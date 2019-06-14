@@ -1,0 +1,15 @@
+{% assign page_id = 'page' | append: paginator.page | append: '/' %}
+{% assign page_id = page.url | replace: page_id, '' %}
+{% assign page_path = page_id | append: include.path | replace: "blog", "assets" %}
+{% assign abs_path =  page_path | prepend: site.baseurl | prepend: site.url %}
+<div class='img_row'>
+  <a href="{{ abs_path }}">
+    <img class="col three" src="{{ abs_path }}" {% if src.alt %}alt="{{ include.alt }}"{% endif %}/>
+  </a>
+</div>
+{% if include.caption %}
+<div class="col three caption">
+  {{ include.caption }}
+</div>
+{% endif %}
+

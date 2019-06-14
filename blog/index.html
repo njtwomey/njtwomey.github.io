@@ -1,0 +1,28 @@
+---
+layout: default
+---
+
+<div class="header-bar">
+  <h2>{{ site.blog_name }}</h2>
+  <h3>{{ site.blog_description }}</h3>
+</div>
+
+<ul class="post-list">
+  {% for post in paginator.posts %}
+    {% capture position %}{% cycle 'left', 'right' %}{% endcapture %}
+    <li>
+      <h2><a class="post-title" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></h2>
+      <p class="post-meta">{{ post.date | date: '%B %-d, %Y' }}</p>
+      <div class="profile col one {{ position }}">
+        {% if post.thumb_image %}
+            {% include image.html path=post.thumb_image %}
+        {% endif %}
+      </div>
+      <p>{{ post.description }}</p>
+    </li>
+  {% endfor %}
+</ul>
+
+{% include pagination.html %}
+{% include social.html %}
+
