@@ -8,3 +8,4 @@ group :jekyll_plugins do
     gem 'jemoji'
     gem 'unicode_utils'
 end
+gem 'minitest'

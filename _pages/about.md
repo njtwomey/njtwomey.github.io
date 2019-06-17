@@ -11,7 +11,7 @@ news: false
 social: true
 ---
 
-I'm a lecturer / research fellow in computational behavioural analysis with machine learning at the University of Bristol. My research interests lie in machine learning, data science, artificial intelligence, and the application of these to healthcare (and recently in astronomy too). More specifically, my machine learning research is on the design and development of bespoke probabilistic and structural methods for these application areas.  
+I'm a research fellow / lecturer in machine learning, data science and artificial intelligence at the University of Bristol. My research interests lie in the design and development of bespoke probabilistic and structural methods for digital health (and recently astronomy). I also have a keen research interest in data and model efficiency in applications with complex hetergeneous data and limited labels. 
 
 I intend this website to serve these purposes: 
 

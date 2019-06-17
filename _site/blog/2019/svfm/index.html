@@ -100,7 +100,7 @@
 
   
     <article class="post-content">
-      <p>This blog post relates to some recent work of mine <a class="citation" href="#twomey2019neural">(Twomey, Kozłowski, &amp; Santos-Rodrı́guez Raúl, 2019)</a> on neural ordinary differential equations. While the work is under review at the moment and this post is going to introduce a high-level summary of the main ideas of the paper, and all of the details can be found in the PDF (link can be found at bottom of page).</p>
+      <p>This blog post relates to some recent work of mine <a class="citation" href="#twomey2019neural">(Twomey, Kozłowski, &amp; Santos-Rodrı́guez Raúl, 2019)</a> on neural ordinary differential equations. While the work is under review at the moment this post is going to introduce a high-level summary of the main ideas of the paper, and all of the details can be found in the PDF (link can be found at bottom of page).</p>
 
 <h3 id="introduction">Introduction</h3>
 
@@ -172,7 +172,7 @@
 
 <p>which is simply the sum of the Euclidean distance between successive evaluation points, i.e. the total transportation distance.</p>
 
-<p>It’s reasonably easy to see that high variance vector fields is indicative of a turbulent trajectory while low variance is suggestive of a straight trajectory that is simpler to solve. A loss on the curvature of vector fields will then encourage straight vector fields, and this loss is formulated based on vector field variance as follows:</p>
+<p>It’s reasonably easy to see that high variance vector fields are indicative of a turbulent trajectory while low variance vector fields are suggestive of a straight trajectory that is simpler to solve. A loss on the curvature of vector fields will then encourage straight vector fields, and this loss is formulated based on vector field variance as follows:</p>
 
 <script type="math/tex; mode=display">~~~~~ \mathcal{L}_{\text{VLoss}} = \frac{1}{T}\sum_{t=1}^T \left\| \nabla\mathbf{h}(t_i) - \mathbb{E}\left[\nabla \mathbf{h}(t)\right] \right\|^2_2</script>
 
@@ -238,7 +238,7 @@
 
 <h3 id="take-away-messages">Take-away messages</h3>
 
-<p>I hope this has given a flavour for some of the capabilities of NODE and NODE-like models (such as SVFM that we propose in the paper below). While I think the classification tasks are very informative for understanding and learning about these model classes (and for motivating useful regularisers), I also believe that the forecasting example delivers a more complete illustration of the model’s capability. This is because neither NODE models (nor a variant called <a href="https://arxiv.org/abs/1904.01681">Augmented NODEs</a>) are capable of solving the behavioural forecasting problem since their advections constitute a homeomorphism. SVFM paths are not so constrained (both by the mixture distribution and the uncertainty on the vector fields) and thus may model a broader set of problems.</p>
+<p>I hope this has given a flavour for some of the capabilities of NODE and NODE-like models (such as SVFM that we propose in the paper below). While I think the classification tasks are very informative for understanding and learning about these model classes (and for motivating useful regularisers), I also believe that the forecasting example delivers a more complete illustration of the model’s capability. This is because neither NODE models (nor a variant called <a href="https://arxiv.org/abs/1904.01681">Augmented NODEs</a>) are capable of solving the behavioural forecasting problem. SVFM paths are richer (both by the mixture distribution and the uncertainty on the vector fields) and thus may model a broader set of problems, including behavioural forecasting.</p>
 
 <hr />
 
