@@ -32,7 +32,7 @@ blog_name: Notes, snippets and articles!
 blog_description:  
 
 # Pagination
-paginate: 20
+paginate: 10
 permalink: /blog/:year/:title/
 paginate_path: /blog/page:num/
 
