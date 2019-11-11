@@ -1,0 +1,28 @@
+---
+layout: default
+---
+
+
+<div class="header-bar">
+  <h2>Posts tagged: '{{ page.tag }}'</h2>
+  <h3>{{ site.blog_description }}</h3>
+</div>
+
+<ul class="post-list">
+  {% for post in page.posts %}
+    {% capture position %}{% cycle 'left', 'right' %}{% endcapture %}
+    <li>
+      <h2><a class="post-title" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></h2>
+      <p class="post-meta">
+          {{ post.date | date_to_long_string }}
+          {% if post.author %} &middot; {{ post.author }}{% endif %}
+          {% if post.tags %}{% for tag in post.tags %} &middot; <a href="/tags/{{tag}}">{{tag}}</a>{% endfor %}{% endif %}
+      </p>
+      <br>
+      <p> {{ post.description }} </p>
+    </li>
+  {% endfor %}
+</ul>
+
+{% include social.html %}
+

@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 name: Niall Twomey
 email: twomeynj at gmail dot com 
-description: A website for cataloguing publications, projects, code snippets. 
+description: The personal website of Niall Twomey cataloguing publications, projects, blog and code snippets. 
 footer_text: 
 
 url: http://www.nialltwomey.com # the base hostname & protocol for your site
@@ -21,9 +21,9 @@ orcid_id: 0000-0002-3225-2654 # your ORCID ID
 medium_username: # your Medium username
 quora_username: # your Quora username
 
-contact_note: Contact me through the links below
+contact_note: Contact me through the links below.
 
-google_analytics:  # out your google-analytics code
+google_analytics: UA-151975494-1 # out your google-analytics code
 
 # -----------------------------------------------------------------------------
 # Blog
@@ -63,6 +63,15 @@ collections:
     permalink: /projects/:path/
 
 news_limit: 5
+
+# -----------------------------------------------------------------------------
+# Tags
+# -----------------------------------------------------------------------------
+tag_page_layout: tag_page
+tag_page_dir: tags
+tag_permalink_style: pretty
+tag_feed_layout: tag_feed
+tag_feed_dir: tags
 
 # -----------------------------------------------------------------------------
 # Jekyll settings

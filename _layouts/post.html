@@ -7,29 +7,25 @@ social: true
 
   <header class="post-header">
     <h1 class="post-title">{{ page.title }}</h1>
-    <p class="post-meta">{{ page.date | date: "%B %-d, %Y" }}{% if page.author %} • {{ page.author }}{% endif %}{% if page.meta %} • {{ page.meta }}{% endif %}</p>
+    <p class="post-meta">
+        {{ page.date | date_to_long_string }}
+        {% if page.author %} &middot; {{ page.author }}{% endif %}
+        {% if page.tags %}{% for tag in page.tags %} &middot; <a href="/tags/{{tag}}">{{tag}}</a>{% endfor %}{% endif %}
+    </p>
   </header>
-  
-  {% include image.html path='thumb.png' %}
-  {% if content.size < 100 %}
+ 
+  {% if page.thumb %} 
+    {% include image.html path='thumb.png' %}
+  {% endif %}
+
     <article class="post-content">
-      <p>
-        The content for this post is currently under development with the aim of being fully released at the end of the month.
-      </p>
-      
-      {% if page.bibtex %}
-        <p>
-          In the meantime, you may be interested in reading the full paper {% cite page.bibtex %} and a link to download and read this is given below.  
-        </p>
-        
-        {% bibliography --cited %}
-      {% endif %} 
-    </article>
-  {% else %}
-    <article class="post-content">
+      <hr>
+      <p> {{ page.description }} </p> 
+      <hr>
       {{ content }}
     </article>
 
+    {% comment %}
     {% if site.disqus_shortname and page.comments and content.size > 100 %}
       <div id="disqus_thread"></div>
       <script type="text/javascript">
@@ -44,8 +40,7 @@ social: true
       </script>
       <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     {% endif %}
-  {% endif %}
-
+    {% endcomment %}
 </div>
 
 {% include social.html %}

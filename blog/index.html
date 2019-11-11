@@ -12,13 +12,19 @@ layout: default
     {% capture position %}{% cycle 'left', 'right' %}{% endcapture %}
     <li>
       <h2><a class="post-title" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a></h2>
-      <p class="post-meta">{{ post.date | date: '%B %-d, %Y' }}</p>
-      <div class="profile col one {{ position }}">
-        {% if post.thumb_image %}
+      <p class="post-meta">
+          {{ post.date | date_to_long_string }}
+          {% if post.author %} &middot; {{ post.author }}{% endif %}
+          {% if post.tags %}{% for tag in post.tags %} &middot; <a href="/tags/{{tag}}">{{tag}}</a>{% endfor %}{% endif %}
+      </p>
+      {% if post.thumb_image %}
+        <div class="profile col one {{ position }}">
             {% include image.html path=post.thumb_image %}
-        {% endif %}
-      </div>
-      <p>{{ post.description }}</p>
+        </div>
+      {% else %}
+        <br>
+      {% endif %} 
+      <p> {{ post.description }} </p>
     </li>
   {% endfor %}
 </ul>

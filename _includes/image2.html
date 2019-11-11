@@ -1,23 +1,23 @@
-{% assign page_id = 'page' | append: paginator.page | append: '/' %}
-{% assign page_id = page.url | replace: page_id, '' %}
+{%- assign page_id = 'page' | append: paginator.page | append: '/' -%}
+{%- assign page_id = page.url | replace: page_id, '' -%}
 
-{% assign page_path_1 = page_id | append: include.path1 | replace: "blog", "assets" %}
-{% assign page_path_2 = page_id | append: include.path2 | replace: "blog", "assets" %}
+{%- assign page_path_1 = page_id | append: include.path1 | replace: "blog", "assets" -%}
+{%- assign page_path_2 = page_id | append: include.path2 | replace: "blog", "assets" -%}
 
-{% assign abs_path_1 =  page_path_1 | prepend: site.baseurl | prepend: site.url %}
-{% assign abs_path_2 =  page_path_2 | prepend: site.baseurl | prepend: site.url %}
+{%- assign abs_path_1 =  page_path_1 | prepend: site.baseurl | prepend: site.url -%}
+{%- assign abs_path_2 =  page_path_2 | prepend: site.baseurl | prepend: site.url -%}
 
 <div class='img_row'>
-  <a href="{{ abs_path_1 }}">
-    <img class="col half first" src="{{ abs_path_1 }}" {% if src.alt %}alt="{{ include.alt }}"{% endif %}/>
+  <a href="{{- abs_path_1 -}}">
+    <img class="col half first" src="{{- abs_path_1 -}}" {%- if src.alt -%}alt="{{- include.alt -}}"{%- endif -%}/>
   </a>
-  <a href="{{ abs_path_2 }}">
-    <img class="col half last" src="{{ abs_path_2 }}" {% if src.alt %}alt="{{ include.alt }}"{% endif %}/>
+  <a href="{{- abs_path_2 -}}">
+    <img class="col half last" src="{{- abs_path_2 -}}" {%- if src.alt -%}alt="{{- include.alt -}}"{%- endif -%}/>
   </a>
 </div>
-{% if include.caption %}
+{%- if include.caption -%}
 <div class="col three caption">
-  {{ include.caption }}
+  {{- include.caption -}}
 </div>
-{% endif %}
+{%- endif -%}
 
