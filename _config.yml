@@ -6,7 +6,7 @@ email: twomeynj at gmail dot com
 description: The personal website of Niall Twomey cataloguing publications, projects, blog and code snippets. 
 footer_text: 
 
-url: http://www.nialltwomey.com # the base hostname & protocol for your site
+url: https://www.nialltwomey.com # the base hostname & protocol for your site
 baseurl: # the subpath of your site, e.g. /blog/
 last_updated: # leave blank if you don't want to display last updated
 
