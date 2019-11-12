@@ -1,11 +1,9 @@
 <footer>
-
   <div class="wrapper col three caption">
-    &copy; Copyright {{- site.time | date: '%Y' -}} {{- site.name -}}
-    {{- site.footer_text -}}
-    {%- if site.last_updated -%}
-        Last updated: {{- site.last_updated -}}.
-    {%- endif -%}
+    &copy; Copyright {{ site.time | date: '%Y' }} {{ site.name }}
+    {{ site.footer_text }}
+    {% if site.last_updated %}
+        Last updated: {{ site.last_updated }}.
+    {% endif %}
   </div>
-
 </footer>

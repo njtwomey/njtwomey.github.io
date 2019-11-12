@@ -1,7 +1,61 @@
+# Setting up local env 
+
+Follow [https://jekyllrb.com/docs/installation/macos/](https://jekyllrb.com/docs/installation/macos/)
+
+## Install ruby
+
+```bash 
+xcode-select --install
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew install ruby
+```
+
+### Set up ruby paths
+Add this to shell config (`~/.zshrc`)
+
+```bash
+export PATH=/usr/local/opt/ruby/bin:$PATH
+```
+
+### Verify versions  
+
+```bash 
+which ruby
+# /usr/local/opt/ruby/bin/ruby
+
+ruby -v
+ruby 2.6.3p62 (2019-04-16 revision 67580)
+```
+
+## Install gem locally 
+
+```bash 
+gem install --user-install bundler jekyll
+```
+
+Then add this to your shell config 
+
+```bash 
+export PATH=$HOME/.gem/ruby/2.6.0/bin:$PATH
+```
+
+where `2.6` corresponds to the version of ruby installed (see verify versions section above)
+
+## Verify gem
+
+Run 
+
+```bash 
+gem env
+```
+
+and verify that under the `GEM PATHS` section a path in the local directory is present. 
+
 # Run local environment 
 
 ```bash
-./bin/setup
+./bin/run_Locally_without_drafts  # or 
+./bin/run_Locally_with_drafts     # to view draft posts
 ```
 
 
