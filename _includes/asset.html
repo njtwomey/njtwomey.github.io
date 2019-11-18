@@ -1,0 +1,10 @@
+{%- assign page_id = 'page' | append: paginator.page | append: '/' -%}
+{%- assign full_path = page.url 
+    | replace: page_id, ''  
+    | append: include.path 
+    | replace: "blog", "assets" 
+    | prepend: site.baseurl 
+    | prepend: site.url
+    | append: include.href
+-%}
+<a href="{{- full_path -}}">{%- if include.text -%}{{- include.text -}}{%- else -%}{{- include.href -}}{%- endif -%}</a>

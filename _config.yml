@@ -35,6 +35,7 @@ blog_description:
 paginate: 10
 permalink: /blog/:year/:title/
 paginate_path: /blog/page:num/
+assetlink: /assets/:path/
 
 text:
   pagination:
@@ -58,6 +59,7 @@ collections:
       layout: post
     output: true
     permalink: /news/:path/
+    assetlink: /assets/:path/
   projects:
     output: true
     permalink: /projects/:path/

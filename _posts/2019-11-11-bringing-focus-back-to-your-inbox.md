@@ -2,7 +2,7 @@
 layout: post
 title: Bringing focus back to your inbox
 description: I realised recently that my primary email account is barely fulfilling its purpose anymore. The main cause&colon; over-subscription has devalued the utility of the basic service. In other words, since the majority of the emails I received have basically zero value, I give much less attention to those that are actually valuable. I decided to take action and brutally cull and unsubscribe from all but the most important or valuable services. The main problem with this decision is that I am fairly lazy so wanted to do as little manual labor as possible. Since I'm also rather forgetful and will surely need to do this again in the future I'm really hoping that this post will help the future me! 
-tags: 2019 snippet email javascript python
+tags: 2019 email javascript python
 date: 2019-11-08
 author: Niall Twomey
 comments: false

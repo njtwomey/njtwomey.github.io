@@ -49,6 +49,7 @@ lines.append(f'description: {description}')
 lines.append(f'date: {year}-{month}-{day}')
 lines.append(f'author: Niall Twomey')
 lines.append(f'comments: false')
+lines.append(f'tags: {tags}')
 if bibtex: 
     lines.append(f'bibtex: {bibtex}')
 if thumbnail: 
