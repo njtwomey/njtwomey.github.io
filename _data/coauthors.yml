@@ -1,8 +1,20 @@
+Burghardt:
+    url: http://people.cs.bris.ac.uk/~burghard/
+
 Burrows: 
     url: http://www.bristol.ac.uk/engineering/people/alison-b-burrows/index.html
 
+Byrne:
+    url: http://www.nuigalway.ie/our-research/people/engineering-and-informatics/dallanbyrne/
+
+Camplani:
+    url: https://scholar.google.es/citations?user=7FrKNIIAAAAJ&hl=en
+
 Craddock: 
     url: http://www.bris.ac.uk/engineering/people/ian-j-craddock/index.html
+
+Damen:
+    url: http://people.cs.bris.ac.uk/~damen/
 
 Diethe: 
     url: https://tomdiethe.com/
@@ -19,11 +31,17 @@ Flach:
 Hannuna: 
     url: http://www.bristol.ac.uk/engineering/people/sion-l-hannuna/index.html
 
+Harwin:
+    url: https://www.reading.ac.uk/biologicalsciences/bme/about/staff/w-s-harwin.aspx
+
+Holmes:
+    url: https://www.cardiff.ac.uk/people/view/1439807-holmes-michael
+    
 Hourihane: 
     url: http://research.ucc.ie/profiles/W010/J.Hourihane@ucc.ie
 
 Kozłowski: 
-    url: http://www.bristol.ac.uk/engineering/people/michal-kozlowski/index.html
+    url: https://www.imperial.ac.uk/people/m.kozlowski
 
 Kull: 
     url: https://www.ut.ee/en/meelis-kull
@@ -31,11 +49,17 @@ Kull:
 Mann: 
     url: http://www.bristol.ac.uk/engineering/people/callum-n-mann/overview.html
 
+Masullo: 
+    url: http://www.bristol.ac.uk/engineering/people/alessandro-masullo/index.html
+
 Marnane: 
     url: http://publish.ucc.ie/researchprofiles/D013/lmarnane
 
 McConville: 
     url: http://www.bristol.ac.uk/engineering/people/ryan-mcconville/index.html
+
+Mirmehdi: 
+    url: http://people.cs.bris.ac.uk/~majid//
 
 Oikonomou:
     url: http://www.spd.gr/
@@ -45,6 +69,12 @@ Piechocki:
 
 Perello-Nieto:
     url: https://www.perellonieto.com/
+
+Pope:
+    url: https://www.montevallo.edu/directory/pope-james-hartman/
+
+Ponce Lopez:
+    url: http://www.bris.ac.uk/engineering/people/victor-ponce-lopez/index.html
 
 Poyiadzi: 
     url: http://www.bristol.ac.uk/engineering/people/rafael-poyiadzi/index.html
@@ -66,6 +96,12 @@ Twomey:
 
 Tonkin: 
     url: http://www.bristol.ac.uk/engineering/people/emma-l-tonkin/
+
+Vafeas: 
+    url: http://www.bristol.ac.uk/engineering/people/antonis-t-vafeas/overview.html
+
+Woznowski:
+    url: https://dblp.org/pers/w/Woznowski:Przemyslaw.html
 
 Yordanova: 
     url: http://stenialo.org/?page_id=29
