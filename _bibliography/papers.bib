@@ -5,6 +5,29 @@
 % PAPERS FROM 2020 %
 %%%%%%%%%%%%%%%%%%%%
 
+@inproceedings{twomey2020towards, 
+  author={Twomey, Niall and Fain, Mikhail and Ponikar, Andrey and Sarraf, Nadine},
+  title={Towards Multi-Language Recipe Personalisation and Recommendation},
+  pages={1-6},
+  year={2020},
+  organization={ACM}, 
+  booktitle={In Fourteenth ACM Conference on Recommender Systems (RecSys ’20)}, 
+  abstract={Multi-language recipe personalisation and recommendation is an under-explored field of information retrieval in academic and production systems. The existing gaps in our current understanding are numerous, even on fundamental questions such as whether consistent and high-quality recipe recommendation can be delivered across languages. In this paper, we strive to answer these questions by introducing the multi-language recipe recommendation setting and presenting grounding results that will help to establish the potential and absolute value of future work in this area. Our work draws on several billion events from millions of recipes and users from Arabic, English, Indonesian, Russian, and Spanish. We represent recipes using a combination of normalised ingredients, standardised skills and image embeddings obtained without human intervention. In modelling, we take a classical approach based on optimising an embedded bi-linear user-item metric space towards the interactions that most strongly elicit cooking intent. For users without interaction histories, a bespoke content-based cold-start model that predicts context and recipe affinity is introduced. We show that our approach to personalisation is stable and easily scales to new languages. A robust cross-validation campaign is employed and consistently rejects baseline models and representations, strongly favouring those we propose. Our results are presented in a language-oriented (as opposed to model-oriented) fashion to emphasise the language-based goals of this work. We believe that this is the first large-scale work that comprehensively considers the value and potential of multi-language recipe recommendation and personalisation as well as delivering scalable and reliable models. 
+}, 
+  pdf={twomey2020towards.pdf}
+}
+
+@inproceedings{twomey2020neural, 
+  author = {Twomey, Niall and Koz{\l}owski, Micha{\l} and  Santos-Rodr{\'\i}guez, Ra{\'u}l},
+  title = {Neural ODEs with stochastic vector field mixtures},
+  year = {2020},
+  publisher = {IOS Press},
+  abstract = {It was recently shown that neural ordinary differential equation models cannot solve fundamental and seemingly straightforward tasks even with high-capacity vector field representations. This paper introduces two other fundamental tasks to the set that baseline methods cannot solve, and proposes mixtures of stochastic vector fields as a model class that is capable of solving these essential problems. Dynamic vector field selection is of critical importance for our model, and our approach is to propagate component uncertainty over the integration interval with a technique based on forward filtering. We also formalise several loss functions that encourage desirable properties on the trajectory paths, and of particular interest are those that directly encourage fewer expected function evaluations. Experimentally, we demonstrate that our model class is capable of capturing the natural dynamics of human behaviour; a notoriously volatile application area. Baseline approaches cannot model this problem.}, 
+  booktitle = {Proceedings of the Twenty-Fourth European Conference on Artificial Intelligence (ECAI '20) 2020},
+  pages = {1–8},
+  series = {ECAI'20}, 
+  pdf={twomey2020neural.pdf}
+}
 
 @article{elsts2020energy,
   title = "Energy-efficient activity recognition framework using wearable accelerometers",
@@ -18,16 +41,6 @@
   keywords = "Feature selection, Activity recognition, Wearables",
   abstract = "Acceleration data for activity recognition typically are collected on battery-powered devices, leading to a trade-off between high-accuracy recognition and energy-efficient operation. We investigate this trade-off from a feature selection perspective, and propose an energy-efficient activity recognition framework with two key components: a detailed energy consumption model and a number of feature selection algorithms. We evaluate the model and the algorithms using Random Forest classifiers to quantify the recognition accuracy, and find that the multi-objective Particle Swarm Optimization algorithm achieves the best results for the task. The results show that by selecting appropriate groups of features, energy consumption for computation and data transmission is reduced by an order of magnitude compared with the raw-data approach, and that the framework presents a flexible selection of feature groups that allow the designer to choose an appropriate accuracy-energy trade-off for a specific target application.", 
   pdf={elsts2020energy.pdf}
-}
-
-@article{fain2020towards, 
-  title={Towards Multi-Language Recipe Personalisation and Recommendation}, 
-  author={Fain, Mikhail and Ponikar, Andrey and Sarraf, Nadine and Twomey, Niall}, 
-  journal={arXiv},
-  year={2020}, 
-  abstract={Multi-language recipe personalisation and recommendation is an under-explored field of information retrieval in academic and production systems. The existing gaps in our current understanding are numerous, even on fundamental questions such as whether consistent and high-quality recipe recommendation can be delivered across languages. In this paper, we strive to answer these questions by introducing the multi-language recipe recommendation setting and presenting grounding results that will help to establish the potential and absolute value of future work in this area. Our work draws on several billion events from millions of recipes and users from Arabic, English, Indonesian, Russian, and Spanish. We represent recipes using a combination of normalised ingredients, standardised skills and image embeddings obtained without human intervention. In modelling, we take a classical approach based on optimising an embedded bi-linear user-item metric space towards the interactions that most strongly elicit cooking intent. For users without interaction histories, a bespoke content-based cold-start model that predicts context and recipe affinity is introduced. We show that our approach to personalisation is stable and easily scales to new languages. A robust cross-validation campaign is employed and consistently rejects baseline models and representations, strongly favouring those we propose. Our results are presented in a language-oriented (as opposed to model-oriented) fashion to emphasise the language-based goals of this work. We believe that this is the first large-scale work that comprehensively considers the value and potential of multi-language recipe recommendation and personalisation as well as delivering scalable and reliable models. 
-}, 
-  pdf={fain2020towards.pdf}
 }
 
 @article{poyiadzi2020detecting,
