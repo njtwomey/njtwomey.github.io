@@ -11,7 +11,7 @@ news: false
 social: true
 ---
 
-I am an experienced and innovative researcher and in theoretical and applied machine learning. 
+I am an experienced and innovative researcher in theoretical and applied machine learning. 
 
 Machine learning research serves as a creative and intellectual outlet for me and the teams I work 
 with and lead. 
@@ -23,7 +23,7 @@ I pride myself on continuously producing original research and never having fail
 and reliable models across a multiplicity of domains and problems.
 
 From an applications perspective, I would loosely define myself as a 'generalist' in my direct work 
-and leadership.
+and teams/projects I lead.
 I have a proven track record of directly working with and managing research with many types of data 
 sources (numeric, text, image, video, depth, skeletons, astronomy), sensors (accelerometers and other
 wearables, environmental, video, LIDAR), label structures (sequences, hierarchical, dynamic, circular) 
@@ -37,17 +37,5 @@ To date, I have authored approximately 50 peer-reviewed machine learning papers,
 over forty co-authors.
 As well as deploying models to several healthcare settings, I have also brought several models to 
 web-scale and millions live users. 
-These models have been explicitly tailored to closely align with product needs, and deliver positive 
-responses on core business metrics. 
-
-I intend this website to serve these purposes: 
-
-1. To deliver a non-technical overview on my main research contributions from a 
-   practical and intuitive perspective; 
-2. For easy access to some code snippets that I often find useful but that I don't
-   use frequently enough to have committed to memory; and 
-3. To store various notes on machine learning concepts that I've written in the 
-   past which I refer to sometimes.
-
-Thanks for reading, and feel free to contact me through the links below.
-
+These models have been explicitly tailored to closely align with product needs, and have consistently 
+delivered positive effects on core business metrics.
