@@ -2,6 +2,45 @@
 ---
 
 %%%%%%%%%%%%%%%%%%%%
+% PAPERS FROM 2021 %
+%%%%%%%%%%%%%%%%%%%%
+
+@article{fain2021backretrieval,
+    title={Backretrieval: An Image-Pivoted Evaluation Metric for Cross-Lingual Text Representations Without Parallel Corpora},
+    author={Fain, Mikhail and Twomey, Niall and Bollegala, Danushka},
+    journal={arXiv preprint arXiv:2105.04971},
+    year={2021},
+    abstract={     Cross-lingual text representations have gained popularity lately and act as the backbone of many tasks such as unsupervised machine translation and cross-lingual information retrieval, to name a few. However, evaluation of such representations is difficult in the domains beyond standard benchmarks due to the necessity of obtaining domain-specific parallel language data across different pairs of languages. In this paper, we propose an automatic metric for evaluating the quality of cross-lingual textual representations using images as a proxy in a paired image-text evaluation dataset. Experimentally, Backretrieval is shown to highly correlate with ground truth metrics on annotated datasets, and our analysis shows statistically significant improvements over baselines. Our experiments conclude with a case study on a recipe dataset without parallel cross-lingual data. We illustrate how to judge cross-lingual embedding quality with Backretrieval, and validate the outcome with a small human study. },
+    pdf={fain2021backretrieval.pdf}
+}
+
+@article{takiguchi2021multifield,
+    title={Multi-Field Models in Neural Recipe Ranking -- An Early Exploratory Study},
+    author={Kentaro Takiguchi and Niall Twomey and Luis M Vaquero},
+    journal={arXiv preprint arxiv:2105.05710},
+    year={2021},
+    archivePrefix={arXiv},
+    primaryClass={cs.IR},
+    abstract={Explicitly modelling field interactions and correlations in complex documents structures has recently gained popularity in neural document embedding and retrieval tasks. Although this requires the specification of bespoke task-dependent models, encouraging empirical results are beginning to emerge. We present the first in-depth analyses of non-linear multi-field interaction (NL-MFI) ranking in the cooking domain in this work. Our results show that field-weighted factorisation machines models provide a statistically significant improvement over baselines in recipe retrieval tasks. Additionally, we show that sparsely capturing subsets of field interactions offers advantages over exhaustive alternatives. Although field-interaction aware models are more elaborate from an architectural basis, they are often more data-efficient in optimisation and are better suited for explainability due to mirrored document and model factorisation. },
+    pdf={takiguchi2021multifield.pdf}
+}
+
+@article{poyiadzi2021statistical,
+    title={Statistical Hypothesis Testing for Class-Conditional Label Noise},
+    author={Rafael Poyiadzi and Weisong Yang and Niall Twomey and Ra{\'u}l Santos-Rodr{\'\i}guez},
+    journal={arXiv preprint arxiv:2103.02630},
+    year={2021},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG},
+    abstract={In this work we aim to provide machine learning practitioners with tools to answer the question: is there class-conditional flipping noise in my labels? In particular, we present hypothesis tests to reliably check whether a given dataset of instance-label pairs has been corrupted with class-conditional label noise. While previous works explore the direct estimation of the noise rates, this is known to be hard in practice and does not offer a real understanding of how trustworthy the estimates are. These methods typically require anchor points - examples whose true posterior is either 0 or 1. Differently, in this paper we assume we have access to a set of anchor points whose true posterior is approximately 1/2. The proposed hypothesis tests are built upon the asymptotic properties of Maximum Likelihood Estimators for Logistic Regression models and accurately distinguish the presence of class-conditional noise from uniform noise. We establish the main properties of the tests, including a theoretical and empirical analysis of the dependence of the power on the test on the training sample size, the number of anchor points, the difference of the noise rates and the use of realistic relaxed anchors. },
+    pdf={poyiadzi2021statistical.pdf}
+}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%
 % PAPERS FROM 2020 %
 %%%%%%%%%%%%%%%%%%%%
 
