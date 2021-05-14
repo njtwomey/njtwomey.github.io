@@ -19,13 +19,13 @@ My theoretical contributions to the field can be categorised into three key area
 structural and behavioural modelling.
 I take on real-world problems in complex, high-risk domains that cannot generally be solved with 
 out-of-the-box techniques.
-I pride myself on continuously producing original research and never having failed to deliver strong 
+I pride myself on continuously producing original research and consistently delivering strong 
 and reliable models across a multiplicity of domains and problems.
 
 From an applications perspective, I would loosely define myself as a 'generalist' in my direct work 
 and teams/projects I lead.
 I have a proven track record of directly working with and managing research with many types of data 
-sources (numeric, text, image, video, depth, skeletons, astronomy), sensors (accelerometers and other
+sources (numeric, text, image, video, voice, depth, skeletons, astronomy), sensors (accelerometers and other
 wearables, environmental, video, LIDAR), label structures (sequences, hierarchical, dynamic, circular) 
 at various levels of supervision (supervised, weak-supervised, semi-supervised, structured, fusion and
 active and transfer learning) in real environments (data latency, data missingness). 
