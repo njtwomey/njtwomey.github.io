@@ -28,7 +28,8 @@ I have a proven track record of directly working with and managing research with
 sources (numeric, text, image, video, voice, depth, skeletons, astronomy), sensors (accelerometers and other
 wearables, environmental, video, LIDAR), label structures (sequences, hierarchical, dynamic, circular) 
 at various levels of supervision (supervised, weak-supervised, semi-supervised, structured, fusion and
-active and transfer learning) in real environments (data latency, data missingness). 
+active and transfer learning) in real environments (data latency, data missingness) across various tasks 
+(classification, regression, forecasting, cost-sensitive learning and calibration). 
 I am forward thinking in my modelling and research design where my models have coped with unexpected 
 artefacts in real-world and live deployments. 
 
