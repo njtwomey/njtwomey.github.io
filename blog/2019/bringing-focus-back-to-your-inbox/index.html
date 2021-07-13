@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Niall Twomey | Bringing focus back to your inbox</title>
+  <meta name="description" content="The personal website of Niall Twomey cataloguing publications, projects, blog and code snippets.">
+
+  <link rel="shortcut icon" href="https://www.nialltwomey.com/assets/img/favicon.ico">
+  <link rel="icon" href="https://www.nialltwomey.com/assets/img/favicon.ico">
+  <link rel="stylesheet" href="https://www.nialltwomey.com/assets/css/main.css">
+  <link rel="canonical" href="https://www.nialltwomey.com/blog/2019/bringing-focus-back-to-your-inbox/">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <span class="site-title"><a href='/'><strong>Niall</strong> Twomey</a>
+    </span>
+
+    <nav class="site-nav">
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+      <div class="trigger">
+        <!-- About -->
+        <a class="page-link" href="https://www.nialltwomey.com/">about</a>
+
+        <!-- Blog -->
+        <a class="page-link" href="https://www.nialltwomey.com/blog/">blog</a>
+
+        <!-- Pages --><a class="page-link" href="https://www.nialltwomey.com/projects/">projects</a><a class="page-link" href="https://www.nialltwomey.com/publications/">publications</a><!-- CV link -->
+        <!-- <a class="page-link" href="https://www.nialltwomey.com/assets/pdf/CV.pdf">vitae</a> -->
+
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Bringing focus back to your inbox</h1>
+    <p class="post-meta">
+        08 November 2019
+         &middot; Niall Twomey
+         &middot; <a href="/tags/2019">2019</a> &middot; <a href="/tags/email">email</a> &middot; <a href="/tags/javascript">javascript</a> &middot; <a href="/tags/python">python</a>
+    </p>
+  </header>
+ 
+  
+
+    <article class="post-content">
+      <hr>
+      <p> I realised recently that my primary email account is barely fulfilling its purpose anymore. The main cause&colon; over-subscription has devalued the utility of the basic service. In other words, since the majority of the emails I received have basically zero value, I give much less attention to those that are actually valuable. I decided to take action and brutally cull and unsubscribe from all but the most important or valuable services. The main problem with this decision is that I am fairly lazy so wanted to do as little manual labor as possible. Since I'm also rather forgetful and will surely need to do this again in the future I'm really hoping that this post will help the future me! </p> 
+      <hr>
+      <p>First, I needed to get a list of emails that routinely send me emails. I did some searching online and came across <a href="https://helgeklein.com/blog/2015/02/extracting-all-email-addresses-from-a-gmail-label/">this</a> article that does 90% of what I needed. It used Google’s <a href="https://script.google.com">scripting language</a> for <a href="https://docs.google.com/spreadsheets">Google Sheets</a> that a provides high-level API that queries Gmail. I edited the code a small bit for my own purposes. Specifically I wanted to introduce a semi-persistent cursor location and to dump the email addresses to a spreadsheet. My modified version of the code is at the bottom of this page.</p>
+
+<p>The following outlines the approach to get the email addresses:</p>
+
+<ol>
+  <li>Create a new spreadsheet via <a href="https://docs.google.com/spreadsheets">https://docs.google.com/spreadsheets</a>.</li>
+  <li>Set the cells A1 and B1 to <code class="highlighter-rouge">Offset</code> and <code class="highlighter-rouge">0</code> respectively (only the cell B1 is important and at first should be set to 0).</li>
+  <li>Click on the <code class="highlighter-rouge">Tools</code> menu, and then select <code class="highlighter-rouge">Script Editor</code>.</li>
+  <li>Make a new script file, and set its contents with the contents of the javascript snippet at the bottom of this page.</li>
+  <li>Run the function <code class="highlighter-rouge">GetAddresses</code> either from the spreadsheet (follow menu <code class="highlighter-rouge">Email Analysis</code>-&gt; <code class="highlighter-rouge">Extract Email Addresses</code>) or from the script page (follow menu <code class="highlighter-rouge">Run</code> -&gt; <code class="highlighter-rouge">Run function</code> -&gt; <code class="highlighter-rouge">GetAddresses</code>).</li>
+  <li>The script will ask for permission to access your active email account when it’s first executed.</li>
+  <li>Wait until the script ends. It could take some time.</li>
+  <li>It’s good practise to remove the permissions that you granted to the spreadsheet afterwards. This can be done here: <a href="https://myaccount.google.com/security-checkup">https://myaccount.google.com/security-checkup</a>.</li>
+</ol>
+
+<p>When the script terminates a new tab called <code class="highlighter-rouge">EmailAddresses</code> will be created. Dump the second column of this sheet to a file called <code class="highlighter-rouge">emails.csv</code>. If the python file below is in the same directory as <code class="highlighter-rouge">emails.csv</code> the list of the 50 most common email domains will be printed.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+
+<span class="n">counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span>
+	<span class="k">lambda</span> <span class="n">email</span><span class="p">:</span> <span class="n">email</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'@'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> 
+	<span class="nb">filter</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">strip</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="s">'emails.csv'</span><span class="p">,</span> <span class="s">'r'</span><span class="p">)))</span>
+<span class="p">))</span>
+
+<span class="k">for</span> <span class="n">email</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">counts</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span> 
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'{email:&gt;40s}: {count}'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This script obviously won’t unsubscribe you from anything, but it will give you a priority list of the domains that email most frequently. My rationale is that it’s unlikely that all of these have great value, so unsubscribing from them will help my inbox.</p>
+
+<p>I ended up deleting many the actual emails from the least important senders too, which freed up about 2 GB of storage space on my Google account.</p>
+
+<p>The modified javascript code is:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Apart from a few small changes, this script is based almost completely on code from: </span>
+<span class="c1">//   https://helgeklein.com/blog/2015/02/extracting-all-email-addresses-from-a-gmail-label/</span>
+
+<span class="c1">//</span>
+<span class="c1">// Parse the email addresses from one search query</span>
+<span class="c1">//</span>
+<span class="kd">function</span> <span class="nx">GetAddressesFromPage</span><span class="p">(</span><span class="nx">pageSize</span><span class="p">,</span> <span class="nx">userInputSheet</span><span class="p">,</span> <span class="nx">sheet</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">addressesOnly</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="kd">var</span> <span class="nx">messageData</span> <span class="o">=</span> <span class="p">[];</span>
+
+    <span class="c1">// The starting cursor position</span>
+    <span class="kd">var</span> <span class="nx">startIndex</span> <span class="o">=</span> <span class="nb">parseInt</span><span class="p">(</span><span class="nx">userInputSheet</span><span class="p">.</span><span class="nx">getRange</span><span class="p">(</span><span class="s2">"B1"</span><span class="p">).</span><span class="nx">getValue</span><span class="p">());</span>
+
+    <span class="c1">// Search over range</span>
+    <span class="kd">var</span> <span class="nx">threads</span> <span class="o">=</span> <span class="nx">GmailApp</span><span class="p">.</span><span class="nx">search</span><span class="p">(</span><span class="s2">"to:me"</span><span class="p">,</span> <span class="nx">startIndex</span><span class="p">,</span> <span class="nx">pageSize</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">threads</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+
+    <span class="c1">// Get all messages for the current batch of threads</span>
+    <span class="kd">var</span> <span class="nx">messages</span> <span class="o">=</span> <span class="nx">GmailApp</span><span class="p">.</span><span class="nx">getMessagesForThreads</span><span class="p">(</span><span class="nx">threads</span><span class="p">);</span>
+
+    <span class="nx">Logger</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Parsing email addresses for page "</span> <span class="o">+</span> <span class="nx">startIndex</span><span class="p">.</span><span class="nx">toString</span><span class="p">());</span>
+
+    <span class="c1">// Loop over all messages</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">messages</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Loop over all messages in this thread</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">messages</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">length</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">mailFrom</span> <span class="o">=</span> <span class="nx">messages</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">j</span><span class="p">].</span><span class="nx">getFrom</span><span class="p">();</span>
+            <span class="kd">var</span> <span class="nx">mailDate</span> <span class="o">=</span> <span class="nx">messages</span><span class="p">[</span><span class="nx">i</span><span class="p">][</span><span class="nx">j</span><span class="p">].</span><span class="nx">getDate</span><span class="p">();</span>
+
+            <span class="c1">// mailFrom format may be either one of these:</span>
+            <span class="c1">// name@domain.com</span>
+            <span class="c1">// any text &lt;name@domain.com&gt;</span>
+            <span class="c1">// "any text" &lt;name@domain.com&gt;</span>
+
+            <span class="kd">var</span> <span class="nx">name</span> <span class="o">=</span> <span class="s2">""</span><span class="p">;</span>
+            <span class="kd">var</span> <span class="nx">email</span> <span class="o">=</span> <span class="s2">""</span><span class="p">;</span>
+            <span class="kd">var</span> <span class="nx">matches</span> <span class="o">=</span> <span class="nx">mailFrom</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/</span><span class="se">\s</span><span class="sr">*"</span><span class="se">?([^</span><span class="sr">"</span><span class="se">]</span><span class="sr">*</span><span class="se">)</span><span class="sr">"</span><span class="se">?\s</span><span class="sr">+&lt;</span><span class="se">(</span><span class="sr">.+</span><span class="se">)</span><span class="sr">&gt;/</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">matches</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">name</span> <span class="o">=</span> <span class="nx">matches</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+                <span class="nx">email</span> <span class="o">=</span> <span class="nx">matches</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">email</span> <span class="o">=</span> <span class="nx">mailFrom</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="c1">// Add the data</span>
+            <span class="nx">addressesOnly</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">mailFrom</span><span class="p">);</span>
+            <span class="nx">messageData</span><span class="p">.</span><span class="nx">push</span><span class="p">([</span><span class="nx">name</span><span class="p">,</span> <span class="nx">email</span><span class="p">,</span> <span class="nx">mailDate</span><span class="p">]);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Update the current cursor position</span>
+    <span class="nx">userInputSheet</span><span class="p">.</span><span class="nx">getRange</span><span class="p">(</span><span class="s2">"B1"</span><span class="p">).</span><span class="nx">setValue</span><span class="p">(</span><span class="nx">startIndex</span> <span class="o">+</span> <span class="nx">pageSize</span><span class="p">);</span>
+
+    <span class="c1">// Add the parsed data to the SS</span>
+    <span class="nx">sheet</span><span class="p">.</span><span class="nx">getRange</span><span class="p">(</span><span class="nx">sheet</span><span class="p">.</span><span class="nx">getLastRow</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">messageData</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="nx">setValues</span><span class="p">(</span><span class="nx">messageData</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">//</span>
+<span class="c1">// Searches one label for the first time someone sent you an email</span>
+<span class="c1">// Returns name, e-mail address (extracted from the "From" field) and message time</span>
+<span class="c1">//</span>
+<span class="kd">function</span> <span class="nx">GetAddresses</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Get the active spreadsheet</span>
+    <span class="kd">var</span> <span class="nx">ss</span> <span class="o">=</span> <span class="nx">SpreadsheetApp</span><span class="p">.</span><span class="nx">getActiveSpreadsheet</span><span class="p">();</span>
+
+    <span class="c1">// Num iterations</span>
+    <span class="kd">var</span> <span class="nx">count</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+
+    <span class="c1">// Label to search</span>
+    <span class="kd">var</span> <span class="nx">userInputSheet</span> <span class="o">=</span> <span class="nx">ss</span><span class="p">.</span><span class="nx">getSheets</span><span class="p">()[</span><span class="mi">0</span><span class="p">];</span>
+
+    <span class="kd">var</span> <span class="nx">pageSize</span> <span class="o">=</span> <span class="mi">250</span><span class="p">;</span>
+
+    <span class="c1">// Create / empty the target sheet</span>
+    <span class="kd">var</span> <span class="nx">sheetName</span> <span class="o">=</span> <span class="s2">"EmailAddresses"</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">sheet</span> <span class="o">=</span> <span class="nx">ss</span><span class="p">.</span><span class="nx">getSheetByName</span><span class="p">(</span><span class="nx">sheetName</span><span class="p">)</span> <span class="o">||</span> <span class="nx">ss</span><span class="p">.</span><span class="nx">insertSheet</span><span class="p">(</span><span class="nx">sheetName</span><span class="p">,</span> <span class="nx">ss</span><span class="p">.</span><span class="nx">getSheets</span><span class="p">().</span><span class="nx">length</span><span class="p">);</span>
+
+    <span class="c1">// Get all messages in a nested array (threads -&gt; messages)</span>
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="nx">GetAddressesFromPage</span><span class="p">(</span><span class="nx">pageSize</span><span class="p">,</span> <span class="nx">userInputSheet</span><span class="p">,</span> <span class="nx">sheet</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">ret</span> <span class="o">==</span> <span class="kc">false</span><span class="p">)</span>
+            <span class="k">break</span><span class="p">;</span>
+
+        <span class="c1">// Termination conditions</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">--</span><span class="nx">count</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">break</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="c1">//</span>
+<span class="c1">// Adds a menu to easily call the script</span>
+<span class="c1">//</span>
+<span class="kd">function</span> <span class="nx">onOpen</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">sheet</span> <span class="o">=</span> <span class="nx">SpreadsheetApp</span><span class="p">.</span><span class="nx">getActiveSpreadsheet</span><span class="p">();</span>
+
+    <span class="kd">var</span> <span class="nx">menu</span> <span class="o">=</span> <span class="p">[{</span>
+        <span class="na">name</span><span class="p">:</span> <span class="s2">"Extract Email Addresses"</span><span class="p">,</span>
+        <span class="na">functionName</span><span class="p">:</span> <span class="s2">"GetAddresses"</span>
+    <span class="p">}];</span>
+
+    <span class="nx">sheet</span><span class="p">.</span><span class="nx">addMenu</span><span class="p">(</span><span class="s2">"Email Analysis"</span><span class="p">,</span> <span class="nx">menu</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Modifying the first agrument of <code class="highlighter-rouge">GmailApp.search</code> of the code below from <code class="highlighter-rouge">"to:me"</code> to <code class="highlighter-rouge">"unsubscribe"</code> instead prioritises the search for ‘unsubscribe-able’ emails.</p>
+
+    </article>
+
+    
+</div>
+
+<div class="social">
+  
+    <div class="col three caption">
+      Contact me through the links below.
+    </div>
+  
+  <span class="contacticon center">
+    <a href="mailto:%74%77%6F%6D%65%79%6E%6A %61%74 %67%6D%61%69%6C %64%6F%74 %63%6F%6D"><i class="fas fa-envelope" style="font-size:0.5em;"></i></a>
+    <a href="https://orcid.org/0000-0002-3225-2654" style="font-size:0.5em;" target="_blank" title="ORCID"><i class="ai ai-orcid"></i></a>
+    <a href="https://scholar.google.com/citations?user=bRN8Y34AAAAJ" style="font-size:0.5em;" target="_blank" title="Google Scholar"><i class="ai ai-google-scholar"></i></a>
+    <a href="https://github.com/njtwomey" style="font-size:0.5em;" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+    <a href="https://www.linkedin.com/in/nialltwomey" style="font-size:0.5em;" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+    <a href="https://twitter.com/twomeynj" style="font-size:0.5em;" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+    
+    
+    
+  </span>
+</div>
+
+
+
+      </div>
+    </div>
+
+    <footer>
+  <div class="wrapper col three caption">
+    &copy; Copyright 2021 Niall Twomey
+    
+    
+  </div>
+</footer>
+
+
+    <!-- Load jQuery -->
+<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+
+<!-- Load Common JS -->
+<script src="https://www.nialltwomey.com/assets/js/common.js"></script><!-- Load KaTeX -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js"></script>
+<script src="https://www.nialltwomey.com/assets/js/katex.js"></script><!-- Include custom icon fonts -->
+<link rel="stylesheet" href="https://www.nialltwomey.com/assets/css/fontawesome-all.min.css">
+<link rel="stylesheet" href="https://www.nialltwomey.com/assets/css/academicons.min.css">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151975494-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-151975494-1');
+</script>
+
+
+
+  </body>
+
+</html>
