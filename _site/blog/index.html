@@ -67,6 +67,27 @@
   
     
     <li>
+      <h2><a class="post-title" href="/blog/2022/explainable-gif/">Animated Local Explanations</a></h2>
+      <p class="post-meta">
+          28 January 2022
+           &middot; Niall Twomey
+           &middot; <a href="/tags/2022">2022</a> &middot; <a href="/tags/animation">animation</a> &middot; <a href="/tags/fun">fun</a> &middot; <a href="/tags/python">python</a>
+      </p>
+      
+        <div class="profile col one left">
+            <div class='img_row'>
+  <a href="http://localhost:4000/assets/2022/explainable-gif/xor/predictive-query=1-opt_ls=0.464.png">
+    <img class="col three" src="http://localhost:4000/assets/2022/explainable-gif/xor/predictive-query=1-opt_ls=0.464.png"/>
+  </a>
+</div>
+        </div>
+        <br>
+       
+      <p> Explainability is a part of machine learning is where we try to demystify the factors that influence a particular model prediction, particularly when the predictive functions are complex and nonlinear. In a typical paper or a blog that you may read, you'll see explanations visualised in a nice static image. I was recently after reading a <a href="https://arxiv.org/abs/2107.04309">paper</a> and afterwards was inspired to produce animations of explanations, as well as a few additional insights. </p>
+    </li>
+  
+    
+    <li>
       <h2><a class="post-title" href="/blog/2019/eager-exception-logging-in-python/">Eager exception logging in Python</a></h2>
       <p class="post-meta">
           22 November 2019
@@ -88,13 +109,14 @@
            &middot; <a href="/tags/snippet">snippet</a> &middot; <a href="/tags/visualisation">visualisation</a> &middot; <a href="/tags/python">python</a> &middot; <a href="/tags/jupyter">jupyter</a>
       </p>
       
-        <div class="profile col one right">
+        <div class="profile col one left">
             <div class='img_row'>
   <a href="http://localhost:4000/assets/2019/visualising-confidence-in-multi-class-classification-problems/soft.png">
     <img class="col three" src="http://localhost:4000/assets/2019/visualising-confidence-in-multi-class-classification-problems/soft.png"/>
   </a>
 </div>
         </div>
+        <br>
        
       <p> It is best practise to visualise the confidence of predictive models whenever possible. With binary classification in two dimensions this is particularly straightforward since confidence that is lost from one class is necessarily gained by the other. With more classes the visualisation becomes less straightforward&colon; confidence can be lost to any combination of classes and to each at different rates. <a href="https://en.m.wikipedia.org/wiki/Voronoi_diagram">Voronoi diagrams</a> are a popular way of displaying multi-class predictions, but unfortunately these do not directly show predictive confidence. In this post I briefly describe and give code for a method that embeds multi-class confidence in predictive diagrams. </p>
     </li>
@@ -119,16 +141,17 @@
       <p class="post-meta">
           26 June 2019
           
-           &middot; <a href="/tags/2019">2019</a> &middot; <a href="/tags/fun">fun</a> &middot; <a href="/tags/python">python</a>
+           &middot; <a href="/tags/2019">2019</a> &middot; <a href="/tags/fun">fun</a> &middot; <a href="/tags/python">python</a> &middot; <a href="/tags/animation">animation</a>
       </p>
       
-        <div class="profile col one right">
+        <div class="profile col one left">
             <div class='img_row'>
   <a href="http://localhost:4000/assets/2019/taking-the-fourier-transform-of-your-cat/thumb.png">
     <img class="col three" src="http://localhost:4000/assets/2019/taking-the-fourier-transform-of-your-cat/thumb.png"/>
   </a>
 </div>
         </div>
+        <br>
        
       <p> There are a few YouTube channels that I watch fairly regularly that have recently been making some truly beautiful visualisations of the Fourier transform. The visualisations really were beautiful (I'll link to them in the text) not only aesthetically but also in how they intuitively show what the Fourier transform works and what it achieves. I was inspired to try to replicate the visualisation procedure and the code inside this post is a python implementation of the method. The approach itself in truth isn't terribly complicated, but I find the outcome hypnotic! </p>
     </li>
@@ -142,13 +165,14 @@
            &middot; <a href="/tags/2019">2019</a> &middot; <a href="/tags/research">research</a> &middot; <a href="/tags/ode">ode</a> &middot; <a href="/tags/preprint">preprint</a>
       </p>
       
-        <div class="profile col one left">
+        <div class="profile col one right">
             <div class='img_row'>
   <a href="http://localhost:4000/assets/2019/neural-odes-with-stochastic-vector-field-mixtures/thumb.png">
     <img class="col three" src="http://localhost:4000/assets/2019/neural-odes-with-stochastic-vector-field-mixtures/thumb.png"/>
   </a>
 </div>
         </div>
+        <br>
        
       <p> It was recently shown that neural ordinary differential equation models cannot solve fundamental and seemingly straightforward tasks even with high-capacity vector field representations. This paper introduces two other fundamental tasks to the set that baseline methods cannot solve, and proposes mixtures of stochastic vector fields as a model class that is capable of solving these essential problems. Dynamic vector field selection is of critical importance for our model, and our approach is to propagate component uncertainty over the integration interval with a technique based on forward filtering. We also formalise several loss functions that encourage desirable properties on the trajectory paths, and of particular interest are those that directly encourage fewer expected function evaluations. Experimentally, we demonstrate that our model class is capable of capturing the natural dynamics of human behaviour; a notoriously volatile application area. Baseline approaches cannot adequately model this problem. </p>
     </li>
@@ -182,7 +206,7 @@
 
     <footer>
   <div class="wrapper col three caption">
-    &copy; Copyright 2020 Niall Twomey
+    &copy; Copyright 2022 Niall Twomey
     
     
   </div>

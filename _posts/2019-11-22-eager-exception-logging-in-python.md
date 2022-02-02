@@ -8,6 +8,10 @@ comments: false
 tags: 2019 python snippet
 ---
 
+Update 2022: I've been using [loguru](https://github.com/Delgan/loguru) recently as my main logging library. I think I've also moved away from my thinking from before: I no longer see the value in simultaneously logging and raising exceptions. In a way, perhaps this post was itself too eager in following 'best practises'. I think there may be a case for something like this if you're relying heavily on log files for debugging. :shrug:
+
+---
+
 I am writing a large library for human activity recognition from sensor data at the moment. The library will hopefully be sufficiently generic to allow for a broad range of representation and prediction capabilities as well as delivering some kind of insight into the datasets and problems under consideration. However, every dataset is slightly different, and a pipeline that has been crafted for fusing a dataset consisting of wearable, video, environmental, electricity data streams is almost certainly going to fail (or at least not operate as expected) when applied to another dataset that only has wearable data, for example. Therefore, I do a reasonable amount of metadata validation: datasets are tagged as having (or not) particular data modalities, and pipelines likewise tag their requirements in terms of data modalities, and I insist that datasets provide the capabilities required by the various functions that I write. 
 
 The example code below gives a flavour for how some of these checks might be implemented:

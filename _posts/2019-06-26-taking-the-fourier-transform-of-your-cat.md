@@ -3,7 +3,7 @@ layout: post
 title: "Taking the Fourier transform of your cat"
 description: "There are a few YouTube channels that I watch fairly regularly that have recently been making some truly beautiful visualisations of the Fourier transform. The visualisations really were beautiful (I'll link to them in the text) not only aesthetically but also in how they intuitively show what the Fourier transform works and what it achieves. I was inspired to try to replicate the visualisation procedure and the code inside this post is a python implementation of the method. The approach itself in truth isn't terribly complicated, but I find the outcome hypnotic!" 
 thumb_image: "2019/taking-the-fourier-transform-of-your-cat/thumb.png"
-tags: 2019 fun python
+tags: 2019 fun python animation
 ---
 
 Before getting into the coding, here are four example outputs of the code that I'll be generating:
