@@ -9,6 +9,8 @@ social: true
 tags: 2019 research ode preprint
 ---
 
+When $a \ne 0$, there are two solutions to \(ax^2 + bx + c = 0\) and they are
+$$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
 
 This blog post relates to some recent work of mine {% cite twomey2019neural %} on neural ordinary differential equations. While the work is under review at the moment this post is going to introduce a high-level summary of the main ideas of the paper, and all of the details can be found in the PDF (link can be found at bottom of page).
 
