@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Niall Twomey | Animated Local Explanations</title>
+  <meta name="description" content="The personal website of Niall Twomey cataloguing publications, projects, blog and code snippets.">
+
+  <link rel="shortcut icon" href="https://www.nialltwomey.com/assets/img/favicon.ico">
+  <link rel="icon" href="https://www.nialltwomey.com/assets/img/favicon.ico">
+  <link rel="stylesheet" href="https://www.nialltwomey.com/assets/css/main.css">
+  <link rel="canonical" href="https://www.nialltwomey.com/blog/2022/explainable-gif/">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  </head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <span class="site-title"><a href='/'><strong>Niall</strong> Twomey</a>
+    </span>
+
+    <nav class="site-nav">
+      <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+      <div class="trigger">
+        <!-- About -->
+        <a class="page-link" href="https://www.nialltwomey.com/">about</a>
+
+        <!-- Blog -->
+        <a class="page-link" href="https://www.nialltwomey.com/blog/">blog</a>
+
+        <!-- Pages --><a class="page-link" href="https://www.nialltwomey.com/projects/">projects</a><a class="page-link" href="https://www.nialltwomey.com/publications/">publications</a><!-- CV link -->
+        <!-- <a class="page-link" href="https://www.nialltwomey.com/assets/pdf/CV.pdf">vitae</a> -->
+
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Animated Local Explanations</h1>
+    <p class="post-meta">
+        28 January 2022
+         &middot; Niall Twomey
+         &middot; <a href="/tags/2022">2022</a> &middot; <a href="/tags/animation">animation</a> &middot; <a href="/tags/fun">fun</a> &middot; <a href="/tags/python">python</a>
+    </p>
+  </header>
+ 
+  
+
+    <article class="post-content">
+      <hr>
+      <p> Explainability is a part of machine learning is where we try to demystify the factors that influence a particular model prediction, particularly when the predictive functions are complex and nonlinear. In a typical paper or a blog that you may read, you'll see explanations visualised in a nice static image. I was recently after reading a <a href="https://arxiv.org/abs/2107.04309">paper</a> and afterwards was inspired to produce animations of explanations, as well as a few additional insights. </p> 
+      <hr>
+      <h3 id="context">Context</h3>
+
+<p>The two images below shows the classical toy <code class="language-plaintext highlighter-rouge">XOR</code> dataset: on the left the datapoints of the two class (red and blue) are shown, and on the right the predictions of a model trained on the dataset are shown (the background colour corresponds to confidence in the predicted class).</p>
+
+<p>Although the dataset here is pretty simple and we can understand it completely from the visual, it nonetheless cannot be solved with a single linear decision boundary. Models that solve problems of this sort are not seen typically as ‘interpretable’ or ‘explainable’ owing to the nonlinear and complex relationship between the input and output. For example, the predictive function I used was a dense neural network with 3 layers and 10 hidden units with rectified units after each layer.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/dataset.png">
+    <img class="col half first" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/dataset.png" />
+  </a>
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/predictive.png">
+    <img class="col half last" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/predictive.png" />
+  </a>
+</div>
+
+<p>The key idea that the linked paper (and many others) explores is that by using simple models in the right way, we can obtain explanations of predictions in small (or local) regions of space.</p>
+
+<p>The image below gives an example of this idea using linear logistic regression as the class of explanatory models. The black circles marks the ‘query’ region, that is the local region in the feature space that we want to be explained by the local logistic model. We want good accuracy within these circles, and we don’t care about accuracy far away from these circles. The background colour corresponds to the predicted class of the model. In the vicinity of the query region, we can see that the red and blue datapoints tend to fall on the correct side of the decision boundary. However, the predicted accuracy of points that are far the query region are effectively irrelevant to the region of interest, and can either be correct or not. For example, the bottom left blue cluster, being far from the query region, is predicted red.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/lengthscale=0.250/00024.png">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/lengthscale=0.250/00024.png" />
+  </a>
+</div>
+
+<p>This model is more interpretable than the original neural network since we can see that the dominant factor influencing the predicted class is the feature along the x-axis. You can also see this visually based on the direction of the little arrows.</p>
+
+<p>The explanation of another query region can be found <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/lengthscale=0.250/00074.png">here</a>.</p>
+
+<h2 id="animations">Animations</h2>
+
+<p>The main reason why I’m writing this post is that I really wanted to see animations of some of the images in the paper I was reading. As a simple scenario, I’ve made the query region move around in circles through the feature space.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/lengthscale=0.250/output.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/lengthscale=0.250/output.gif" />
+  </a>
+</div>
+
+<p>I’ve also animated this for two other toy datasets, commonly known as <code class="language-plaintext highlighter-rouge">moons</code> and <code class="language-plaintext highlighter-rouge">circles</code>.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/moons/lengthscale=0.250/output.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/moons/lengthscale=0.250/output.gif" />
+  </a>
+</div>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/circles/lengthscale=0.250/output.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/circles/lengthscale=0.250/output.gif" />
+  </a>
+</div>
+
+<p>I thought these animations were pretty nice. Although I was hoping that I would see a smooth animation, I was somewhat surprised that the smoothness in the animation wasn’t hard to come by.</p>
+
+<p>Update 08-02-2022: On twitter, <a href="https://twitter.com/tommy_da_cat/status/1489254321522765827">I was asked</a> what these images might look like in higher dimensions than the 2D cases that I’ve showed above. I came up with this. This is more complex than the examples from above. Here, query centre is the black dot, local region around query shown by transparency, and local prediction is shown by hyperplane colour.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/3d.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/3d.gif" />
+  </a>
+</div>
+
+<p>I think this looks pretty neat. If you look at the animation enough I think you can interpret it pretty naturally.</p>
+
+<h2 id="effect-of-bandwidth">Effect of bandwidth</h2>
+
+<p>In my implementation, the query region is defined by an RBF kernel, which is fully specified by location and a bandwidth parameters. While animations above show the effect of the query position, they ignore the effect that bandwidth has on performance metrics of interest (e.g. accuracy).</p>
+
+<p>This is what is shown in the image below on the right where a few metrics are plotted against bandwidth (<code class="language-plaintext highlighter-rouge">bw</code>) on the <code class="language-plaintext highlighter-rouge">XOR</code> dataset at a specific query region in feature space. With small bandwidths, we get very high accuracy (blue trace). This is because the query location is in a dense region of space (orange trace) with highly negative class distribution (green trace). As the query bandwidth grows large enough, the non-linear traits of the dataset need to be increasingly accounted for, but these traits cannot be modelled by the simple explanatory model class. Thus the predictive accuracy diminishes to the class priors which in turns leads to unreliable explanations.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/region_state-query=2.png">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/region_state-query=2.png" />
+  </a>
+</div>
+
+<p>On the other hand, if the query location is close to the boundary between classes (in the image below) the best accuracy (and possibly best explanations) are obtained with larger bandwidths. Very small bandwidths tend to over-fit to the local properties of the data in these boundary regions.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/roi/00002.png">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/roi/00002.png" />
+  </a>
+</div>
+
+<p>This shows that context is important when soliciting explanations: with too little you risk seeing over-fitted explanations, and with too much you may risk explaining too much.</p>
+
+<h2 id="bandwidth-animations">Bandwidth animations</h2>
+
+<p>I’ve also animated these bandwidth effect charts. These take a bit of time to parse. Generally speaking, as the query location approaches the boundary between classes that wider bandwidths give higher accuracy. And when the query location is in a region with highly skewed class ratios, the smallest bandwidth seems to give the best accuracy.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/roi/output.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/roi/output.gif" />
+  </a>
+</div>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/moons/roi/output.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/moons/roi/output.gif" />
+  </a>
+</div>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/circles/roi/output.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/circles/roi/output.gif" />
+  </a>
+</div>
+
+<p>It’s generally always worth interrogating what happens with linear datasets too. For the image below I simplified the <code class="language-plaintext highlighter-rouge">XOR</code> dataset to have a linear boundary, but kept the neural network architecture from above. We can see that the local is basically the same for all query regions, and that the most accurate results are obtained with the largest bandwidth considered. To me, this indicates that the dataset local and global explanations are effectively equivalent, and it may be possible to make this testable in a formal way. You also get artefacts on accuracy measures with small bandwidths near decision boundaries, as expected.</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xnor/roi/output.gif">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xnor/roi/output.gif" />
+  </a>
+</div>
+
+<h2 id="choosing-the-bandwidth">Choosing the bandwidth</h2>
+
+<p>Given that the bandwidth affects accuracy and probably explanations, a natural question is how one might decide on a bandwidth. The answer probably depends on the particular question that you’re asking. We’ve seen that if you’re querying in a region with highly skewed class ratio that small bandwidths seem lead to good accuracy, but if you’re close to the class decision boundary that larger bandwidths seem to be preferable. So, concretely I wanted to know is without any information on the query region, what bandwidth should I suggest. I think of this as an unconditional query.</p>
+
+<p>I approached this problem in an entirely un-interesting way and exhaustively evaluated accuracy across a wide range of query locations and over a range of bandwidths. The image below is what resulted for the <code class="language-plaintext highlighter-rouge">XOR</code> dataset. The outcome of this seems to follow some of the intuitions that were gained in the paragraphs above: small bandwidths overfit and may not result in optimal accuracy. The maximal value in the right trace seems to be a compromise between fitting the local and global traits. (Note: this image in log-scaled on the x axis so that the details can be more easily seen. In reality, the peak is quite narrow.)</p>
+
+<div class="img_row">
+  <a href="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/optimal_lengthscale.png">
+    <img class="col three" src="https://www.nialltwomey.com/assets/2022/explainable-gif/xor/optimal_lengthscale.png" />
+  </a>
+</div>
+
+    </article>
+
+    
+</div>
+
+<div class="social">
+  
+    <div class="col three caption">
+      Contact me through the links below.
+    </div>
+  
+  <span class="contacticon center">
+    <a href="mailto:%74%77%6F%6D%65%79%6E%6A %61%74 %67%6D%61%69%6C %64%6F%74 %63%6F%6D"><i class="fas fa-envelope" style="font-size:0.5em;"></i></a>
+    <a href="https://orcid.org/0000-0002-3225-2654" style="font-size:0.5em;" target="_blank" title="ORCID"><i class="ai ai-orcid"></i></a>
+    <a href="https://scholar.google.com/citations?user=bRN8Y34AAAAJ" style="font-size:0.5em;" target="_blank" title="Google Scholar"><i class="ai ai-google-scholar"></i></a>
+    <a href="https://github.com/njtwomey" style="font-size:0.5em;" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+    <a href="https://www.linkedin.com/in/nialltwomey" style="font-size:0.5em;" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+    <a href="https://twitter.com/twomeynj" style="font-size:0.5em;" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
+    
+    
+    
+  </span>
+</div>
+
+
+
+      </div>
+    </div>
+
+    <footer>
+  <div class="wrapper col three caption">
+    &copy; Copyright 2022 Niall Twomey
+    
+    
+  </div>
+</footer>
+
+
+    <!-- Load jQuery -->
+<script src="//code.jquery.com/jquery-1.12.4.min.js"></script>
+
+<!-- Load Common JS -->
+<script src="https://www.nialltwomey.com/assets/js/common.js"></script><!-- Load KaTeX -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.9.0/katex.min.js"></script>
+<script src="https://www.nialltwomey.com/assets/js/katex.js"></script><!-- Include custom icon fonts -->
+<link rel="stylesheet" href="https://www.nialltwomey.com/assets/css/fontawesome-all.min.css">
+<link rel="stylesheet" href="https://www.nialltwomey.com/assets/css/academicons.min.css">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-151975494-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-151975494-1');
+</script>
+
+
+
+  </body>
+
+</html>
