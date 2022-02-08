@@ -41,6 +41,12 @@ I've also animated this for two other toy datasets, commonly known as `moons` an
 
 I thought these animations were pretty nice. Although I was hoping that I would see a smooth animation, I was somewhat surprised that the smoothness in the animation wasn't hard to come by. 
 
+Update 08-02-2022: On twitter, [I was asked](https://twitter.com/tommy_da_cat/status/1489254321522765827) what these images might look like in higher dimensions than the 2D cases that I've showed above. I came up with this. This is more complex than the examples from above. Here, query centre is the black dot, local region around query shown by transparency, and local prediction is shown by hyperplane colour.
+
+{% include image.html path='3d.gif' %}
+
+I think this looks pretty neat. If you look at the animation enough I think you can interpret it pretty naturally. 
+
 ## Effect of bandwidth
 
 In my implementation, the query region is defined by an RBF kernel, which is fully specified by location and a bandwidth parameters. While animations above show the effect of the query position, they ignore the effect that bandwidth has on performance metrics of interest (e.g. accuracy). 
