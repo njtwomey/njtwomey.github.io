@@ -247,6 +247,11 @@ export type CapabilityIcon =
   | "funding"
   | "interpretability"
   | "roadmap"
+  | "linemanagement"
+  | "hiring"
+  | "performance"
+  | "uncertainty"
+  | "agentpractice"
   | "evaluation"
   | "signals"
   | "audio"
@@ -299,6 +304,12 @@ export const specialities = [
     title: "Probabilistic and Bayesian modelling",
   },
   { theme: "what-is-modelled", slug: "generative-modelling", icon: "generative", title: "Generative modelling" },
+  {
+    theme: "what-is-modelled",
+    slug: "uncertainty-quantification",
+    icon: "uncertainty",
+    title: "Uncertainty quantification and calibration",
+  },
   {
     theme: "what-is-modelled",
     slug: "representation-learning",
@@ -395,6 +406,14 @@ export const specialities = [
   // pipelines. This is about what happens to a model once it is serving: the
   // latency it has to hold, what it costs to run, and how a regression is
   // noticed before a user notices it.
+  // The practice rather than the tooling: how a team builds once coding agents
+  // are part of the loop. The tools themselves are on the technologies page.
+  {
+    theme: "building-and-shipping",
+    slug: "agent-assisted-engineering",
+    icon: "agentpractice",
+    title: "Agent-assisted engineering practice",
+  },
   {
     theme: "building-and-shipping",
     slug: "monitoring-and-reliability",
@@ -470,6 +489,19 @@ export const specialities = [
     icon: "careers",
     title: "Growing research careers",
   },
+  {
+    theme: "developing-people",
+    slug: "line-management",
+    icon: "linemanagement",
+    title: "Line management and team building",
+  },
+  { theme: "developing-people", slug: "hiring", icon: "hiring", title: "Hiring and interview design" },
+  {
+    theme: "developing-people",
+    slug: "performance-management",
+    icon: "performance",
+    title: "Performance management and promotion",
+  },
   { theme: "developing-people", slug: "teaching", icon: "teaching", title: "Teaching and curriculum design" },
 
   {
@@ -524,7 +556,7 @@ export const specialities = [
     theme: "strategy-and-influence",
     slug: "securing-funding",
     icon: "funding",
-    title: "Securing funding and investment",
+    title: "Securing funding and research investment",
   },
 ] as const satisfies readonly { theme: Theme; slug: string; icon: CapabilityIcon; title: string }[];
 
@@ -552,6 +584,10 @@ export const coverage: CoverageTable = {
   "what-is-modelled": {
     "probabilistic-modelling": { ucc: 2, bristol: 3, amazon: 1 },
     "generative-modelling": { amazon: 3 },
+    // One of the four keywords on his own Scholar profile, which is a stronger
+    // claim than the CV makes and the reason this is a row rather than being
+    // folded into the Bayesian one above it.
+    "uncertainty-quantification": { ucc: 1, bristol: 3, amazon: 2 },
     "representation-learning": { bristol: 2, cookpad: 3, amazon: 3 },
     "continuous-time-dynamics": { bristol: 2 },
   },
@@ -581,6 +617,7 @@ export const coverage: CoverageTable = {
     infrastructure: { bristol: 2, cookpad: 1, kidsloop: 1, amazon: 3 },
     "efficiency-and-compression": { ucc: 2, bristol: 2, amazon: 2 },
     "field-deployment": { ucc: 2, bristol: 3, amazon: 1 },
+    "agent-assisted-engineering": { amazon: 3 },
     "monitoring-and-reliability": { bristol: 2, cookpad: 2, amazon: 3 },
   },
 
@@ -617,6 +654,11 @@ export const coverage: CoverageTable = {
     "growing-research-careers": { bristol: 2, cookpad: 2, kidsloop: 2, amazon: 3 },
     // Bristol only, and deliberately: designing and delivering undergraduate
     // and postgraduate courses is a thing that happened in one place.
+    "line-management": { bristol: 3, cookpad: 2, kidsloop: 3, amazon: 2 },
+    hiring: { bristol: 2, cookpad: 2, kidsloop: 3, amazon: 3 },
+    "performance-management": { bristol: 2, kidsloop: 3, amazon: 3 },
+    // Bristol only, and deliberately: designing and delivering undergraduate
+    // and postgraduate courses is a thing that happened in one place.
     teaching: { bristol: 3 },
   },
 
@@ -630,11 +672,12 @@ export const coverage: CoverageTable = {
     "technical-judgement": { bristol: 3, cookpad: 2, kidsloop: 2, amazon: 3 },
     "research-methodology": { bristol: 2, cookpad: 3, kidsloop: 2, amazon: 3 },
     "research-community": { bristol: 3, cookpad: 2, kidsloop: 2, amazon: 2 },
-    // The two competitive awards are UCC (IRCSET) and Bristol (MRC fellowship,
-    // plus PhD studentship funding and £20k of competition prize money). No
-    // industry cell: budget and headcount are not the same claim as winning a
-    // grant, and nothing in the CV evidences one.
-    "securing-funding": { ucc: 1, bristol: 3 },
+    // Academic grants are UCC (IRCSET) and Bristol (MRC fellowship, PhD
+    // studentship funding, £20k of competition prize money). The industry cells
+    // are the same act in a different currency: winning leadership backing for a
+    // research direction, which the CV records as advocating deep scientific
+    // investment where others would have taken something off the shelf.
+    "securing-funding": { ucc: 1, bristol: 3, kidsloop: 2, amazon: 3 },
   },
 };
 
