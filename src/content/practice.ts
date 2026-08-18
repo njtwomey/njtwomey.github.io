@@ -135,11 +135,14 @@ export type Depths = Partial<Record<OrgKey, Depth>>;
 export const families = [
   { id: "methods", label: "Methods" },
   { id: "applications", label: "Applications" },
-  // Labelled "Practice" until the page itself became ML Practice, at which point
-  // a band carrying the page's own name read as though the other two families
-  // were something else. The id stays `practice` because it is internal and
-  // `themes` is keyed off it.
-  { id: "practice", label: "Delivery and leadership" },
+  // These two were one family, "Delivery and direction", holding four themes.
+  // They are separated because shipping a system and moving an organisation are
+  // not the same kind of claim, and a single band asked a reader to read them as
+  // one. Splitting them also stops the people and strategy rows reading as an
+  // appendix to the engineering rows, which is what they looked like while the
+  // four sat under one heading.
+  { id: "delivery", label: "Delivery" },
+  { id: "influence", label: "Influence" },
 ] as const;
 
 export type Family = (typeof families)[number]["id"];
@@ -190,9 +193,15 @@ export const themes = [
   { id: "output-structure", family: "methods", label: "Output structure" },
   { id: "search-and-language", family: "applications", label: "Search, language and recommendation" },
   { id: "signals-and-sensing", family: "applications", label: "Signals, sensing and behaviour" },
-  { id: "building-and-shipping", family: "practice", label: "Building and shipping" },
-  { id: "measurement-and-evidence", family: "practice", label: "Measurement and evaluation" },
-  { id: "research-leadership", family: "practice", label: "Research leadership" },
+  { id: "building-and-shipping", family: "delivery", label: "Building and shipping" },
+  { id: "measurement-and-evidence", family: "delivery", label: "Measurement and evaluation" },
+
+  // Two themes rather than one, because developing people and moving an
+  // organisation are different claims and doing one does not imply the other.
+  // The rows under the first are a person's development; the rows under the
+  // second are mostly influence without authority, which is the harder half.
+  { id: "developing-people", family: "influence", label: "Developing people" },
+  { id: "strategy-and-influence", family: "influence", label: "Strategy and influence" },
 ] as const satisfies readonly { id: string; family: Family; label: string }[];
 
 export type Theme = (typeof themes)[number]["id"];
@@ -227,9 +236,15 @@ export type CapabilityIcon =
   | "deployment"
   | "monitoring"
   | "practice"
+  | "teaching"
+  | "careers"
   | "methodology"
   | "community"
+  | "handshake"
   | "strategy"
+  | "executive"
+  | "judgement"
+  | "funding"
   | "evaluation"
   | "signals"
   | "audio"
@@ -436,28 +451,66 @@ export const specialities = [
   // depths below start from that single row's own ratings rather than from
   // nothing, and each one is argued in `.scratch/domains/ratings.md`.
   {
-    theme: "research-leadership",
-    slug: "research-methodology",
-    icon: "methodology",
-    title: "Research methodology and standards",
-  },
-  {
-    theme: "research-leadership",
+    theme: "developing-people",
     slug: "mentoring-and-supervision",
     icon: "practice",
     title: "Mentoring and supervision",
   },
   {
-    theme: "research-leadership",
+    theme: "developing-people",
+    slug: "growing-research-careers",
+    icon: "careers",
+    title: "Growing research careers",
+  },
+  { theme: "developing-people", slug: "teaching", icon: "teaching", title: "Teaching and curriculum design" },
+
+  {
+    theme: "strategy-and-influence",
+    slug: "research-strategy",
+    icon: "strategy",
+    title: "Research strategy and prioritisation",
+  },
+  {
+    theme: "strategy-and-influence",
+    slug: "technical-strategy",
+    icon: "handshake",
+    title: "Cross-team alignment and stakeholder partnership",
+  },
+  {
+    theme: "strategy-and-influence",
+    slug: "executive-communication",
+    icon: "executive",
+    title: "Executive communication and design documents",
+  },
+  // The rarest of these and the hardest to evidence, which is why it is named
+  // rather than left implicit under mentoring: judgement exercised on other
+  // people's work, deciding a promising direction should stop, catching a
+  // flawed result before it ships. The CV calls it "trusted cross-organisational
+  // scientific authority", and peer review and programme committees are the
+  // public half of it.
+  {
+    theme: "strategy-and-influence",
+    slug: "technical-judgement",
+    icon: "judgement",
+    title: "Technical judgement and research review",
+  },
+  {
+    theme: "strategy-and-influence",
+    slug: "research-methodology",
+    icon: "methodology",
+    title: "Research methodology and standards",
+  },
+  {
+    theme: "strategy-and-influence",
     slug: "research-community",
     icon: "community",
     title: "Research community and dissemination",
   },
   {
-    theme: "research-leadership",
-    slug: "technical-strategy",
-    icon: "strategy",
-    title: "Technical strategy and stakeholder alignment",
+    theme: "strategy-and-influence",
+    slug: "securing-funding",
+    icon: "funding",
+    title: "Securing funding and investment",
   },
 ] as const satisfies readonly { theme: Theme; slug: string; icon: CapabilityIcon; title: string }[];
 
@@ -537,11 +590,28 @@ export const coverage: CoverageTable = {
     "responsible-ml": { bristol: 2, kidsloop: 3, amazon: 2 },
   },
 
-  "research-leadership": {
-    "research-methodology": { bristol: 2, cookpad: 3, kidsloop: 2, amazon: 3 },
+  "developing-people": {
     "mentoring-and-supervision": { bristol: 3, cookpad: 2, kidsloop: 2, amazon: 3 },
-    "research-community": { bristol: 3, cookpad: 2, kidsloop: 2, amazon: 2 },
+    // 6 direct mentees promoted to senior roles, and an internship programme
+    // that took a team from 0 papers to 10.
+    "growing-research-careers": { bristol: 2, cookpad: 2, kidsloop: 2, amazon: 3 },
+    // Bristol only, and deliberately: designing and delivering undergraduate
+    // and postgraduate courses is a thing that happened in one place.
+    teaching: { bristol: 3 },
+  },
+
+  "strategy-and-influence": {
+    "research-strategy": { cookpad: 2, kidsloop: 2, amazon: 3 },
     "technical-strategy": { bristol: 2, cookpad: 2, kidsloop: 2, amazon: 3 },
+    "executive-communication": { bristol: 2, cookpad: 2, kidsloop: 2, amazon: 3 },
+    "technical-judgement": { bristol: 3, cookpad: 2, kidsloop: 2, amazon: 3 },
+    "research-methodology": { bristol: 2, cookpad: 3, kidsloop: 2, amazon: 3 },
+    "research-community": { bristol: 3, cookpad: 2, kidsloop: 2, amazon: 2 },
+    // The two competitive awards are UCC (IRCSET) and Bristol (MRC fellowship,
+    // plus PhD studentship funding and £20k of competition prize money). No
+    // industry cell: budget and headcount are not the same claim as winning a
+    // grant, and nothing in the CV evidences one.
+    "securing-funding": { ucc: 1, bristol: 3 },
   },
 };
 
