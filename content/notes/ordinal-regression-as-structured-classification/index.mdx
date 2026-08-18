@@ -1,0 +1,34 @@
+---
+title: "A note on Ordinal Regression as Structured Classification"
+description: "This extends ordinal regression with a structured interpretation of the problem, applying a novel treatment of encoded labels. That transforms an ordinal regression task into a structured classification task solved with conditional random fields, so all model parameters are jointly learnt."
+date: "2019-06-11"
+tags: ["research", "arXiv 2019", "probabilistic"]
+published: true
+---
+
+<Paper id="twomey2019ordinal" />
+
+Some labels have an order but no arithmetic. A clinician grading cognitive decline as mild, moderate
+or severe puts severe further from mild than moderate, and nobody can say how much further. Most
+machine learning work on ordinal medical problems, in our experience, drops the ordering and fits an
+ordinary classifier, whose one-hot targets make every wrong answer equally wrong, and penalising
+distant mistakes instead means writing a cost matrix out of the distances the scale never defined.
+
+This paper puts the ordering in the label. A grade out of K becomes K-1 bits, the k-th set whenever
+k falls below the grade, so four out of seven is 111000 and three is 110000. A conditional random
+field chained across those bits predicts them jointly, under a log likelihood that turns out to
+track the number of bits in disagreement, which is the distance between the true grade and the
+predicted one. Nobody writes the cost matrix down; the encoding implies it.
+
+We compare StORM against ordered logit, nested binary classifiers and logistic regression, all four
+linear in their parameters. On a ten-category spiral, drawn in two dimensions so the right answer is
+visible, it reaches a mean absolute error of 0.112 against 2.474 for ordered logit. The benchmark
+collections, the two Alzheimer's datasets where nothing separates the four significantly, and the
+queries the encoding opens up are in the paper.
+
+Not every sequence the chain can emit is a valid label, since a zero followed by a one has no
+ordinal reading. Zeroing an edge potential would forbid them, and this paper follows a different
+observation instead, that invalid predictions seem to coincide with outlying data. Whether a
+structured label space can flag its own outliers is the open question, and the model is presumably
+declining to commit on a point unlike anything in training. That is conjecture, and the paper
+records the work as ongoing.

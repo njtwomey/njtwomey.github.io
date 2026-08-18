@@ -1,0 +1,29 @@
+# Build output
+dist/
+node_modules/
+
+# Generated from content/ — reformatting it only creates diff noise
+src/content/publications.json
+src/content/notes.json
+public/publications-details.json
+public/publications.bib
+
+# The previous Jekyll site, kept verbatim as a reference
+legacy/
+
+# Vendored assets
+public/pdf/
+public/img/
+public/notes/
+
+# shadcn writes these; keep them as the registry emits them so a re-add is a
+# clean diff rather than a reformat
+src/components/ui/
+
+# BibTeX has its own conventions and prettier does not know them
+*.bib
+
+# Python side
+.venv/
+python/
+uv.lock

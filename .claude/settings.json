@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["WebFetch", "Bash(npm run:*)", "Bash(make:*)", "Bash(npx vite:*)", "Bash(npx shadcn:*)"]
+  }
+}

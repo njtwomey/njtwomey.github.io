@@ -1,170 +1,171 @@
-# Setting up local env 
+# nialltwomey.com
 
-Follow [https://jekyllrb.com/docs/installation/macos/](https://jekyllrb.com/docs/installation/macos/)
-
-## Install ruby
-
-```bash 
-xcode-select --install
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install ruby
-```
-
-### Set up ruby paths
-Add this to shell config (`~/.zshrc`)
+Personal site — publications, work history and notes. React + Vite + Tailwind + shadcn/ui, published
+to GitHub Pages by GitHub Actions on every push to `main`.
 
 ```bash
-export PATH=/usr/local/opt/ruby/bin:$PATH
+make install     # once
+make dev         # http://localhost:5173
+make check       # what CI runs: content + typecheck + format + tests
+make build       # static site into dist/
 ```
 
-### Verify versions  
+If you only remember one thing: **everything you write lives in `content/`**, and a build step
+compiles it into what the app reads. You never edit anything in `src/content/*.json` — those are
+generated and gitignored.
 
-```bash 
-which ruby
-# /usr/local/opt/ruby/bin/ruby
+---
 
-ruby -v
-ruby 2.6.3p62 (2019-04-16 revision 67580)
+## Add a publication
+
+The bibliography is `content/publications.bib`. Paste in the BibTeX the publisher, arXiv or DBLP
+gives you, name the key `<surname><year><word>`, and put it under the right year banner:
+
+```bibtex
+@inproceedings{twomey2020towards,
+  title={Towards Multi-Language Recipe Personalisation and Recommendation},
+  author={Twomey, Niall and Fain, Mikhail and Ponikar, Andrey and Sarraf, Nadine},
+  booktitle={Fourteenth ACM Conference on Recommender Systems (RecSys '20)},
+  year={2020},
+  abstract={...},
+  pdf={twomey2020towards.pdf}
+}
 ```
 
-## Install gem locally 
+The PDF goes in `public/pdf/` named after the citation key. `pdf={...}` naming a file that is not
+there **fails the build** — deliberately, so a dead download link never reaches the site.
 
-```bash 
-gem install --user-install bundler jekyll
+Fields that get used: `title`, `author`, `year`, `journal`/`booktitle`/`school`, `abstract`, `pdf`,
+`doi`, `url`, `arxiv`, `code`, `slides`.
+
+### Or let Claude do it
+
+Drop PDFs into `inbox/` and say **"add my new papers"**. The `add-publications` skill reconciles
+the bibliography against Google Scholar, DBLP and OpenAlex, moves the PDFs into place, and reports
+what it could not verify. It is under instruction never to invent a field — a missing DOI is fine,
+a plausible wrong one is not.
+
+## Add a short summary to a paper
+
+Optional, and worth doing for the papers you care about:
+
+```
+content/publications/twomey2019ordinal/index.md
 ```
 
-Then add this to your shell config 
+One or two sentences in plain English, saying what the paper does and why it is interesting. It
+shows on the card above the abstract toggle. Where there is no summary the card falls back to the
+abstract, so there is no need to write 60 of them.
 
-```bash 
-export PATH=$HOME/.gem/ruby/2.6.0/bin:$PATH
+The directory name must be a citation key that exists, or the build fails.
+
+## Write a note
+
+**A note is a directory**: `content/notes/<slug>/index.mdx`, plus every image that belongs to it.
+
+```
+content/notes/my-note/
+  index.mdx
+  hero.png
+  result.gif
 ```
 
-where `2.6` corresponds to the version of ruby installed (see verify versions section above)
+```mdx
+---
+title: "Sentence case, no full stop"
+description: "One or two sentences — this is what shows on the index and in link previews."
+date: "2026-08-17" # quoted, or the day shifts
+tags: ["research"]
+hero: hero.png # a bare filename from this directory
+heroAlt: "What the image shows."
+published: false
+---
 
-## Verify gem
+Prose. Images are referenced by bare filename, because they live right here:
 
-Run 
+<Figure src="result.gif" caption="What to notice." />
 
-```bash 
-gem env
+Cite a paper inline with <Cite id="twomey2019neural" />, or drop the whole card in:
+
+<Paper id="twomey2019neural" />
 ```
 
-and verify that under the `GEM PATHS` section a path in the local directory is present. 
+Available without importing anything: `Paper`, `Cite`, `Figure`, `Figures`. Maths is KaTeX
+(`$inline$`, `$$display$$`). Code fences are highlighted by Shiki at build time in both light and
+dark, so always declare the language — `python, `bash — and use ```text for output.
 
-# Run local environment 
+If a note contains code, put a runnable version in `python/` and check it before quoting the
+output. See `python/README.md`.
+
+**`published: false` means it is not on the live site**, but it _is_ on `make dev`, badged "Draft".
+That is the point: write and read it before deciding. Set a stale note back to `false` rather than
+deleting it — the five migrated from the old Jekyll site are all unpublished for exactly that
+reason, and the Notes nav item only appears once something is published.
+
+### Or let Claude draft it
+
+Say **"draft a note about the ordinal regression paper"**. The `draft-note` skill reads the paper,
+matches the house style, and leaves it unpublished for you to check. It will
+not invent a figure.
+
+## Change the bio, the focus areas or a social link
+
+`src/content/site.ts`. Plain TypeScript, edited directly.
+
+## Add to the domains page
+
+`src/content/domains.ts`. It is organised by employer, most recent first — each entry has a summary
+and a list of `strands`, the individual pieces of work done there. Papers deliberately do not
+appear here; the publications page is where they live.
+
+## Add a UI component
+
+Always through the CLI, never by hand:
 
 ```bash
-./bin/run_Locally_without_drafts  # or 
-./bin/run_Locally_with_drafts     # to view draft posts
+npx shadcn@latest add <component>
 ```
 
+Icons come from `lucide-react`. Styling is Tailwind utilities over the shadcn semantic tokens
+(`bg-background`, `text-muted-foreground`) — never raw palette values, or dark mode breaks.
 
+---
 
-# al-folio
-
-[![build status](https://travis-ci.org/alshedivat/al-folio.svg?branch=master)](https://travis-ci.org/alshedivat/al-folio)
-[![demo](https://img.shields.io/badge/theme-demo-brightgreen.svg)](https://alshedivat.github.io/al-folio/)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/alshedivat/al-folio/blob/master/LICENSE)
-[![gitter](https://badges.gitter.im/alshedivat/al-folio.svg)](https://gitter.im/alshedivat/al-folio?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-A simple and clean [Jekyll](https://jekyllrb.com/) theme for academics.
-
-[![Screenshot](assets/img/full-screenshot.png)](https://alshedivat.github.io/al-folio/)
-
-Originally, **al-folio** was based on the [\*folio theme](https://github.com/bogoli/-folio) (published by [Lia Bogoev](http://liabogoev.com) and under the MIT license).
-Since then, it got a full re-write of the styles and many additional cool features.
-The emphasis is on whitespace, transparency, and academic usage: [theme demo](https://alshedivat.github.io/al-folio/).
-
-## Getting started
-
-For more about how to use Jekyll, check out [this tutorial](https://www.taniarascia.com/make-a-static-website-with-jekyll/).
-Why Jekyll? Read this [blog post](https://karpathy.github.io/2014/07/01/switching-to-jekyll/)!
-
-### Installation
-
-Assuming you have [Ruby](https://www.ruby-lang.org/en/downloads/) and [Bundler](https://bundler.io/) installed on your system (*hint: for ease of managing ruby gems, consider using [rbenv](https://github.com/rbenv/rbenv)*), first fork the theme from `github.com:alshedivat/al-folio` to `github.com:<your-username>/<your-repo-name>` and do the following:
-
-```bash
-$ git clone git@github.com:<your-username>/<your-repo-name>.git
-$ cd <your-repo-name>
-$ bundle install
-$ bundle exec jekyll serve
-```
-
-Now, feel free to customize the theme however you like (don't forget to change the name!).
-After you are done, **commit** your final changes.
-Now, you can deploy your website to [GitHub Pages](https://pages.github.com/) by running the deploy script:
-
-```bash
-$ ./bin/deploy [--user]
-```
-By default, the script uses the `master` branch for the source code and deploys the webpage to `gh-pages`.
-The optional flag `--user` tells it to deploy to `master` and use `source` for the source code instead.
-Using `master` for deployment is a convention for [user and organization pages](https://help.github.com/articles/user-organization-and-project-pages/).
-
-**Note:** when deploying your user or organization page, make sure the `_config.yml` has `url` and `baseurl` fields as follows.
+## How it fits together
 
 ```
-url: # should be empty
-baseurl:  # should be empty
+content/publications.bib             the bibliography — source of truth
+content/publications/<key>/index.md  optional plain-English summary
+content/notes/<slug>/index.mdx       a note, with its images beside it
+src/content/site.ts                  bio, role, focus areas, socials
+src/content/domains.ts                  the domains page, by employer
+public/pdf/                          paper PDFs, named by citation key
+inbox/                               staging area for PDFs to be filed
 ```
 
-### Usage
+Generated at build time and gitignored: `src/content/*.json`, `public/notes/`,
+`public/publications/`, `public/publications-details.json`, `public/publications.bib`.
 
-Note that `_pages/about.md` is built to index.html in the published site. There is therefore no need to have a separate index page for the project. If an index page does exist in the root directory then this will prevent `_pages/about.md` from being added to the built site.
+## Deployment
 
-## Features
+Push to `main`. `.github/workflows/deploy.yml` compiles the content, typechecks, format-checks,
+tests, builds, and publishes `dist/` as a Pages artifact. There is no deploy script and no build
+output in the repo.
 
-#### Ergonomic Publications
+The custom domain comes from `public/CNAME`. Because routing is client-side, the build writes
+`404.html` as a copy of `index.html` — that is what makes a direct hit on `/publications` work.
 
-Your publications page is generated automatically from your BibTex bibliography.
-Simply edit `_bibliography/papers.bib`.
-You can also add new `*.bib` files and customize the look of your publications however you like by editing `_pages/publications.md`.
+> **One-time setting:** the repo used to deploy from a branch. In _Settings → Pages_, set the
+> source to **GitHub Actions**. The workflow attempts this itself via `configure-pages`, but the
+> setting is worth confirming after the first run.
 
-Keep meta-information about your co-authors in `_data/coauthors.yml` and Jekyll will insert links to their webpages automatically.
+## Conventions worth knowing
 
-#### Collections
-This Jekyll theme implements collections to let you break up your work into categories.
-The example is divided into news and projects, but easily revamp this into apps, short stories, courses, or whatever your creative work is.
+- **Never invent a citation, venue, year or DOI.** Omit the field instead. This is the one thing
+  on an academic site that is both damaging and invisible.
+- Papers are referenced by **citation key** everywhere — notes, the front page — so a
+  correction propagates in one edit.
+- Prettier at **120 columns**; `make format` before committing.
+- Light and dark are both real. Check both.
 
-> To do this, edit the collections in the `_config.yml` file, create a corresponding folder, and create a landing page for your collection, similar to `_pages/projects.md`.
-
-Two different layouts are included: the blog layout, for a list of detailed descriptive list of entries, and the projects layout.
-The projects layout overlays a descriptive hoverover on a background image.
-If no image is provided, the square is auto-filled with the chosen theme color.
-Thumbnail sizing is not necessary, as the grid crops images perfectly.
-
-#### Theming
-Six beautiful theme colors have been selected to choose from.
-The default is purple, but quickly change it by editing `$theme-color` variable in the `_sass/variables.scss` file (line 72).
-Other color variables are listed there, as well.
-
-#### Photos
-Photo formatting is made simple using rows of a 3-column system.
-Make photos 1/3, 2/3, or full width.
-Easily create beautiful grids within your blog posts and projects pages:
-
-<p align="center">
-  <a href="https://alshedivat.github.io/al-folio/projects/1_project/">
-    <img src="assets/img/photos-screenshot.png" width="75%">
-  </a>
-</p>
-
-#### Code Highlighting
-This theme implements Jekyll's built in code syntax highlighting with Pygments.
-Just use the liquid tags `{% highlight python %}` and `{% endhighlight %}` to delineate your code:
-
-<p align="center">
-  <a href="https://alshedivat.github.io/al-folio/blog/2015/code/">
-    <img src="assets/img/code-screenshot.png" width="75%">
-  </a>
-</p>
-
-## Contributing
-
-Feel free to contribute new features and theme improvements by sending a pull request.
-Style improvements and bug fixes are especially welcome.
-
-## License
-
-The theme is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+`CLAUDE.md` carries the same rules in the form Claude Code reads.

@@ -1,0 +1,255 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+/* The radix-nova style's own layer — shadcn components expect it. */
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "katex/dist/katex.min.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * shadcn design tokens. Everything in the app refers to these semantic names
+ * (bg-background, text-muted-foreground) rather than raw palette values, so a
+ * theme change is a change here and nowhere else.
+ *
+ * The base is neutral, with a violet primary carried over from the previous
+ * site — the accent is the one place the palette has any colour at all, which
+ * is what keeps a page of citations readable.
+ */
+:root {
+  --radius: 0.625rem;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  --primary: oklch(0.48 0.176 285.5);
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.5 0 0);
+
+  --accent: oklch(0.968 0.012 285.5);
+  --accent-foreground: oklch(0.36 0.15 285.5);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.48 0.176 285.5);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.195 0 0);
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.229 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.76 0.14 288);
+  --primary-foreground: oklch(0.17 0.03 285.5);
+
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.259 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+
+  --accent: oklch(0.3 0.03 288);
+  --accent-foreground: oklch(0.9 0.05 288);
+
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.145 0 0);
+
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.76 0.14 288);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --font-heading: var(--font-sans);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* The header is sticky, so an anchor jump must clear it. */
+    scroll-padding-top: 5rem;
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Long titles and DOIs should wrap rather than push a card sideways. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  /*
+   * Prose for MDX notes. A typography plugin would bring a lot of opinion for
+   * the handful of elements a note actually uses, so these are the rules for
+   * those elements and nothing else.
+   */
+  .prose-note {
+    @apply text-foreground/90 text-[0.975rem]/7;
+  }
+  .prose-note > * + * {
+    @apply mt-5;
+  }
+  .prose-note h2 {
+    @apply text-foreground mt-10 scroll-mt-24 text-xl font-semibold tracking-tight;
+  }
+  .prose-note h3 {
+    @apply text-foreground mt-8 scroll-mt-24 text-lg font-semibold tracking-tight;
+  }
+  .prose-note a {
+    @apply text-primary decoration-primary/30 hover:decoration-primary font-medium underline underline-offset-[3px] transition-colors;
+  }
+  .prose-note strong {
+    @apply text-foreground font-semibold;
+  }
+  .prose-note ul {
+    @apply list-disc space-y-2 pl-6;
+  }
+  .prose-note ol {
+    @apply list-decimal space-y-2 pl-6;
+  }
+  .prose-note blockquote {
+    @apply border-border text-muted-foreground border-l-2 pl-4 italic;
+  }
+  .prose-note :not(pre) > code {
+    @apply bg-muted rounded-sm px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+  .prose-note pre {
+    @apply bg-muted/50 overflow-x-auto rounded-lg border p-4 font-mono text-[0.825rem]/6;
+  }
+
+  /*
+   * Shiki, via rehype-pretty-code (configured in vite.config.ts).
+   *
+   * Highlighting happens at build time and each token carries both themes as
+   * custom properties, so the only job here is choosing which one to read.
+   * That makes a theme switch a repaint rather than a re-highlight.
+   */
+  .prose-note code span {
+    color: var(--shiki-light);
+  }
+  .dark .prose-note code span {
+    color: var(--shiki-dark);
+  }
+
+  /* rehype-pretty-code wraps each block in a <figure>, which then owns the
+     spacing that `pre` used to. */
+  .prose-note figure[data-rehype-pretty-code-figure] {
+    @apply my-5;
+  }
+  .prose-note figure[data-rehype-pretty-code-figure] pre {
+    @apply my-0;
+  }
+
+  /* Lines are spans, so they need to be blocks for a long line to scroll
+     rather than reflow into its neighbour. */
+  .prose-note [data-line] {
+    @apply block min-h-[1lh];
+  }
+
+  /* The filename banner, when a fence declares one. */
+  .prose-note [data-rehype-pretty-code-title] {
+    @apply bg-muted text-muted-foreground rounded-t-lg border border-b-0 px-4 py-2 font-mono text-xs;
+  }
+  /* The copy button wraps `pre` in a positioning div, so the title's sibling
+     is that wrapper rather than the block itself. */
+  .prose-note [data-rehype-pretty-code-title] + pre,
+  .prose-note [data-rehype-pretty-code-title] + div > pre {
+    @apply rounded-t-none;
+  }
+  .prose-note img,
+  .prose-note video {
+    @apply mx-auto rounded-lg border;
+  }
+  .prose-note hr {
+    @apply border-border my-10;
+  }
+  .prose-note table {
+    @apply w-full text-sm;
+  }
+  .prose-note th {
+    @apply border-b py-2 text-left font-semibold;
+  }
+  .prose-note td {
+    @apply border-border/60 border-b py-2;
+  }
+
+  /* Display maths can overflow on a phone; let it scroll rather than the page. */
+  .prose-note .katex-display {
+    @apply overflow-x-auto overflow-y-hidden py-1;
+  }
+}
+
+/*
+ * Respect a reader who has asked for less movement. The site's animation is
+ * decorative throughout, so there is nothing to preserve.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

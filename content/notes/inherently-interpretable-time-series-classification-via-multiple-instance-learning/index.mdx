@@ -1,0 +1,32 @@
+---
+title: "A note on Inherently Interpretable Time Series Classification via Multiple Instance Learning"
+description: "Conventional time series classifiers are black boxes that obscure their own decision-making. Applying multiple instance learning to existing deep learning classifiers makes them inherently interpretable without compromising predictive performance, evaluated across 85 UCR datasets and a synthetic dataset built for interpretability evaluation."
+date: "2024-05-09"
+tags: ["research", "ICLR 2024", "interpretability"]
+published: true
+---
+
+<Paper id="early2024inherently" />
+
+A deep time series classifier computes a representation of every time point and then averages them
+all together before the classifier sees anything. Whatever the model knew about where in the signal
+the evidence sat is destroyed in that one step. Recovering it means a post-hoc method such as SHAP,
+which needs hundreds of forward passes per explanation and, on the synthetic benchmark the
+paper builds, scores worse than random.
+
+The information does not need recovering, because it was never missing. Replacing global average
+pooling with a multiple instance learning operator keeps a prediction at every time point and
+aggregates those instead, so an explanation falls out of the same forward pass as the prediction
+rather than being reconstructed afterwards. It is a change to one layer, which is what lets it drop
+into existing backbones instead of requiring new ones.
+
+Across 85 UCR datasets, swapping average pooling for the Conjunctive operator proposed here moved
+mean accuracy from 0.841 to 0.846, so the explanations cost nothing in prediction, and they arrive
+over 800 times faster than SHAP's. Which of the four pooling operators to reach for, and a synthetic
+dataset built so that the discriminatory regions are known in advance, are in the paper.
+
+This paper is explicit about where the effect stops. Interpretability falls as backbones grow more
+complex, and the method improves on average pooling for FCN and InceptionTime but not for ensembles
+of ResNets. Whether that traces to residual connections, to ensembling, or to the two interacting is
+left open, and the answer would help decide which backbone to reach for when localisation matters as
+much as accuracy.

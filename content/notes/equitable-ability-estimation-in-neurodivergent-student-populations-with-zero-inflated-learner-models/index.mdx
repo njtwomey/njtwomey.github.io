@@ -1,0 +1,35 @@
+---
+title: "A note on Equitable Ability Estimation in Neurodivergent Student Populations with Zero-Inflated Learner Models"
+description: "Most learner models under-estimate neurodivergent ability because confounding contexts cannot be held accountable, dyslexia and text-heavy assessments being the obvious case. This models the relationship between context and performance with zero-inflated learner models, on simulated data since few existing datasets suit the question."
+date: "2022-07-26"
+tags: ["research", "EDM 2022", "evaluation"]
+published: true
+---
+
+<Paper id="twomey2022equitable" />
+
+A learner model watches which questions a student answered correctly and estimates how able they
+are, and the material offered next follows from that estimate. Roughly 15% of the UK population is
+neurodivergent, and a dyslexic student who fails a text-heavy item has been tested on delivery as
+much as on ability. Item Response Theory has one explanation for a wrong answer, so it charges that
+failure to ability and recommends more of what caused it.
+
+A wrong answer needs a second explanation. A zero-inflated model splits it into an ordinary path,
+where ability loses to difficulty, and a structural path weighted by the student's conditions and
+the item's delivery and response types. A low learning quality factor is a high structural weight,
+and it measures the contextual inequity in a pairing of student and item, so the confounder gets
+its own parameter rather than loading onto ability.
+
+Item Response Theory, Knowledge Tracing Machines and the zero-inflated version score 0.734, 0.742
+and 0.753 for accuracy, and nothing in that spread decides between them. Their Pearson correlations
+with the true abilities are 0.839, 0.955 and 0.993, and the Item Response Theory error has a direction
+as well as a size, because it concentrates on students with one or two neurodivergent conditions
+and points downwards. Difficulty and discrimination recovery, and the effect of actively choosing a
+delivery format, are in the paper.
+
+All of it runs on simulated students, because datasets that identify neurodivergent learners and
+record how each item was delivered are not available. We set the weights linking each condition to
+each format by hand, and this paper calls that specification a subjective process. The recovery
+gap should survive on real data, because it comes from the model having somewhere to put format
+effects rather than from the simulator sharing its form, and that is conjecture until such a
+dataset exists.

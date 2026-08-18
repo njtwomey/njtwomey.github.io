@@ -1,0 +1,81 @@
+name: Deploy
+
+# Builds the site and publishes dist/ to GitHub Pages on every push to main.
+#
+# This is a *user* site (njtwomey.github.io) served from a custom domain, so the
+# asset base is `/` and public/CNAME carries www.nialltwomey.com into the build.
+#
+# Deploying from an artifact rather than a branch means GitHub never runs Jekyll
+# over the output, so nothing gets rewritten and no .nojekyll is needed. It also
+# retires the old bin/deploy script, which force-pushed built HTML over the master branch.
+
+on:
+  push:
+    branches: [main]
+    # Nothing here can change the built output, so a README edit should not
+    # redeploy the site. Named individually rather than as `**/*.md`, which also
+    # matched content/publications/<key>/index.md — those are paper summaries
+    # that compile into the site, so that pattern silently skipped deploys for
+    # a real content change.
+    paths-ignore:
+      - "README.md"
+      - "CLAUDE.md"
+      - ".claude/**"
+      - "LICENSE"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it — a half-published site
+# is worse than a slightly stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The bibliography is the content. If a paper claims a PDF that is not in
+      # the repo, fail here rather than publishing a dead download link.
+      - name: Compile and validate content
+        run: npm run publications && npm run content
+
+      - name: Typecheck, format and test
+        run: npm run typecheck && npm run format:check && npm run test
+
+      - name: Build
+        run: npx vite build
+
+      # `enablement` turns Pages on if it is not already, rather than failing —
+      # without it the first run against a repo that still deploys from a branch
+      # dies here.
+      - uses: actions/configure-pages@v6
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

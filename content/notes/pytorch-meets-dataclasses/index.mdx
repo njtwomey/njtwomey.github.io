@@ -1,0 +1,127 @@
+---
+title: "PyTorch meets dataclasses"
+description: "A variant of a torch module has to retype every argument its parent takes, purely in order to hand them straight back up. Dataclasses already solve that problem, and it turns out they compose with nn.Module provided you set one flag correctly."
+date: "2026-07-04"
+tags: ["python", "pytorch", "snippet"]
+published: true
+---
+
+The most consistent mild irritation I have in writing torch code is that a variant of a module has
+to retype every argument its parent takes, purely so that it can hand them straight back up again.
+
+```python
+class Base(nn.Module):
+    def __init__(self, n_input, n_classes, hidden, dropout, label_smoothing):
+        super().__init__()
+        self.n_input = n_input
+        self.n_classes = n_classes
+        self.hidden = hidden
+        self.dropout = dropout
+        self.label_smoothing = label_smoothing
+
+
+class Variant(Base):
+    def __init__(self, n_input, n_classes, hidden, dropout, label_smoothing, n_blocks):
+        super().__init__(
+            n_input=n_input,
+            n_classes=n_classes,
+            hidden=hidden,
+            dropout=dropout,
+            label_smoothing=label_smoothing,
+        )
+        self.n_blocks = n_blocks
+```
+
+Five arguments are named three times over before the one new field arrives.
+
+None of this is a real problem, and I don't think it is even bad design, so much as the shape that
+falls out of splitting a base class from the model that specialises it. It is just that with five
+variants of the same base, adding one argument becomes six edits, and if you miss one it either
+fails at the call site or carries on quietly with a stale default.
+
+Inheriting a set of declared fields is precisely what dataclasses are for, which raises the question
+of whether a dataclass can also be an `nn.Module`, given how particular `nn.Module` is about what
+happens in `__init__`. It can, because `__post_init__` runs after the generated `__init__` has
+assigned the fields, and that is exactly where `nn.Module.__init__` needs to go.
+
+```python
+@dataclass(eq=False)
+class Classifier(nn.Module):
+    n_input: int
+    n_classes: int
+    hidden: list[int] = field(default_factory=lambda: [64])
+
+    def __post_init__(self):
+        super().__init__()  # before any submodule is assigned
+        sizes = [self.n_input, *self.hidden]
+        layers: list[nn.Module] = []
+        for a, b in zip(sizes[:-1], sizes[1:], strict=True):
+            layers += [nn.Linear(a, b), nn.ReLU()]
+        layers.append(nn.Linear(sizes[-1], self.n_classes))
+        self.net = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.net(x)
+```
+
+The variant then declares the one field it adds and says nothing at all about the three it
+inherits.
+
+```python
+@dataclass(eq=False)
+class DropoutClassifier(Classifier):
+    p_dropout: float = 0.1
+
+    def forward(self, x):
+        return self.net(nn.functional.dropout(x, p=self.p_dropout, training=self.training))
+```
+
+## Getting `eq=False` right
+
+This is the one part that will cause trouble if you get it wrong. A dataclass writes an `__eq__`
+for you by default, and Python responds to any class defining `__eq__` by setting `__hash__` to
+`None`. That leaves the module unhashable and breaks torch a long way from wherever you caused it.
+
+Setting `unsafe_hash=True` makes the error go away, and it was the first thing I reached for, but it
+leaves you worse off than the crash did, because it fails silently. The hash comes from the field
+values, so two separately initialised models that share their hyperparameters and nothing else are
+treated as the same object.
+
+```text
+unsafe_hash: hash(a) == hash(b) = True, a == b = True, same weights = False, len({a, b}) = 1
+```
+
+Putting two models into a set and getting one of them back is the sort of bug that takes an
+afternoon to find. Setting `eq=False` keeps the identity semantics `nn.Module` already had, which is
+what you wanted in the first place.
+
+## What you get, and what it costs
+
+Hyperparameters are now declared fields, so you can read them off a model without going anywhere
+near a constructor signature.
+
+```python
+asdict(child)
+# {'n_input': 10, 'n_classes': 3, 'hidden': [32, 32], 'p_dropout': 0.5}
+```
+
+A checkpoint becomes `Model(**config)` alongside a state dict.
+
+The cost is three unwritten conventions. Setup lives in `__post_init__` rather than `__init__`, the
+`super().__init__()` inside it reaches `nn.Module` rather than the parent dataclass, and `eq=False`
+is load bearing. None of that is difficult, but unwritten conventions are how a codebase becomes
+hard to join.
+
+So I would not adopt it in this raw form. It wants a base type that hides the decorator, the flag
+and the `__post_init__` convention behind one thing you subclass, and that might be a metaclass. I
+would want to see it working first.
+
+Two things I haven't solved either way. A field that is itself a module gets assigned before
+`__post_init__` can call `nn.Module.__init__`, and `**kwargs` has no equivalent that keeps the
+typing you were doing all of this for.
+
+## The whole thing
+
+Everything above, in one file that runs. The output quoted earlier is what this prints.
+
+<CodeFile path="python/demos/torch_dataclass.py" />

@@ -1,0 +1,84 @@
+/**
+ * Everything about the person, in one place.
+ *
+ * This is the file to edit for a new job title, a new social account or a
+ * rewritten bio — none of that should mean touching a component.
+ */
+export const site = {
+  name: "Niall Twomey",
+  shortName: "Niall Twomey",
+  role: "Senior Applied Scientist, Amazon",
+  location: "Bristol, United Kingdom",
+  url: "https://www.nialltwomey.com",
+  description:
+    "Applied scientist working on retrieval and ranking, recommendation, multimodal inference and agentic LLM systems. Publications, work history and notes.",
+
+  /**
+   * Two paragraphs: what the work is and where it is strongest, then where it
+   * has happened. The tooling and interface work is one closing sentence on
+   * purpose. It signals that the capability runs wider than modelling, and it
+   * is not the subject. See .claude/skills/writing before editing.
+   */
+  intro: [
+    "I have spent the thirteen years since my PhD building machine learning that runs in production, starting in digital signal processing and health sensing and arriving at large language models, agentic systems and multimodal inference. I do my best work where the problem is not yet well posed and the answer has to be worked out rather than looked up. When an existing method holds up under evaluation I use it and spend the time elsewhere. Work at that edge has no accumulated knowledge to draw on, so the substitute is having worked across enough different problems first-hand to recognise which of them a new one resembles.",
+    "That has run from founding a research group at the University of Bristol on an MRC Fellowship, through recommendation systems at Cookpad serving millions of people, then learner models and simulation for education technology at KidsLoop, to leading science initiatives at Amazon. I have authored around 70 peer-reviewed papers, at ICLR, AAAI, ECML, ECAI, KDD, SIGIR, RecSys and ICASSP, and several patents. Across my academic and industry roles, I have mentored around 50 researchers and engineers.",
+  ],
+} as const;
+
+/**
+ * What the work is actually about. Broader than a tag list and narrower than a
+ * CV — each line is a body of work with shipped systems or papers behind it.
+ */
+export const focusAreas: { title: string; detail: string }[] = [
+  {
+    title: "LLMs and agentic systems",
+    detail: "Tool use, RAG, response routing, MCP, built so each piece can be measured on its own.",
+  },
+  {
+    title: "Retrieval, ranking and recommendation",
+    detail: "Neural and field-aware ranking, two-tower retrieval, cross-modal embeddings, multilingual search.",
+  },
+  {
+    title: "Interfaces and prototyping",
+    detail: "React front ends for lineage, pipeline visualisation and evaluation harnesses.",
+  },
+  {
+    title: "Multimodal inference",
+    detail: "Vision-language alignment, speech and audio quality, and getting continuous signals into a usable shape.",
+  },
+  {
+    title: "Time series and anomaly detection",
+    detail: "Forecasting and monitoring over sparse and dense series, under production latency budgets.",
+  },
+  {
+    title: "Simulation",
+    detail:
+      "User models with economic constraints, calibrated on observed behaviour, used to predict an experiment before running it.",
+  },
+  {
+    title: "Responsible AI",
+    detail: "Label noise tests, bias audits, drift detection, fairness-aware modelling.",
+  },
+  {
+    title: "Research leadership",
+    detail: "Roadmaps, mentoring, and getting research published in places that had never published.",
+  },
+];
+
+export type SocialLink = {
+  label: string;
+  href: string;
+  /** Which icon to render — resolved in `components/social-links.tsx`. */
+  icon: "scholar" | "orcid" | "github" | "linkedin";
+};
+
+// No email address. It was here, assembled at runtime to keep it out of the
+// committed source, and it is now gone entirely: the safest address to publish
+// is the one that is not published. LinkedIn carries anyone who needs to make
+// contact.
+export const socials: SocialLink[] = [
+  { label: "Google Scholar", href: "https://scholar.google.com/citations?user=bRN8Y34AAAAJ", icon: "scholar" },
+  { label: "ORCID", href: "https://orcid.org/0000-0002-3225-2654", icon: "orcid" },
+  { label: "GitHub", href: "https://github.com/njtwomey", icon: "github" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/nialltwomey", icon: "linkedin" },
+];

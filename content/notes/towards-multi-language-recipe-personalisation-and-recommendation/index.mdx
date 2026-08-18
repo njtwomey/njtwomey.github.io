@@ -1,0 +1,35 @@
+---
+title: "A note on Towards Multi-Language Recipe Personalisation and Recommendation"
+description: "Multi-language recipe recommendation is under-explored, down to fundamental questions such as whether consistent recommendation can be delivered across languages. Drawing on several billion events across five languages, recipes are represented by normalised ingredients, standardised skills and image embeddings obtained without human intervention."
+date: "2020-09-24"
+tags: ["research", "RecSys 2020", "recommendation"]
+published: true
+---
+
+<Paper id="twomey2020towards" />
+
+Recipe recommendation puts the right dish in front of somebody, given what they have cooked and
+clicked on before. Most methods for it read a recipe against a hand-labelled dictionary of canonical
+ingredients, tools and skills, and have only been evaluated on one language at a time. Cookpad
+publishes in Arabic, English, Indonesian, Russian and Spanish, and a dictionary maintained by hand
+describes exactly one of them, so the second costs what the first did.
+
+The dictionary can be read off the recipes themselves. For each language we split raw ingredient
+text on spaces, throw away two hundred quantity terms and anything carrying punctuation or a number,
+and keep the fifteen hundred commonest strings. Cooking skills come from the same text as ingredient
+and verb pairs whose mutual information clears a threshold set by how indiscriminate each half is.
+Neither representation needs a dictionary written by hand.
+
+Native speakers scored the normaliser against a system built on the platform's professionally
+maintained proprietary dictionary. The unsupervised version had the lower error rate in all five
+languages, from 0.14 to 0.05 in Russian, without a labelled example in any of them. Bayesian
+optimisation chose the model family and representation together and picked ingredients, skills and a
+hybrid model in every language, and on search re-ranking the personalisation model beat the
+click-based cold-start baseline by around 20% on mAP@1. The per-language tables are in the paper.
+
+Text embeddings of the whole recipe need no dictionary either, and the optimiser never picked one.
+Every personalisation model here is linear, so whether a targeted representation still beats general
+text under a non-linear recommender is the open question. Our reading is that sub-word units
+averaged over a long recipe converge on the average recipe of its cuisine and stop separating dishes
+that differ in one ingredient, which is conjecture that embedding the ingredient list alone would
+test.

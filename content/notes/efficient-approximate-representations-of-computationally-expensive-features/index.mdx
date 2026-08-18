@@ -1,0 +1,33 @@
+---
+title: "A note on Efficient Approximate Representations of Computationally Expensive Features"
+description: "High computational complexity is often a barrier to achieving the representations you want in resource-constrained settings. Constraining the architecture of a neural network and regressing from raw data to the intended features shows that low-capacity networks can capture the end-to-end dynamics of cascaded composite functions."
+date: "2018-04-26"
+tags: ["research", "ESANN 2018", "sensors"]
+published: false
+---
+
+<Paper id="santos2018efficient" />
+
+A model that reads a sensor rarely reads the raw signal. The readings pass through a fixed chain of
+arithmetic that summarises them into features a domain expert can interpret and criticise. The chain
+costs nothing on the machine where the analysis was designed, and on the battery-powered node that
+took the reading it can cost as much as everything else the device does. Learning a representation
+from raw data removes the cost and the interpretation together.
+
+The representation does not need learning, because it already exists. Filtering, windowing, a Fourier
+transform, the spectral density and a logarithmically binned histogram are each deterministic, so
+their composition is a fixed function of the raw window, and we regress a two hidden layer network
+from that window onto the exact feature values. The output is the histogram itself rather than a
+learned code, and the saving comes from imitating the whole chain at once instead of any one step.
+
+We swept six network sizes against exact computation on accelerometer data from the SPHERE
+Challenge. Feature error rose as the networks shrank, from a mean absolute error of 0.165 to 0.867
+against targets spanning roughly 1.5 to 330, and the features arrived 2.4 to 22 times faster. Across
+all six, a logistic regression trained on the approximations stayed within 0.04 of a percentage point
+of the same classifier on exact features. The spectrograms and error distributions are in the paper.
+
+All of it rests on the classifier not reading whatever the approximation lost. Knowing which feature
+chains tolerate that, instead of fitting a network and measuring, is the open question. The errors
+presumably fall in directions a decision boundary was already ignoring, since a boundary uses the
+ordering and separation among features rather than their magnitudes, and that stays conjecture while
+logistic regression is the only classifier here.

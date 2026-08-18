@@ -1,0 +1,37 @@
+---
+title: "A note on Hypothesis Testing for Class-Conditional Noise Using Local Maximum Likelihood"
+description: "Assessing the quality of labels before any learning takes place remains an open question, and the existing tests for class-conditional label noise build on the asymptotics of maximum likelihood for parametric logistic regression. Those parametric assumptions are often too strong in practice, so the same procedures are followed under local maximum likelihood instead."
+date: "2024-02-27"
+tags: ["research", "AAAI 2024", "labels"]
+published: true
+---
+
+<Paper id="yang2024hypothesis" />
+
+Training labels are wrong more often than anyone would like, and they are rarely wrong evenly.
+Annotation gathered by crowdsourcing or scraped from the web mislabels some classes more than
+others. Telling that asymmetry apart from mistakes spread evenly across every class is what these
+tests are for, before a model is fitted rather than after. One such test already exists, but it
+assumes the relationship between features and labels has a simple parametric shape, and checking
+that assumption means understanding the data you were trying to vet.
+
+This paper stops assuming the shape. Instead of fitting one global logistic regression it estimates
+the relationship locally, in the neighbourhood of each point it cares about, by local maximum
+likelihood. The test needs only the variance of that estimate at a handful of reference instances,
+and the local version supplies it with the same asymptotic guarantees. An assumption about the
+entire function is traded for an assumption that the function is smooth.
+
+Those reference instances are the demanding part, because they have to be points whose true class
+probability is an even split. The smart home study makes that concrete: in a two-floor house where
+the label is the floor somebody is on, readings taken on the stairs are that even split. Including
+the stair readings in training drives the test below its rejection threshold, and excluding them
+keeps it above. We read that as confirmation that assigning the stairs to one floor
+introduces label noise. On synthetic data the parametric test survives where its assumptions happen
+to be harmless and breaks where they are not, which is the argument for the nonparametric one.
+
+All of this rests on somebody nominating those even-split instances, and a staircase is an unusually
+generous case. Where a problem offers no natural boundary, finding them becomes a modelling question
+in its own right, and the answer decides how widely a check of this kind can be run before training.
+The limitation this paper states is narrower. Local estimates degrade where a neighbourhood is nearly
+empty, which arose about once in ten thousand fits, and bootstrap bias correction is the route
+flagged for it.

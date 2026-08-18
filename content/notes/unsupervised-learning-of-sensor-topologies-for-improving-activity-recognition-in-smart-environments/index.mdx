@@ -1,0 +1,37 @@
+---
+title: "A note on Unsupervised learning of sensor topologies for improving activity recognition in smart environments"
+description: "Classifiers in smart environments treat sensor activations as independent features, which in general they are not, and taking all possible combinations of sensors is computationally prohibitive. Signal processing and information-theoretic techniques recover the sensor topology of the home, which determines the combinations worth using ahead of time."
+date: "2017-02-14"
+tags: ["research", "Neurocomputing 2017", "sensors"]
+published: false
+---
+
+<Paper id="twomey2017unsupervised" />
+
+A smart home covers its walls with motion sensors and reads which ones fired to say what the
+residents are doing. Motion in the kitchen fits cooking as readily as it fits walking through, so
+what separates activities is which sensors fire together. Two residents break that, because a
+classifier free to combine anything reads kitchen motion alongside bedroom motion as one activity
+when it is two people doing two things. Ruling that pair out needs a map of the house, and drawing
+one by hand means surveying every home in a deployment.
+
+The residents survey the house themselves by walking around in it. Two sensors either side of a
+doorway fire within a few seconds of each other, because the same person passed both, so a cross
+correlation over every pair of streams, weighted to decay exponentially with lag, ranks pairs by
+how quickly one follows the other. Mutual information over the same pairs is the second estimator,
+and neither threshold uses a label. What both recover is reachability rather than proximity, which
+is why the maps respect walls.
+
+The maps never link the two residents' bedrooms, although sleeping and working in them are the most
+frequent activities in the dataset, and they connect the top and bottom of the staircase across two
+storeys. Cross correlation scores an area under the ROC curve of 0.879 against a hand-drawn
+adjacency matrix, computed from three months of data in under two seconds. Restricting the
+classifier to the sensors the map calls adjacent takes F1 from 0.632 to 0.675, while combining
+everything takes it to 0.521. The CRF construction and two further testbeds are in the paper.
+
+That settles less than it looks. Friedman and Nemenyi comparisons at a significance level of 0.01
+separate the exhaustive representation from everything else and cannot separate the three adjacency
+models from the single-sensor baseline, so what the topology is shown to buy is protection from the
+spurious combinations rather than a gain over plain sensors. The maps also leave the door sensors
+linked to nothing, presumably because a door sensor fires only when somebody opens it while a
+motion sensor fires whenever anybody passes, and nothing here tests that.

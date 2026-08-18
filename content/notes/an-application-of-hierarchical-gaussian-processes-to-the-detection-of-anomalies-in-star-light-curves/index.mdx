@@ -1,0 +1,37 @@
+---
+title: "A note on An application of hierarchical Gaussian processes to the detection of anomalies in star light curves"
+description: "Light curves are astronomical time series representing the brightness of celestial objects, and the task here is finding anomalous ones among periodic variable stars. A hierarchical Gaussian process gives a general and stable model for anomaly detection, at only a few additional parameters and negligible additional computational complexity."
+date: "2019-03-19"
+tags: ["research", "Neurocomputing 2019", "probabilistic"]
+published: true
+---
+
+<Paper id="twomey2019application" />
+
+Anomaly detection picks out the members of a collection that do not look like the rest, when nobody
+has said what the rest looks like. A light curve is the brightness of a star over time, and this
+catalogue holds 9,236 of them across three types of periodic variable star, an unknown number filed
+under the wrong type. Fitting a model of the normal ones is the obvious response, and its training
+set comes from that same uncounted catalogue, so the model learns the anomalies and stops flagging
+them.
+
+Normal is a shape shared across curves rather than any one curve. A Gaussian process is a
+distribution over functions rather than a single fitted curve, so it holds a whole family of shapes
+at once, and stacking two of them says exactly that: one draw fixes the underlying shape a star type
+follows, and each observed star is a second draw around that shape. Individual variation becomes
+part of the description instead of noise to be averaged out. Scoring a new curve is then only asking
+how probable it is under that description, which is its negative log marginal likelihood.
+
+Both baselines score a curve by cross correlation against prototype centroids, which means fixing a
+distance measure and a number of clusters before starting. On the star catalogue they reached 0.44
+and 0.16 precision against 0.99 for the hierarchical model. Precision
+was still 0.98 with the model fitted on roughly seven curves, few enough to look at individually
+before training, and ten times as much data bought 0.01 more. Why the periodic kernel we expected to
+help is absent from the final model is in the paper.
+
+Every precision figure here rests on a class held out as the outlier class, because the catalogue
+this work is aimed at carries no anomaly count to divide by. For that catalogue this paper ranks the
+curves and shows the strangest in each class. Scoring a detector where nobody knows the answer is
+the open problem. Refitting on the least anomalous 80% of a validation set holds precision, and
+retaining more than that loses it, which the paper offers as a hint at the outlier proportion rather
+than a measurement. A catalogue with a verified count would settle it.
