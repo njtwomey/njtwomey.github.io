@@ -1,22 +1,42 @@
 import { MDXProvider } from "@mdx-js/react";
 import { ArrowLeft } from "lucide-react";
 import * as React from "react";
+import type { ComponentType } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { asset, mdxComponents, NoteSlugContext } from "@/components/mdx";
 import { Page, useDocumentMeta } from "@/components/page";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ContentsRail } from "@/components/contents-rail";
-import { formatDate, note as findNote, noteRailItems, titleCase } from "@/lib/notes";
+import { formatDate, note as findNote, noteRailItems, titleCase, type Note as NoteMeta } from "@/lib/notes";
+
+/**
+ * The lazy component for a note, cached for the lifetime of the page.
+ *
+ * Each note is its own chunk, resolved on demand. The cache is module level and
+ * not a `useMemo`, because React requires a lazy component to be a stable value
+ * and not something built during render: a fresh `lazy()` per render carries a
+ * fresh promise, and under a navigation transition React can then resolve a
+ * chunk it is no longer holding a reference to. The symptom is a URL that
+ * changes while the page does not, with the chunk fetched, no error thrown, and
+ * nothing committed. It only appears in a production build, since in dev the
+ * module is already in the graph and resolves before React can suspend.
+ */
+const CONTENT = new Map<string, React.LazyExoticComponent<ComponentType>>();
+
+function contentFor(note: NoteMeta): React.LazyExoticComponent<ComponentType> {
+  const cached = CONTENT.get(note.slug);
+  if (cached) return cached;
+  const lazy = React.lazy(note.load);
+  CONTENT.set(note.slug, lazy);
+  return lazy;
+}
 
 export function Note() {
   const { slug } = useParams<{ slug: string }>();
   const note = slug ? findNote(slug) : undefined;
 
-  // Each note is its own chunk, so the component is resolved on demand. The
-  // lazy() call is memoised on the slug — rebuilding it every render would
-  // remount the note and refetch its chunk.
-  const Content = React.useMemo(() => (note ? React.lazy(async () => note.load()) : null), [note]);
+  const Content = note ? contentFor(note) : null;
 
   // The note draws its own header, so `Page` is given no `title` and would
   // otherwise leave the tab reading "Niall Twomey". Passing the title through

@@ -75,3 +75,59 @@ describe("notes", () => {
     }
   });
 });
+
+/**
+ * Tags are three slots in a fixed order: the kind of note, then the venue for a
+ * note about a paper, then one or two topics. The shape is checked here and the
+ * topic list itself is not, because the shape is mechanical and the choice of
+ * topic is editorial. `.claude/skills/draft-note` carries the topics in use.
+ */
+describe("note tags", () => {
+  const tagsOf = (slug: string) =>
+    [...(sourceOf(slug).match(/^tags:\s*\[(.*)\]$/m)?.[1] ?? "").matchAll(/"([^"]*)"/g)].map((match) => match[1]!);
+
+  it("open with research where the note is about a paper, and carry one to four tags in all", () => {
+    for (const slug of slugs) {
+      const tags = tagsOf(slug);
+      // `research` marks a note built on a paper, which is a fact about the note
+      // rather than a label: it is exactly the set that cites one. A note with no
+      // paper carries topics alone, since a second kind would only ever restate
+      // the absence of the first.
+      if (/<Paper id=/.test(sourceOf(slug))) {
+        expect(tags[0], `${slug} cites a paper so should open with "research"`).toBe("research");
+      } else {
+        expect(tags, `${slug} cites no paper so should not claim a kind`).not.toContain("research");
+      }
+      expect(tags.length, `${slug} has ${tags.length} tags`).toBeGreaterThanOrEqual(1);
+      expect(tags.length, `${slug} has ${tags.length} tags`).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it("take the venue and year from the bibliography rather than the keyboard", () => {
+    for (const slug of slugs) {
+      // A venue tag is the one ending in a year. It has to agree with the bib
+      // entry for a paper the note cites: hand-typing a venue is how a note
+      // ends up still saying "preprint" two years after the paper appeared,
+      // and nothing about the rendered badge gives that away.
+      const venues = tagsOf(slug).filter((tag) => /\s(19|20)\d{2}$/.test(tag));
+      if (venues.length === 0) continue;
+      expect(venues.length, `${slug} should carry at most one venue tag`).toBe(1);
+
+      const cited = citationKeysIn(sourceOf(slug))
+        .map((key) => publication(key))
+        .filter((paper) => paper !== undefined)
+        .map((paper) => `${paper.venueShort} ${paper.year}`);
+      expect(cited, `${slug} tags "${venues[0]}", which no paper it cites was published in`).toContain(venues[0]);
+    }
+  });
+
+  it("are lowercase topics after the kind and the venue", () => {
+    for (const slug of slugs) {
+      for (const tag of tagsOf(slug).filter((tag) => !/\s(19|20)\d{2}$/.test(tag))) {
+        // Casing is the venue's only privilege, since an acronym printed as
+        // "Ecml Pkdd" is wrong in a way "Sensors" is merely inconsistent.
+        expect(tag, `${slug} tag "${tag}" should be lowercase and hyphenated`).toMatch(/^[a-z]+(-[a-z]+)*$/);
+      }
+    }
+  });
+});

@@ -122,7 +122,12 @@ export function buildNotesIndex({ write = true } = {}) {
       // call per file: the per-file form races with its own mkdir on macOS.
       cpSync(dir, resolve(staging, slug), {
         recursive: true,
-        filter: (source) => !source.endsWith("/index.mdx"),
+        // Everything beside a note is an asset to be served, except the prose
+        // itself and any TypeScript. A figure component living next to the note
+        // it belongs to is a build input, and copying it would publish the
+        // source verbatim under public/. It is also outside `tsconfig.json`,
+        // whose include list is `src`, so it would escape `make check` as well.
+        filter: (source) => !/\/index\.mdx$|\.tsx?$/.test(source),
       });
     }
     mkdirSync(staging, { recursive: true });

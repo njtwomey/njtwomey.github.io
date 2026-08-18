@@ -4,7 +4,6 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { DOMAINS_DETAIL } from "@/lib/flags";
 import { loadDetails } from "@/lib/publications";
 import { About } from "@/routes/about";
 
@@ -26,8 +25,8 @@ async function withPaperDetails<T>(load: Promise<T>, pick: (module: T) => React.
 
 const Publications = React.lazy(() => withPaperDetails(import("@/routes/publications"), (m) => m.Publications));
 const Note = React.lazy(() => withPaperDetails(import("@/routes/note"), (m) => m.Note));
-const Domains = React.lazy(() => import("@/routes/domains").then((m) => ({ default: m.Domains })));
-const DomainsDetail = React.lazy(() => import("@/routes/domains-detail").then((m) => ({ default: m.DomainsDetail })));
+const Practice = React.lazy(() => import("@/routes/practice").then((m) => ({ default: m.Practice })));
+const Technologies = React.lazy(() => import("@/routes/technologies").then((m) => ({ default: m.Technologies })));
 const Notes = React.lazy(() => import("@/routes/notes").then((m) => ({ default: m.Notes })));
 
 /**
@@ -64,12 +63,20 @@ export default function App() {
             <Routes>
               <Route path="/" element={<About />} />
               <Route path="/publications" element={<Publications />} />
-              <Route path="/domains" element={<Domains />} />
-              {/* Written, kept compiled, not published. See src/lib/flags.ts.
-                  Unregistering the route rather than hiding the link is what
-                  makes it genuinely absent: the catch-all below sends anyone
-                  who guesses the URL back to the front page. */}
-              {DOMAINS_DETAIL && <Route path="/domains/detail" element={<DomainsDetail />} />}
+              <Route path="/practice" element={<Practice />} />
+              <Route path="/technologies" element={<Technologies />} />
+              {/* /domains was this page's path until it was renamed. The
+                  catch-all below would swallow the old URL and land anyone
+                  following an existing link on the front page without saying
+                  why, so the redirect is explicit and has to stay above it. */}
+              <Route path="/domains" element={<Navigate to="/practice" replace />} />
+              {/* /domains/detail used to sit here behind a flag, holding a
+                  paragraph per capability. A flag was the wrong tool: it kept
+                  the route unregistered and shipped every paragraph to every
+                  visitor anyway, because the matrix imported the module the
+                  prose lived in. The prose is now out of the tree entirely and
+                  archived in .scratch/domains/, and the catch-all below sends
+                  anyone with the old URL back to the front page. */}
               <Route path="/notes" element={<Notes />} />
               <Route path="/notes/:slug" element={<Note />} />
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -14,14 +14,42 @@ export const site = {
     "Applied scientist working on retrieval and ranking, recommendation, multimodal inference and agentic LLM systems. Publications, work history and notes.",
 
   /**
-   * Two paragraphs: what the work is and where it is strongest, then where it
-   * has happened. The tooling and interface work is one closing sentence on
-   * purpose. It signals that the capability runs wider than modelling, and it
-   * is not the subject. See .claude/skills/writing before editing.
+   * Three paragraphs: what the work is and how the time gets allocated, then
+   * where it has happened, then the one specialisation running under all of it.
+   *
+   * The third paragraph is last rather than second because it only lands once
+   * the reader has seen the list of employers in the second. "Behavioural
+   * modelling" asserted before the evidence reads as a label; asserted after
+   * four unrelated-looking organisations it reads as the thing they had in
+   * common. It names domains rather than employers for the same reason, since
+   * repeating the second paragraph's list would be the third telling of the
+   * same fact.
+   *
+   * The claim is deliberately bounded. It is that behavioural modelling is the
+   * thread through jobs that otherwise look unrelated, not that it was the
+   * point of every job, and the paragraph ends by saying what the shared
+   * modelling problem actually is so the claim can be checked rather than
+   * taken. Every domain in it is publicly evidenced: the sensing and dementia
+   * work by the Bristol papers in content/publications.bib, the learner models
+   * by the EDM paper, the cooking by the Cookpad retrieval and recommendation
+   * papers. The Amazon clause is pitched at the level of a capability on
+   * purpose. See the confidentiality header in src/content/practice.ts.
+   *
+   * The literature sentence in the first paragraph is about triage. Knowing
+   * what has already been answered is what decides where the effort does not
+   * go, which is what sets up the sentence after it about working where there
+   * is no accumulated knowledge to draw on. An earlier version ended it on
+   * "spend the time elsewhere", which named no destination and read as a
+   * willingness to reuse other people's work rather than as a judgement call.
+   *
+   * The tooling and interface work is one closing sentence on purpose. It
+   * signals that the capability runs wider than modelling, and it is not the
+   * subject. See .claude/skills/writing before editing.
    */
   intro: [
-    "I have spent the thirteen years since my PhD building machine learning that runs in production, starting in digital signal processing and health sensing and arriving at large language models, agentic systems and multimodal inference. I do my best work where the problem is not yet well posed and the answer has to be worked out rather than looked up. When an existing method holds up under evaluation I use it and spend the time elsewhere. Work at that edge has no accumulated knowledge to draw on, so the substitute is having worked across enough different problems first-hand to recognise which of them a new one resembles.",
+    "I have spent the thirteen years since my PhD building machine learning that runs in production, starting in digital signal processing and health sensing and arriving at large language models, agentic systems and multimodal inference. I do my best work where the problem is not yet well posed and the answer has to be worked out rather than looked up. Knowing the literature is how I triage my own time. Where an existing method holds up under evaluation I use it and put the effort into problems that have no method yet. Work at that edge has no accumulated knowledge to draw on, so the substitute is having worked across enough different problems first-hand to recognise which of them a new one resembles.",
     "That has run from founding a research group at the University of Bristol on an MRC Fellowship, through recommendation systems at Cookpad serving millions of people, then learner models and simulation for education technology at KidsLoop, to leading science initiatives at Amazon. I have authored around 70 peer-reviewed papers, at ICLR, AAAI, ECML, ECAI, KDD, SIGIR, RecSys and ICASSP, and several patents. Across my academic and industry roles, I have mentored around 50 researchers and engineers.",
+    "Behavioural modelling has been a principal specialisation throughout my career. I have worked on activity recognition from wearable and in-home sensors, behavioural signatures of early-stage dementia and mild cognitive impairment, search and recommendation personalised to what somebody chooses to cook, learner models that hold a student's ability apart from the format they were assessed in, and models of customer behaviour built from logged interactions. Those domains share no data and no evaluation protocol, and they pose the same modelling problem. In each of them, behaviour is visible only through whatever a system happened to record, and the state worth estimating is not among the things recorded.",
   ],
 } as const;
 

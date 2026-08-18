@@ -272,11 +272,26 @@ The slug is the title slugified, without the `A note on` prefix.
 title: "A note on <the paper's exact title, copied from the .bib>"
 description: "One or two sentences, shown on the index and used as the page description. Not printed on the note itself."
 date: "2025-10-14" # quoted, or YAML parses it as a Date and the day shifts
-tags: ["research", "ICIP 2025", "distillation"] # venue and year among them
+tags: ["research", "ICIP 2025", "distillation", "efficiency"]
 published: false
 ---
 <Paper id="zeng2025multi" />
 ```
+
+**Tags are three slots in a fixed order**, giving one to four tags in all. First is `research`, and
+only on a note built on a paper: a note with no paper carries topics alone, since a second kind
+would only ever restate the absence of the first. Second, on that same note, is the venue and year,
+which is `venueShort` and `year` from the paper's entry in `src/content/publications.json` rather
+than a venue typed from memory. Last come one or two topics, lowercase and hyphenated, in
+alphabetical order. `src/content/references.test.ts` fails the build when a venue tag disagrees with
+the bibliography, which is what stops a note carrying a venue the paper has since outgrown.
+
+The topics in use are `activity-recognition`, `anomaly-detection`, `distillation`, `education`,
+`efficiency`, `evaluation`, `fairness`, `interpretability`, `javascript`, `label-noise`,
+`probabilistic`, `python`, `pytorch`, `recommendation`, `retrieval`, `sensors`, `smart-homes`,
+`structured-prediction`, `time-series` and `visualisation`. Reuse one before inventing another,
+since nothing on the site filters by tag and a second word for the same idea only makes two cards
+that belong together look unrelated.
 
 `<Paper>` renders highlighted inside a note by default, so it needs no `variant`. Bare filenames in
 `<Figure src="...">` resolve against the note's own directory. Maths is KaTeX. Code fences must

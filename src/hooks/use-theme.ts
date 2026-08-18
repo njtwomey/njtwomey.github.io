@@ -22,16 +22,38 @@ function stored(): Theme {
  * script a dark-mode reader gets a white flash on every navigation into the site.
  * This hook keeps the two in step afterwards.
  */
+/**
+ * The chosen theme, shared by every caller.
+ *
+ * Held outside React because the preference is one fact about the page and not
+ * a fact about a component. With a `useState` per call the header toggle would
+ * update only itself, and a second consumer such as a chart reading the resolved
+ * value would never hear the change. That costs nothing today and would be a
+ * silent bug the moment anything but the toggle asks.
+ */
+const listeners = new Set<() => void>();
+let choice: Theme = typeof window === "undefined" ? "system" : stored();
+
+function subscribe(onChange: () => void) {
+  listeners.add(onChange);
+  const query = window.matchMedia("(prefers-color-scheme: dark)");
+  query.addEventListener("change", onChange);
+  return () => {
+    listeners.delete(onChange);
+    query.removeEventListener("change", onChange);
+  };
+}
+
 export function useTheme() {
-  const [theme, setThemeState] = React.useState<Theme>(() => (typeof window === "undefined" ? "system" : stored()));
+  const theme = React.useSyncExternalStore(
+    subscribe,
+    () => choice,
+    () => "system" as const,
+  );
 
   const resolved = React.useSyncExternalStore(
-    (onChange) => {
-      const query = window.matchMedia("(prefers-color-scheme: dark)");
-      query.addEventListener("change", onChange);
-      return () => query.removeEventListener("change", onChange);
-    },
-    () => (theme === "system" ? systemTheme() : theme),
+    subscribe,
+    () => (choice === "system" ? systemTheme() : choice),
     () => "light" as const,
   );
 
@@ -42,7 +64,8 @@ export function useTheme() {
 
   const setTheme = React.useCallback((next: Theme) => {
     localStorage.setItem(STORAGE_KEY, next);
-    setThemeState(next);
+    choice = next;
+    for (const listener of listeners) listener();
   }, []);
 
   /**

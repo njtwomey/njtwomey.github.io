@@ -16,7 +16,8 @@ import { cn } from "@/lib/utils";
 const links = [
   { to: "/", label: "About", end: true },
   { to: "/publications", label: "Publications" },
-  { to: "/domains", label: "Domains" },
+  { to: "/practice", label: "ML Practice" },
+  { to: "/technologies", label: "Technologies" },
   ...(notes.length > 0 ? [{ to: "/notes", label: "Notes" }] : []),
 ];
 

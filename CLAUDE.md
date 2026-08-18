@@ -4,7 +4,7 @@ Guidance for Claude Code working in this repository.
 
 ## What this is
 
-The personal site of Niall Twomey at **www.nialltwomey.com**: publications, domains of work, and
+The personal site of Niall Twomey at **www.nialltwomey.com**: publications, ML practice, and
 notes. A static React app built by Vite and published to GitHub Pages by GitHub Actions on every
 push to `main`. It replaces a Jekyll site whose source has been deleted, so nothing here refers to
 it.
@@ -34,12 +34,12 @@ imports. Nothing in `src/content/*.json` is edited by hand.
 ```
 content/publications.bib             →  src/content/publications.json     (bundled: titles, authors, venues, summaries)
                                      →  public/publications-details.json  (fetched: abstracts, BibTeX)
-                                     →  public/publications.bib           (the download link)
+                                     →  public/publications.bib           (published whole, no longer linked from the UI)
 content/publications/<key>/index.md  →  the `summary` on that paper's card
 content/notes/<slug>/index.mdx       →  src/content/notes.json            (frontmatter index)
 content/notes/<slug>/*               →  public/notes/<slug>/              (copied)
 src/content/site.ts                      bio, role, focus areas, social links — plain TS
-src/content/domains.ts                   the domains page — plain TS
+src/content/practice.ts                  the ML Practice page — plain TS
 ```
 
 `scripts/build-publications.mjs` is the only thing that understands BibTeX, and it is **strict on
@@ -92,6 +92,14 @@ file it came from, and an unreadable path fails the build. Code fences are highl
 build time in both themes, so always declare a language and use ```text for program output. `Paper`,
 `Cite`, `Figure`, `Figures` and `CodeFile` need no import. Maths is KaTeX.
 
+**Tags are three slots in a fixed order**, one to four in all: `research` where the note is built on
+a paper, then the venue and year for that paper, then one or two lowercase topics in alphabetical
+order. A note that cites no paper carries topics alone, because a second kind would only restate the
+absence of the first. The venue tag is copied from the bibliography entry for the key the note cites,
+because that is the fact and a hand-typed venue is how a note ends up still saying "preprint" two
+years after the paper appeared. `src/content/references.test.ts` fails the build when a tag
+disagrees with the bib, and the topics in use are listed in the `draft-note` skill.
+
 **`published: false` is the default and means the note is not on the live site.** It is on the dev
 server badged "Draft". Keep stale notes in the repo set back to `false` rather than deleting them.
 The Notes nav item only appears once at least one note is published. The `hero` doubles as the index
@@ -124,7 +132,7 @@ deploy script and no `source` branch; built output is never committed.
 This is a **user** site on a custom domain, so the Vite base is `/` and `public/CNAME` carries
 `www.nialltwomey.com` into the build. `VITE_BASE` exists for previewing under a subpath; never
 hard-code a base. Because routing is client-side, the build writes `404.html` as a copy of
-`index.html`, which is what makes a direct hit on `/domains` work on Pages.
+`index.html`, which is what makes a direct hit on `/practice` work on Pages.
 
 ## Skills
 
@@ -141,7 +149,7 @@ worse than one that is missing them.
 ## Writing
 
 **Load the `writing` skill before writing or editing any user-facing prose**, meaning the bio, the
-domains page, publication summaries, note prose and page ledes. Two rules outrank the rest: every
+ML Practice page, publication summaries, note prose and page ledes. Two rules outrank the rest: every
 sentence must be a complete sentence, and em dashes are banned in favour of a comma, a colon, a
 semicolon or a full stop. `uv run python/tools/prose_stats.py <file>` measures a draft against the
 voice. Code comments are exempt and should explain why at whatever length it takes.

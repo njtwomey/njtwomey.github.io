@@ -112,11 +112,11 @@ not invent a figure.
 
 `src/content/site.ts`. Plain TypeScript, edited directly.
 
-## Add to the domains page
+## Add to the ML Practice page
 
-`src/content/domains.ts`. It is organised by employer, most recent first — each entry has a summary
-and a list of `strands`, the individual pieces of work done there. Papers deliberately do not
-appear here; the publications page is where they live.
+`src/content/practice.ts`. The rows are capabilities rather than employers, filed under nine themes
+and three families, and `coverage` records how deeply each row ran at each organisation. Papers
+deliberately do not appear here; the publications page is where they live.
 
 ## Add a UI component
 
@@ -138,7 +138,7 @@ content/publications.bib             the bibliography — source of truth
 content/publications/<key>/index.md  optional plain-English summary
 content/notes/<slug>/index.mdx       a note, with its images beside it
 src/content/site.ts                  bio, role, focus areas, socials
-src/content/domains.ts                  the domains page, by employer
+src/content/practice.ts              the ML Practice page, by capability
 public/pdf/                          paper PDFs, named by citation key
 inbox/                               staging area for PDFs to be filed
 ```
