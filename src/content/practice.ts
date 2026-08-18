@@ -165,10 +165,16 @@ export type Family = (typeof families)[number]["id"];
  * filing error.
  *
  * The axes are not exhaustive and must not be made so. Only rows Niall has
- * actually worked in appear. Supervised learning has no row because it would be
- * filled at all five organisations, discriminative modelling has none for the
- * same reason, and roughly twenty further entries from the source taxonomy have
- * none because the work is not there. A syllabus of empty rows would say
+ * actually worked in appear. Discriminative modelling has no row because it
+ * would be filled at all five organisations, and roughly twenty further entries
+ * from the source taxonomy have none because the work is not there.
+ *
+ * Supervised learning was left out on that same argument and has been put back,
+ * because the argument was wrong. A reader opening a list of learning paradigms
+ * on "unsupervised and self-supervised" notices what is missing before they
+ * notice what is there, and being filled everywhere is what a foundation looks
+ * like rather than a reason to hide it. Behavioural modelling and data science
+ * are filled at all five as well and nobody reads those as padding. A syllabus of empty rows would say
  * nothing about anybody. `.scratch/domains/ratings.md` records every exclusion
  * and the argument behind it.
  *
@@ -211,6 +217,7 @@ export type Theme = (typeof themes)[number]["id"];
  * and the mapping to lucide lives next to the markup that renders it.
  */
 export type CapabilityIcon =
+  | "supervised"
   | "unsupervised"
   | "weak"
   | "rl"
@@ -277,6 +284,8 @@ export type Speciality = (typeof specialities)[number]["slug"];
  * no ratings.
  */
 export const specialities = [
+  // First, because the rows under this heading are all defined against it.
+  { theme: "learning-signal", slug: "supervised-learning", icon: "supervised", title: "Supervised learning" },
   {
     theme: "learning-signal",
     slug: "unsupervised-and-self-supervised",
@@ -575,6 +584,10 @@ export type CoverageTable = { [G in Theme]: Record<SpecialitiesOf<G>, Depths> };
 
 export const coverage: CoverageTable = {
   "learning-signal": {
+    // The one row filled at 3 everywhere, which is the honest answer: biosignal
+    // classification, activity recognition, ranking, learner models and
+    // everything since have all had labels at the centre of them.
+    "supervised-learning": { ucc: 3, bristol: 3, cookpad: 3, kidsloop: 3, amazon: 3 },
     "unsupervised-and-self-supervised": { ucc: 1, bristol: 2, cookpad: 2, amazon: 2 },
     "weak-supervision": { bristol: 3, amazon: 2 },
     "reinforcement-learning": { kidsloop: 2, amazon: 2 },

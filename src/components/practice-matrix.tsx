@@ -41,6 +41,7 @@ import {
   Sigma,
   Sparkles,
   Spline,
+  SquareCheck,
   Split,
   Tags,
   Target,
@@ -90,6 +91,7 @@ import { cn } from "@/lib/utils";
 
 /** Icon keys live in the content; the mapping to lucide lives beside the markup. */
 export const ICONS: Record<CapabilityIcon, LucideIcon> = {
+  supervised: SquareCheck,
   unsupervised: Shapes,
   weak: Tags,
   rl: Target,

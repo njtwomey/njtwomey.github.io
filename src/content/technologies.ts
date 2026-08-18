@@ -709,7 +709,6 @@ export const technologies = [
         "TorchServe",
         "TensorFlow Serving",
         "NVIDIA Triton",
-        "BentoML",
         "Ray Serve",
         "FastAPI",
         "Flask",
@@ -741,9 +740,8 @@ export const technologies = [
         "gRPC and Protocol Buffers",
         "Django",
         "Step Functions",
-        "BentoML",
       ],
-      ["AWS", "Docker", "S3", "EC2", "Lambda", "SageMaker", "Step Functions", "NVIDIA Triton", "BentoML"],
+      ["AWS", "Docker", "S3", "EC2", "Lambda", "SageMaker", "Step Functions", "NVIDIA Triton"],
     ),
     group(
       "Efficiency, compilation and edge",
