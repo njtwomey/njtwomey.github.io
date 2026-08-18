@@ -49,7 +49,7 @@ export function Practice() {
   return (
     <Page
       title="ML Practice"
-      lede="Every row here is an area I have worked in firsthand."
+      lede="Every row here is an area I have worked in firsthand, at one or more of these organisations."
       description="Each row is a machine learning capability, each column an organisation I worked at, and the dot says how much of that role it was."
       marginWidth="wide"
       left={<ContentsRail items={SECTIONS} active={active} label="Jump to section" />}

@@ -245,6 +245,8 @@ export type CapabilityIcon =
   | "executive"
   | "judgement"
   | "funding"
+  | "interpretability"
+  | "roadmap"
   | "evaluation"
   | "signals"
   | "audio"
@@ -442,6 +444,12 @@ export const specialities = [
     icon: "simulation",
     title: "Simulation and synthetic data",
   },
+  {
+    theme: "measurement-and-evidence",
+    slug: "interpretability",
+    icon: "interpretability",
+    title: "Interpretability and explainability",
+  },
   { theme: "measurement-and-evidence", slug: "responsible-ml", icon: "responsible", title: "Responsible ML" },
 
   // One "Building research practice" row became four. Establishing how a team
@@ -469,6 +477,12 @@ export const specialities = [
     slug: "research-strategy",
     icon: "strategy",
     title: "Research strategy and prioritisation",
+  },
+  {
+    theme: "strategy-and-influence",
+    slug: "roadmapping",
+    icon: "roadmap",
+    title: "Roadmapping and delivery planning",
   },
   {
     theme: "strategy-and-influence",
@@ -587,6 +601,12 @@ export const coverage: CoverageTable = {
     experimentation: { cookpad: 3, kidsloop: 3, amazon: 2 },
     "evaluation-design": { bristol: 3, cookpad: 3, kidsloop: 2, amazon: 3 },
     "simulation-and-experimentation": { bristol: 2, kidsloop: 3, amazon: 3 },
+    // The ICLR paper on inherently interpretable time series classification is
+    // the strongest single piece of evidence on this page for any row, and
+    // explainability tooling is named in the CV's responsible AI cluster. No
+    // Bristol cell: the dementia models are interpretable by construction, which
+    // is not the same as having worked on interpretability.
+    interpretability: { kidsloop: 2, amazon: 3 },
     "responsible-ml": { bristol: 2, kidsloop: 3, amazon: 2 },
   },
 
@@ -602,6 +622,9 @@ export const coverage: CoverageTable = {
 
   "strategy-and-influence": {
     "research-strategy": { cookpad: 2, kidsloop: 2, amazon: 3 },
+    // Distinct from the row above it: strategy is deciding what is worth doing,
+    // this is committing to when it lands and sequencing the work to get there.
+    roadmapping: { cookpad: 2, kidsloop: 2, amazon: 3 },
     "technical-strategy": { bristol: 2, cookpad: 2, kidsloop: 2, amazon: 3 },
     "executive-communication": { bristol: 2, cookpad: 2, kidsloop: 2, amazon: 3 },
     "technical-judgement": { bristol: 3, cookpad: 2, kidsloop: 2, amazon: 3 },

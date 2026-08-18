@@ -24,12 +24,14 @@ import {
   Images,
   Languages,
   LayoutDashboard,
+  Lightbulb,
   ListTree,
   type LucideIcon,
   Microscope,
   Network,
   Presentation,
   Radio,
+  Route,
   Rows3,
   Scale,
   Search,
@@ -121,6 +123,8 @@ export const ICONS: Record<CapabilityIcon, LucideIcon> = {
   // A gavel, because the row is a judgement passed on someone else's work.
   judgement: Gavel,
   funding: Award,
+  interpretability: Lightbulb,
+  roadmap: Route,
   evaluation: ClipboardCheck,
   signals: Activity,
   audio: AudioLines,
@@ -296,7 +300,7 @@ export function CapabilityMatrix() {
         <table className="w-full border-separate border-spacing-0 text-left">
           <caption className="sr-only">
             Capabilities against the organisations they ran at. Each cell says how much of that role the capability was,
-            on a scale from worked in it to main focus, and an empty cell means it did not run there.
+            on a scale from worked in it to main focus. A hollow ring means it did not run there.
           </caption>
           {/* `top-14` is the height of the site header, which is itself sticky,
               so the two stack rather than overlap. */}
