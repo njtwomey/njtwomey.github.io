@@ -9,8 +9,8 @@ published: true
 <Paper id="twomey2019ordinal" />
 
 Some labels have an order but no arithmetic. A clinician grading cognitive decline as mild, moderate
-or severe puts severe further from mild than moderate, and nobody can say how much further. Most
-machine learning work on ordinal medical problems, in our experience, drops the ordering and fits an
+or severe puts severe further from mild than moderate, and nobody can say how much further. In our
+experience most machine learning work on ordinal medical problems drops the ordering and fits an
 ordinary classifier, whose one-hot targets make every wrong answer equally wrong, and penalising
 distant mistakes instead means writing a cost matrix out of the distances the scale never defined.
 
@@ -30,5 +30,4 @@ Not every sequence the chain can emit is a valid label, since a zero followed by
 ordinal reading. Zeroing an edge potential would forbid them, and this paper follows a different
 observation instead, that invalid predictions seem to coincide with outlying data. Whether a
 structured label space can flag its own outliers is the open question, and the model is presumably
-declining to commit on a point unlike anything in training. That is conjecture, and the paper
-records the work as ongoing.
+declining to commit on a point unlike anything in training. The paper records the work as ongoing.

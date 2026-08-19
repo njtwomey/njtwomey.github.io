@@ -8,23 +8,26 @@ published: true
 
 <Paper id="renz2023low" />
 
-Time series anomaly detection watches streams of measurements and flags the points that stop fitting the pattern. Some
-of them are dense enough that a break in the rhythm is obvious, and the sparse ones are the long tail of a large
-platform rather than its exceptions. No events in an hour is what an outage looks like, and it is equally what an
-ordinary quiet hour looks like.
+Time series anomaly detection watches streams of measurements and flags the points that stop fitting
+the pattern. Some of them are dense enough that a break in the rhythm is obvious, and the sparse
+ones are the long tail of a large platform rather than its exceptions. No events in an hour is what
+an outage looks like, and it is equally what an ordinary quiet hour looks like.
 
-The limit belongs to the data rather than the detector. The counts are Poisson draws around a seasonal rate, and a
-Poisson signal rises above its own noise only as the square root of that rate, so normal and broken distributions slide
-into one another as a stream thins. Below some level of traffic the anomaly signature is provably undetectable, and a
-classifier handed perfect knowledge of the generating process traces that ceiling across count level and severity.
+The limit belongs to the data rather than the detector. The counts are Poisson draws around a
+seasonal rate, and a Poisson signal rises above its own noise only as the square root of that rate,
+so normal and broken distributions slide into one another as a stream thins. Below some level of
+traffic the anomaly signature is provably undetectable, and a classifier handed perfect knowledge of
+the generating process traces that ceiling across count level and severity.
 
-Measured against it, five widely used families all fall away as traffic drops: LSTM forecasting, matrix profile,
-autoencoders, ECOD and isolation forest. Forecasting is the strongest of them on dense streams and approaches random
-once the count level falls below $2^6$. Smoothing the raw anomaly scores with an exponential moving average improved
-area under the precision-recall curve in most settings and harmed it in none. The time-to-detection trade-off and a
-replication on Walmart sales are in the paper.
+Measured against it, five widely used families all fall away as traffic drops: LSTM forecasting,
+matrix profile, autoencoders, ECOD and isolation forest. Forecasting is the strongest of them on
+dense streams and approaches random once the count level falls below $2^6$. Smoothing the raw
+anomaly scores with an exponential moving average improved area under the precision-recall curve in
+most settings and harmed it in none. The time-to-detection trade-off and a replication on Walmart
+sales are in the paper.
 
-Smoothing needs a decay constant, and ours came from how long an anomaly lasts in the simulation, which a production
-monitor does not know. Choosing it without that number is the open problem, and a sweep against anomaly duration would
-answer it. The score is itself noisy wherever counts are low, so a constant of roughly the right order should keep most
-of the benefit, which is conjecture while these experiments hold duration fixed.
+Smoothing needs a decay constant, and ours came from how long an anomaly lasts in the simulation,
+which a production monitor does not know. Choosing it without that number is what a production
+monitor is left with, and a sweep against anomaly duration would answer it. The score is itself
+noisy wherever counts are low, so a constant of roughly the right order should keep most of the
+benefit.

@@ -13,10 +13,9 @@ on:
   push:
     branches: [main]
     # Nothing here can change the built output, so a README edit should not
-    # redeploy the site. Named individually rather than as `**/*.md`, which also
-    # matched content/publications/<key>/index.md — those are paper summaries
-    # that compile into the site, so that pattern silently skipped deploys for
-    # a real content change.
+    # redeploy the site. Named individually rather than as `**/*.md`, because a
+    # markdown file sitting beside a note is one of that note's assets and is
+    # copied into the build, so the wildcard would silently skip real deploys.
     paths-ignore:
       - "README.md"
       - "CLAUDE.md"

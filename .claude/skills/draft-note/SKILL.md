@@ -120,9 +120,25 @@ Beats: **the boundary** → **the open question, aimed outward** → **the conje
    would decide. "Choosing that constant without knowing how long an outage lasts is the open
    problem" aims forward; "the decay rate would have been better swept" is a reviewer's note on
    somebody's methodology, and the somebody is Niall.
-3. The likely explanation stated plainly as though it were obvious, then marked as conjecture, then
-   the experiment that would settle it. Leading with the hedge inverts this and ruins it, because the
-   reader meets the idea already discounted.
+3. The likely explanation stated plainly as though it were obvious, and its epistemic status made
+   clear. Leading with the hedge inverts this and ruins it, because the reader meets the idea already
+   discounted.
+
+**These are beats, not a sentence pattern, and the difference matters more here than anywhere else
+in this file.** Read one note and the closing move is right. Read the twelve notes on this site and
+nine of them ended the same way, eight of them on the word "conjecture" and four on the exact phrase
+"would settle it", because a good ending was followed as a template until it became a tell. A body
+of notes that all close alike reads as generated however good each one is on its own.
+
+So vary the third beat. Sometimes the status is carried by the verb and needs no label at all
+("presumably", "our reading is"). Sometimes the note stops at the open question and lets the reader
+draw the inference. Sometimes it names what the paper does not test and stops. Sometimes there is no
+conjecture worth having and the note ends on the boundary. Before settling an ending, read the last
+sentence of every other note in `content/notes/` and pick a move none of them made.
+
+The same holds for the handoff in ¶3. "The X and Y are in the paper" is one wording of it, not the
+wording, and it currently opens eleven of twelve. Naming what is there beats pointing at the
+container.
 
 No summary, no restatement, no take-away. Name the limitation and never make it sound like a
 shortcoming: an anomaly the paper reports and flags is a credit to the work, and the difference is

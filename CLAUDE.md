@@ -47,7 +47,6 @@ imports. Nothing in `src/content/*.json` is edited by hand.
 content/publications.bib             →  src/content/publications.json     (bundled: titles, authors, venues, summaries)
                                      →  public/publications-details.json  (fetched: abstracts, BibTeX)
                                      →  public/publications.bib           (published whole, no longer linked from the UI)
-content/publications/<key>/index.md  →  the `summary` on that paper's card
 content/notes/<slug>/index.mdx       →  src/content/notes.json            (frontmatter index)
 content/notes/<slug>/*               →  public/notes/<slug>/              (copied)
 src/content/site.ts                      bio, role, focus areas, social links — plain TS
@@ -76,11 +75,10 @@ note or the front page's `SELECTED` list stops resolving.
 
 ## Publication summaries
 
-`content/publications/<citation-key>/index.md` holds a short plain-English take, shown on the card
-above the abstract toggle. It is Niall's framing rather than the venue's, which is why it is
-separate from the `.bib`. Where a key has no directory the card falls back to the abstract, so there
-is no obligation to write one for every paper. A directory whose name is not a citation key fails
-the build, otherwise a summary goes quietly unread the moment a key is renamed.
+`notes={...}` in a `publications.bib` entry holds a short plain-English take, shown on the card
+above the abstract toggle. It is Niall's framing rather than the venue's, and it sits in the entry
+rather than in a file beside it so that renaming a key cannot leave it behind. An entry without one
+falls back to the abstract, so there is no obligation to write one for every paper.
 
 ## Notes
 

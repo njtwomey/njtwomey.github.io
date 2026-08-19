@@ -12,7 +12,7 @@ Recipe recommendation puts the right dish in front of somebody, given what they 
 clicked on before. Most methods for it read a recipe against a hand-labelled dictionary of canonical
 ingredients, tools and skills, and have only been evaluated on one language at a time. Cookpad
 publishes in Arabic, English, Indonesian, Russian and Spanish, and a dictionary maintained by hand
-describes exactly one of them, so the second costs what the first did.
+describes exactly one of them, so a second language means building the whole thing again.
 
 The dictionary can be read off the recipes themselves. For each language we split raw ingredient
 text on spaces, throw away two hundred quantity terms and anything carrying punctuation or a number,
@@ -31,5 +31,4 @@ Text embeddings of the whole recipe need no dictionary either, and the optimiser
 Every personalisation model here is linear, so whether a targeted representation still beats general
 text under a non-linear recommender is the open question. Our reading is that sub-word units
 averaged over a long recipe converge on the average recipe of its cuisine and stop separating dishes
-that differ in one ingredient, which is conjecture that embedding the ingredient list alone would
-test.
+that differ in one ingredient, which the optimiser never picking one is at least consistent with.

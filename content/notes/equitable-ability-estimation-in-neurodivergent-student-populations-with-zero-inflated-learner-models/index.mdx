@@ -17,19 +17,18 @@ failure to ability and recommends more of what caused it.
 A wrong answer needs a second explanation. A zero-inflated model splits it into an ordinary path,
 where ability loses to difficulty, and a structural path weighted by the student's conditions and
 the item's delivery and response types. A low learning quality factor is a high structural weight,
-and it measures the contextual inequity in a pairing of student and item, so the confounder gets
-its own parameter rather than loading onto ability.
+and it measures the contextual inequity in a pairing of student and item, so the confounder gets its
+own parameter rather than loading onto ability.
 
 Item Response Theory, Knowledge Tracing Machines and the zero-inflated version score 0.734, 0.742
 and 0.753 for accuracy, and nothing in that spread decides between them. Their Pearson correlations
-with the true abilities are 0.839, 0.955 and 0.993, and the Item Response Theory error has a direction
-as well as a size, because it concentrates on students with one or two neurodivergent conditions
-and points downwards. Difficulty and discrimination recovery, and the effect of actively choosing a
-delivery format, are in the paper.
+with the true abilities are 0.839, 0.955 and 0.993, and the Item Response Theory error has a
+direction as well as a size, because it concentrates on students with one or two neurodivergent
+conditions and points downwards. Difficulty and discrimination recovery, and the effect of actively
+choosing a delivery format, are in the paper.
 
 All of it runs on simulated students, because datasets that identify neurodivergent learners and
 record how each item was delivered are not available. We set the weights linking each condition to
-each format by hand, and this paper calls that specification a subjective process. The recovery
-gap should survive on real data, because it comes from the model having somewhere to put format
-effects rather than from the simulator sharing its form, and that is conjecture until such a
-dataset exists.
+each format by hand, and this paper calls that specification a subjective process. The recovery gap
+should survive on real data, because it comes from the model having somewhere to put format effects
+rather than from the simulator sharing its form. Whether it does is a question nobody can ask yet.

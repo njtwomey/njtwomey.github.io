@@ -19,7 +19,6 @@ public/publications.bib
 # into place, and should only exist if a build died halfway.
 public/notes/
 public/notes.staging/
-public/publications/
 
 # Where PDFs are dropped for the add-publications skill to file. The README
 # explains the convention and is committed; papers waiting to be processed are

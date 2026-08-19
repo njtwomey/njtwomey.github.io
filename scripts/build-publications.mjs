@@ -12,7 +12,7 @@
  * before a deploy).
  */
 import { parse } from "@retorquere/bibtex-parser";
-import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -27,8 +27,6 @@ const BIB = resolve(root, "content/publications.bib");
  * the summary is Niall's own framing and can be rewritten at will. Where a key
  * has no directory, the site falls back to the abstract.
  */
-const SUMMARY_DIR = resolve(root, "content/publications");
-const SUMMARY_ASSETS_OUT = resolve(root, "public/publications");
 const OUT = resolve(root, "src/content/publications.json");
 /**
  * Abstracts and BibTeX records are 80% of the bibliography's weight and are
@@ -117,27 +115,6 @@ function tidyVenue(value, kind, year) {
     .trim();
   if (kind === "preprint" && /^arxiv/i.test(venue)) return "arXiv";
   return venue;
-}
-
-/**
- * Read `content/publications/<key>/index.md`: an optional short summary, with
- * any YAML frontmatter stripped. Returns null when the key has no directory.
- */
-function summaryFor(key) {
-  const file = resolve(SUMMARY_DIR, key, "index.md");
-  if (!existsSync(file)) return null;
-  const body = readFileSync(file, "utf8")
-    .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "")
-    .trim();
-  return body || null;
-}
-
-/** Every citation key that has a summary directory, for validation. */
-function summaryKeys() {
-  if (!existsSync(SUMMARY_DIR)) return [];
-  return readdirSync(SUMMARY_DIR, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name);
 }
 
 /**
@@ -248,7 +225,6 @@ function build() {
     }
 
     const kind = classify(entry.type, venueRaw);
-    const summary = summaryFor(key);
 
     return {
       key,
@@ -263,9 +239,11 @@ function build() {
       // The abstract itself lives in the details file; the flag is what the
       // card needs in order to decide whether to offer an Abstract button.
       hasAbstract: Boolean(f.abstract && tidyText(String(f.abstract))),
-      // Short enough to bundle, and it is what the card shows in place of the
-      // abstract when one has been written.
-      summary,
+      // `notes={...}` in the .bib: Niall's own framing of the paper, shown on
+      // the card in place of the abstract where it has been written. It lives in
+      // the entry rather than in a file beside it, so a renamed key cannot leave
+      // it behind and there is one thing to edit.
+      summary: f.notes ? tidyText(String(f.notes)) : null,
       abstract: f.abstract ? tidyText(String(f.abstract)) : undefined,
       pdf,
       doi: f.doi ? tidyText(String(f.doi)).replace(/^https?:\/\/(dx\.)?doi\.org\//, "") : undefined,
@@ -276,12 +254,6 @@ function build() {
       bibtex: raw.get(key) ?? "",
     };
   });
-
-  // A summary for a key that no longer exists is invisible — the file just
-  // stops being read — so it is caught here instead.
-  for (const key of summaryKeys()) {
-    if (!seen.has(key)) problems.push(`content/publications/${key}/ has no matching entry in publications.bib`);
-  }
 
   // Newest first, and stable within a year so the file does not churn.
   publications.sort((a, b) => b.year - a.year || a.title.localeCompare(b.title));
@@ -310,18 +282,6 @@ if (!check) {
   // The whole bibliography, downloadable. Copied rather than served from
   // content/ because only public/ is published.
   copyFileSync(BIB, resolve(root, "public/publications.bib"));
-
-  // Figures and extras that live beside a summary. Rebuilt from scratch so a
-  // deleted asset actually disappears.
-  rmSync(SUMMARY_ASSETS_OUT, { recursive: true, force: true });
-  for (const key of summaryKeys()) {
-    const assets = readdirSync(resolve(SUMMARY_DIR, key)).filter((name) => name !== "index.md");
-    if (assets.length === 0) continue;
-    mkdirSync(resolve(SUMMARY_ASSETS_OUT, key), { recursive: true });
-    for (const asset of assets) {
-      cpSync(resolve(SUMMARY_DIR, key, asset), resolve(SUMMARY_ASSETS_OUT, key, asset), { recursive: true });
-    }
-  }
 }
 
 const byKind = publications.reduce((acc, p) => ({ ...acc, [p.kind]: (acc[p.kind] ?? 0) + 1 }), {});

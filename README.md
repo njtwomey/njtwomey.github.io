@@ -49,8 +49,11 @@ a plausible wrong one is not.
 
 Optional, and worth doing for the papers you care about:
 
-```
-content/publications/twomey2019ordinal/index.md
+```bibtex
+@article{twomey2019ordinal,
+  ...
+  notes={One or two sentences in plain English.},
+}
 ```
 
 One or two sentences in plain English, saying what the paper does and why it is interesting. It
@@ -135,7 +138,6 @@ Icons come from `lucide-react`. Styling is Tailwind utilities over the shadcn se
 
 ```
 content/publications.bib             the bibliography — source of truth
-content/publications/<key>/index.md  optional plain-English summary
 content/notes/<slug>/index.mdx       a note, with its images beside it
 src/content/site.ts                  bio, role, focus areas, socials
 src/content/practice.ts              the ML Practice page, by capability

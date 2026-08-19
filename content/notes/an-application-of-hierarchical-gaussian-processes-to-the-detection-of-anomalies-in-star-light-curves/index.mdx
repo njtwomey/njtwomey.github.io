@@ -24,14 +24,15 @@ how probable it is under that description, which is its negative log marginal li
 
 Both baselines score a curve by cross correlation against prototype centroids, which means fixing a
 distance measure and a number of clusters before starting. On the star catalogue they reached 0.44
-and 0.16 precision against 0.99 for the hierarchical model. Precision
-was still 0.98 with the model fitted on roughly seven curves, few enough to look at individually
-before training, and ten times as much data bought 0.01 more. Why the periodic kernel we expected to
-help is absent from the final model is in the paper.
+and 0.16 precision against 0.99 for the hierarchical model. Precision was still 0.98 with the model
+fitted on roughly seven curves, few enough to look at individually before training, and ten times as
+much data added 0.01. The final model has no periodic kernel, which we had expected to help, and the
+paper says why.
 
 Every precision figure here rests on a class held out as the outlier class, because the catalogue
 this work is aimed at carries no anomaly count to divide by. For that catalogue this paper ranks the
 curves and shows the strangest in each class. Scoring a detector where nobody knows the answer is
-the open problem. Refitting on the least anomalous 80% of a validation set holds precision, and
-retaining more than that loses it, which the paper offers as a hint at the outlier proportion rather
-than a measurement. A catalogue with a verified count would settle it.
+what this leaves unresolved. Refitting on the least anomalous 80% of a validation set holds
+precision, and retaining more than that loses it, which the paper offers as a hint at the outlier
+proportion rather than a measurement. Nobody has a catalogue with a verified count to check it
+against.

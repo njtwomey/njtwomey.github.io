@@ -408,7 +408,7 @@ colleague explaining something clearly to another smart colleague who respects t
 
 - `src/content/site.ts`, the bio and focus areas
 - `src/content/expertise.ts`, every entry
-- `content/publications/<key>/index.md`, the paper summaries
+- `notes={...}` in `content/publications.bib`, the paper summaries
 - `content/notes/*/index.mdx`, note prose (see also the `draft-note` skill)
 - Page ledes in `src/routes/*.tsx`
 - `README.md` and `CLAUDE.md`

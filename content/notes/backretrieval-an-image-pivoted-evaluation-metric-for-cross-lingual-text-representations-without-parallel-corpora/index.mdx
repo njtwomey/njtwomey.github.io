@@ -8,25 +8,28 @@ published: true
 
 <Paper id="fain2021backretrieval" />
 
-Cross-lingual text embeddings put documents in different languages into a single space, so that a search in Russian
-returns a Spanish document about the same thing. Judging one embedding against another means checking whether it places
-known translations close together, which the standard benchmarks supply and a domain corpus does not. Building the pairs
-takes bilingual annotators for every language pair, and machine-translating them biases the comparison towards whichever
-embedding resembles the translation system.
+Cross-lingual text embeddings put documents in different languages into a single space, so that a
+search in Russian returns a Spanish document about the same thing. Judging one embedding against
+another means checking whether it places known translations close together, which the standard
+benchmarks supply and a domain corpus does not. Building the pairs takes bilingual annotators for
+every language pair, and machine-translating them biases the comparison towards whichever embedding
+resembles the translation system.
 
-The correspondence is already there, in the photographs. Backretrieval takes a source text and its image, finds the
-nearest target-language text, follows that document to its own photograph, then ranks the source-side images by
-similarity to it and reads off where the starting image falls, which Recall@10 summarises. Parallel text is traded for a
-pivot that has to be indifferent to language rather than accurate, and the theory's only demand on it is that image
-retrieval beats random.
+The correspondence is already there, in the photographs. Backretrieval takes a source text and its
+image, finds the nearest target-language text, follows that document to its own photograph, then
+ranks the source-side images by similarity to it and reads off where the starting image falls, which
+Recall@10 summarises. Parallel text is traded for a pivot that has to be indifferent to language
+rather than accurate, and the theory's only demand on it is that image retrieval beats random.
 
-On three public datasets whose images carry descriptions in more than one language, Backretrieval tracks the real
-cross-lingual retrieval metric at Pearson coefficients of 0.97 to 0.99 across ten representation methods. A baseline
-comparing text and image distances directly manages 0.69 to 0.81, and we computed both surrogates on samples holding no
-matching pair at all. The recipe case study, where no ground truth exists, is in the paper.
+On three public datasets whose images carry descriptions in more than one language, Backretrieval
+tracks the real cross-lingual retrieval metric at Pearson coefficients of 0.97 to 0.99 across ten
+representation methods. A baseline comparing text and image distances directly manages 0.69 to 0.81,
+and we computed both surrogates on samples holding no matching pair at all. The recipe case study,
+where no ground truth exists, is in the paper.
 
-The metric orders models and does not measure them. Calibrating those scores onto the scale a real retrieval metric
-reports is what this paper leaves open, and without it the ranking cannot say whether the better embedding is good enough
-to deploy. The image representation presumably sets that scale, since a pivot that cannot separate two similar dishes
-caps the rank however well the text model points; that is conjecture while every experiment here holds the image model
-fixed, and swapping in weaker image features would settle it.
+The metric orders models and does not measure them. Calibrating those scores onto the scale a real
+retrieval metric reports is what this paper leaves open, and without it the ranking cannot say
+whether the better embedding is good enough to deploy. The image representation presumably sets that
+scale, since a pivot that cannot separate two similar dishes caps the rank however well the text
+model points. Every experiment here holds the image model fixed, so nothing in the paper puts that
+to the test.

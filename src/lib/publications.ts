@@ -30,7 +30,7 @@ export type Publication = {
   hasAbstract: boolean;
   /**
    * A short plain-English take on the paper, from
-   * `content/publications/<key>/index.md`. Null where none has been written —
+   * the `notes={...}` field of its `publications.bib` entry. Null where none has been written —
    * the card then falls back to the abstract.
    */
   summary: string | null;
