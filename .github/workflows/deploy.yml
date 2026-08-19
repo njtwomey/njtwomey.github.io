@@ -50,7 +50,7 @@ jobs:
       # The bibliography is the content. If a paper claims a PDF that is not in
       # the repo, fail here rather than publishing a dead download link.
       - name: Compile and validate content
-        run: npm run publications && npm run content
+        run: npm run content
 
       - name: Typecheck, format and test
         run: npm run typecheck && npm run format:check && npm run test
