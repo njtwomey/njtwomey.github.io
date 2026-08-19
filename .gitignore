@@ -50,3 +50,10 @@ npm-debug.log*
 # Prototype work and literature reviews. Developed here, published nowhere:
 # a review is raw material for a note, and the note is what ships.
 repositories/
+
+# The prose skills live in repositories/note-authoring and are symlinked here so
+# they are discoverable while working on the site. The link targets an ignored
+# path, so committing it would leave a dangling symlink in a fresh clone.
+.claude/skills/writing
+.claude/skills/draft-note
+.claude/skills/review-note

@@ -156,6 +156,12 @@ hard-code a base. Because routing is client-side, the build writes `404.html` as
 | `review-note`      | "review this note", "does this read", "actually read the thing"           |
 | `writing`          | any user-facing prose                                                     |
 
+**The three prose skills live in `repositories/note-authoring`** and are symlinked into
+`.claude/skills/` so they are discoverable here. That repository is where notes are drafted and
+reviewed, and it holds `reference/negative-examples.md`, the catalogue of every construction struck
+out of a real draft, and `reference/voice-profile.md`, the voice measured from the notes written
+before any of it was generated. A finished note is copied into `content/notes/<slug>/`.
+
 `review-note` reads a finished draft the way a stranger meets it, forwards and once, which is the one
 thing its author can no longer do. It exists because a sentence like "that pattern is already in the
 literature" passes every other check on this site and is empty to anybody who has not read the note.
