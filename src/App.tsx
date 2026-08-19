@@ -30,15 +30,54 @@ const Technologies = React.lazy(() => import("@/routes/technologies").then((m) =
 const Notes = React.lazy(() => import("@/routes/notes").then((m) => ({ default: m.Notes })));
 
 /**
- * A client-side navigation keeps the old scroll position, which lands you
- * halfway down a page you have not read. Anchored links (#twomey2019neural)
- * are the exception — those are meant to jump.
+ * Put the page where the URL says it should be after a navigation.
+ *
+ * Without a hash that means the top, since a client-side navigation otherwise
+ * keeps the old scroll position and lands you halfway down a page you have not
+ * read.
+ *
+ * With a hash it means the element, and the browser cannot be left to do it.
+ * Every route here is `React.lazy`, so on a cold load of
+ * `/practice#theme-building-and-shipping` the browser looks for the element
+ * while the Suspense fallback is still on screen, does not find it, and never
+ * looks again. The element appears a few frames later and the reader is at the
+ * top of the page wondering what the link was for.
+ *
+ * So watch for it. `scrollIntoView` rather than `scrollTo` because the offset
+ * for the sticky header is already expressed as `scroll-padding-top` on `html`
+ * and `scroll-mt-*` on the targets, and those are exactly what it honours.
  */
-function ScrollToTop() {
+function ScrollOnNavigate() {
   const { pathname, hash } = useLocation();
+
   React.useEffect(() => {
-    if (!hash) window.scrollTo(0, 0);
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    const id = decodeURIComponent(hash.slice(1));
+    const jump = () => {
+      const target = document.getElementById(id);
+      target?.scrollIntoView();
+      return Boolean(target);
+    };
+    if (jump()) return;
+
+    // Not rendered yet. Watch the tree rather than polling, and give up after a
+    // few seconds so a hash naming nothing does not leave an observer running.
+    const observer = new MutationObserver(() => {
+      if (jump()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    const timeout = window.setTimeout(() => observer.disconnect(), 5000);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timeout);
+    };
   }, [pathname, hash]);
+
   return null;
 }
 
@@ -56,7 +95,7 @@ export default function App() {
   return (
     <TooltipProvider delayDuration={200}>
       <Router basename={import.meta.env.BASE_URL}>
-        <ScrollToTop />
+        <ScrollOnNavigate />
         <div className="flex min-h-dvh flex-col">
           <SiteHeader />
           <React.Suspense fallback={<RouteFallback />}>
