@@ -8,29 +8,27 @@ published: true
 
 <Paper id="takiguchi2021multifield" />
 
-Recipe search ranks recipes against whatever somebody typed, and a recipe is not one piece of text:
-it has a title, an ingredient list, a description, a country and a photograph. The usual pipeline
-flattens all of them into one vector before scoring, which loses the difference between a query
-about the title, like "korma", and one about method, like "slow cooker". Keeping the fields apart
-recovers it, and pairing every field with every other should only help further.
+Recipe search ranks recipes against whatever somebody typed, and a recipe is not one piece of text: it has a
+title, an ingredient list, a description, a country and a photograph. The usual pipeline flattens all of them
+into one vector before scoring, which loses the difference between a query about the title, like "korma", and
+one about method, like "slow cooker". Keeping the fields apart recovers it, and pairing every field with every
+other should only help further.
 
-A field-weighted factorisation machine learns a separate weight for every interaction it is handed,
-so it can decide that a query matching the title counts for more than the same words matching the
-description. Which interactions to hand it is the modelling choice, and there are two defensible
-answers: all twenty-one first and second order terms among the six fields, or only the five that
-contain the query. The case for the smaller set is that the fields of one recipe all describe the
-same dish, so title against ingredients largely restates what each already says alone.
+A field-weighted factorisation machine learns a separate weight for every interaction it is handed, so it can
+decide that a query matching the title counts for more than the same words matching the description. Which
+interactions to hand it is the modelling choice, and there are two defensible answers: all twenty-one first
+and second order terms among the six fields, or only the five that contain the query. The case for the smaller
+set is that the fields of one recipe all describe the same dish, so title against ingredients largely restates
+what each already says alone.
 
-The smaller set won. Over ten splits of a recipe platform's search logs the flattened baseline
-scored 0.643 NDCG@20 and modelling every interaction reached 0.661, while the five query-field terms
-reached 0.667 with a higher median and a tighter spread, beating every other configuration under
-pairwise t-tests at a threshold of 0.01. This paper reads that as duplication removed rather than
-capacity lost, and the model left standing has fewer parameters to fit. The NRM-F comparisons and
-the first-order ablations are in the paper.
+The smaller set won. Over ten splits of a recipe platform's search logs the flattened baseline scored 0.643
+NDCG@20 and modelling every interaction reached 0.661, while the five query-field terms reached 0.667 with a
+higher median and a tighter spread, beating every other configuration under pairwise t-tests at a threshold of
+0.01. This paper reads that as duplication removed rather than capacity lost, and the model left standing has
+fewer parameters to fit. The NRM-F comparisons and the first-order ablations are in the paper.
 
-The query-field restriction is domain knowledge, and a feed has no query. Ranking the field pairs by
-how well each correlates with the click label needs none, and keeping the top of that list reached
-0.663. Image sits thirteenth of twenty there, which this paper takes as a case for dropping a
-feature that is expensive to compute. Title paired with image is second on the same figure, so the
-image probably earns its place through the title rather than alone. No run drops the image to find
-out.
+The query-field restriction is domain knowledge, and a feed has no query. Ranking the field pairs by how well
+each correlates with the click label needs none, and keeping the top of that list reached 0.663. Image sits
+thirteenth of twenty there, which this paper takes as a case for dropping a feature that is expensive to
+compute. Title paired with image is second on the same figure, so the image probably earns its place through
+the title rather than alone. No run drops the image to find out.

@@ -79,8 +79,8 @@ function spaFallback(): Plugin {
 }
 
 /**
- * Keep src/content/posts.json in step with content/posts/*.mdx while the dev
- * server is running, so adding or retitling a post shows up without a restart.
+ * Keep src/content/notes.json in step with content/notes/*.mdx while the dev
+ * server is running, so adding or retitling a note shows up without a restart.
  * The same index is written by `npm run content` before a build.
  */
 function notesIndex(): Plugin {

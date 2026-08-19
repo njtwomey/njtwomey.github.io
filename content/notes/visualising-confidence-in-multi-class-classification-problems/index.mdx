@@ -9,7 +9,9 @@ heroAlt: "A decision surface shaded by predictive confidence rather than hard cl
 published: false
 ---
 
-The image below shows the <a href="https://en.m.wikipedia.org/wiki/Voronoi_diagram">Voronoi diagram</a> of the second and fourth dimensions of the <a href="https://en.m.wikipedia.org/wiki/Iris_flower_data_set">Iris</a> dataset on the left. On the right, Voroni diagram adjusted for predictive confidence is shown.
+The image below shows the <a href="https://en.m.wikipedia.org/wiki/Voronoi_diagram">Voronoi diagram</a> of the
+second and fourth dimensions of the <a href="https://en.m.wikipedia.org/wiki/Iris_flower_data_set">Iris</a>
+dataset on the left. On the right, Voroni diagram adjusted for predictive confidence is shown.
 
 <Figures srcs={["hard.png", "soft.png"]} />
 
@@ -26,11 +28,22 @@ pp_rgba[..., -1] = np.clip(pp_rgba[..., -1], 0, 1)
 pl.imshow(pp_rgba, alpha=alpha, extent=extent, origin='lower', aspect=1)
 ```
 
-First a colour palette is generated from a pre-specified colour map. This colour map generates the colour for each class. In general, contrasting colours are preferable since they will highlight confidence change best. I use the default colour map here. The colour and probability of each class is then iterated over. The [Listed Colormap](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.colors.ListedColormap.html) object, when called, gives an object that can be used with `pl.imshow`, but first the alpha channel of the object is set with the probability vector of that class. (The other arguments of `pl.imshow` ensure that the data and colour map are spatially aligned.)
+First a colour palette is generated from a pre-specified colour map. This colour map generates the colour for
+each class. In general, contrasting colours are preferable since they will highlight confidence change best. I
+use the default colour map here. The colour and probability of each class is then iterated over. The [Listed
+Colormap](https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.colors.ListedColormap.html) object, when called,
+gives an object that can be used with `pl.imshow`, but first the alpha channel of the object is set with the
+probability vector of that class. (The other arguments of `pl.imshow` ensure that the data and colour map are
+spatially aligned.)
 
-When the colours for all classes are plotted, hopefully the model's confidence will be readily seen. Highest confidence can be seen with the richest/most vibrant colours, and confidence is lower with decreasing purity of colour.
+When the colours for all classes are plotted, hopefully the model's confidence will be readily seen. Highest
+confidence can be seen with the richest/most vibrant colours, and confidence is lower with decreasing purity
+of colour.
 
-The image below show predictions on the same task but with non-linear predictive models. Particularly with the image on the right, we can see how the transition from the 'green' to 'blue' (right hand side of the image) classes is more gradual than the transition from 'green' to 'orange' classes (left hand side of the image). This information could be useful for several reasons but importantly it is missing from Voronoi diagrams.
+The image below show predictions on the same task but with non-linear predictive models. Particularly with the
+image on the right, we can see how the transition from the 'green' to 'blue' (right hand side of the image)
+classes is more gradual than the transition from 'green' to 'orange' classes (left hand side of the image).
+This information could be useful for several reasons but importantly it is missing from Voronoi diagrams.
 
 <Figures srcs={["nystroem.png", "svm.png"]} />
 
@@ -138,9 +151,12 @@ def prob_conf_plot(X, y, clf, buf=0.1, cmap=None,
     pl.tight_layout()
 ```
 
-The code is by no means new or unique to my processes, but I find myself having to search for it enough to justify putting it up here as a code snippet.
+The code is by no means new or unique to my processes, but I find myself having to search for it enough to
+justify putting it up here as a code snippet.
 
-This images above were developed in a [jupyter notebook](https://jupyter.org/) that can be found here: [notebook.ipynb](notebook.ipynb). The notebook has been dumped to a HTML here [notebook.html](notebook.html) (with the command `jupyter nbconvert --to html notebook.ipynb`).
+This images above were developed in a [jupyter notebook](https://jupyter.org/) that can be found here:
+[notebook.ipynb](notebook.ipynb). The notebook has been dumped to a HTML here [notebook.html](notebook.html)
+(with the command `jupyter nbconvert --to html notebook.ipynb`).
 
 Things to note
 

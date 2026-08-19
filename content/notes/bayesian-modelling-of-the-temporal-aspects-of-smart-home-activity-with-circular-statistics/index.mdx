@@ -8,33 +8,31 @@ published: false
 
 <Paper id="diethe2015circular" />
 
-A smart home is a house wired with motion and door sensors, and a model over them trying to say what
-the resident is doing. Time of day is a strong clue, and the usual way of supplying it is an
-hour-of-day feature appended to the sensor readings. Narrowing those twenty-four bins recovers the
-resolution they discard and leaves the real problem untouched, because the index runs from 0 to 23
-and then stops, so a bedtime at ten to midnight and one at ten past land at opposite ends of it.
+A smart home is a house wired with motion and door sensors, and a model over them trying to say what the
+resident is doing. Time of day is a strong clue, and the usual way of supplying it is an hour-of-day feature
+appended to the sensor readings. Narrowing those twenty-four bins recovers the resolution they discard and
+leaves the real problem untouched, because the index runs from 0 to 23 and then stops, so a bedtime at ten to
+midnight and one at ten past land at opposite ends of it.
 
-The day has no ends, so the scale should not have one either. This paper puts the time of an
-activity on a circle of period twenty-four and draws it from a wrapped normal, which is an ordinary
-normal wound round that circle with a location and a spread but no first hour and no last. An
-activity with two habitual times needs a mixture of them, and mixtures of wrapped normals are not
-identifiable. So we approximate each one by a row of ordinary normals spaced one period apart, the
-central component pinned inside the period and the rest standing in for the wrapped tails. Every one
-of them is an ordinary normal, so expectation propagation applies where the exact model left only
-sampling.
+The day has no ends, so the scale should not have one either. This paper puts the time of an activity on a
+circle of period twenty-four and draws it from a wrapped normal, which is an ordinary normal wound round that
+circle with a location and a spread but no first hour and no last. An activity with two habitual times needs a
+mixture of them, and mixtures of wrapped normals are not identifiable. So we approximate each one by a row of
+ordinary normals spaced one period apart, the central component pinned inside the period and the rest standing
+in for the wrapped tails. Every one of them is an ordinary normal, so expectation propagation applies where
+the exact model left only sampling.
 
-Against Gibbs sampling on generated mixtures it converged in about a fifth of the computation time
-on the small sets and half on the large. It estimated the moments more accurately on the small sets
-and less accurately on the large. Expectation propagation also yields the model evidence, which
-chooses the number of components, and over the sixteen models fitted for every pairing of a true and
-a candidate count from one to four the highest evidence landed on the true count every time. Fitted
-to three months of a single-resident apartment, Dress comes out as two modes, one near eleven in the
-morning and one a few minutes past midnight. The rose diagrams for the other activities are in the
-paper, with the case where two close true modes under a large variance leave the evidence preferring
-a single component.
+Against Gibbs sampling on generated mixtures it converged in about a fifth of the computation time on the
+small sets and half on the large. It estimated the moments more accurately on the small sets and less
+accurately on the large. Expectation propagation also yields the model evidence, which chooses the number of
+components, and over the sixteen models fitted for every pairing of a true and a candidate count from one to
+four the highest evidence landed on the true count every time. Fitted to three months of a single-resident
+apartment, Dress comes out as two modes, one near eleven in the morning and one a few minutes past midnight.
+The rose diagrams for the other activities are in the paper, with the case where two close true modes under a
+large variance leave the evidence preferring a single component.
 
-Nothing here measures the feature the model was built to replace. This paper expects an improvement
-over an hour-of-day feature and runs no experiment putting the two side by side. What a better clock
-is worth to an activity classifier is the open question, and the log probability of an activity
-given its timestamp is the feature that would settle it. The gain should sit with the activities
-that straddle midnight, which is conjecture while nothing here trains a classifier.
+Nothing here measures the feature the model was built to replace. This paper expects an improvement over an
+hour-of-day feature and runs no experiment putting the two side by side. What a better clock is worth to an
+activity classifier is the open question, and the log probability of an activity given its timestamp is the
+feature that would settle it. The gain should sit with the activities that straddle midnight, which is
+conjecture while nothing here trains a classifier.

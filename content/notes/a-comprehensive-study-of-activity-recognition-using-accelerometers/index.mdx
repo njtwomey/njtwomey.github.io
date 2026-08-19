@@ -8,29 +8,27 @@ published: false
 
 <Paper id="twomey2018comprehensive" />
 
-An accelerometer worn on the wrist or the waist records how somebody moves, and a classifier reads
-windows of that signal to say whether they were walking, climbing stairs or sitting still. In a
-controlled recording the battery is not a constraint. A long-term study in somebody's own house is
-where the experiment outlasts the battery and blocks of data go missing. Sampling faster drains it,
-because a sensor's energy consumption scales with the data it produces. Longer windows are the
-obvious escape, and they cost delayed predictions and windows that straddle two activities.
+An accelerometer worn on the wrist or the waist records how somebody moves, and a classifier reads windows of
+that signal to say whether they were walking, climbing stairs or sitting still. In a controlled recording the
+battery is not a constraint. A long-term study in somebody's own house is where the experiment outlasts the
+battery and blocks of data go missing. Sampling faster drains it, because a sensor's energy consumption scales
+with the data it produces. Longer windows are the obvious escape, and they cost delayed predictions and
+windows that straddle two activities.
 
-Context reaches a classifier by three routes rather than one. A higher sampling rate and a wider
-window are two of them, and the third is a model over the sequence of predictions. We chain a
-conditional random field onto each classifier's output, with its class probabilities as the node
-potentials. The sampling rate is set on the device before anything is recorded, and the field runs on
-the predictions once everything has been.
+Context reaches a classifier by three routes rather than one. A higher sampling rate and a wider window are
+two of them, and the third is a model over the sequence of predictions. We chain a conditional random field
+onto each classifier's output, with its class probabilities as the node potentials. The sampling rate is set
+on the device before anything is recorded, and the field runs on the predictions once everything has been.
 
-We ran roughly 1300 configurations over three public datasets, sampling rates from 5 to 50 Hz and
-window lengths from 1.5 to 6 seconds, with no participant in both training and test folds. On the
-smartphone dataset, logistic regression over statistical features climbs from 0.85 at the sparsest
-corner to about 0.94. It arrives there at 3 second windows and 20 Hz, and 6 seconds at 50 Hz gets no
-further on five times the samples. Chaining the field lifted the weakest configuration by about nine
-points to over 90 percent without touching the sensor, though one of the three datasets gains almost
-nothing from it. The full grids and the CNN and LSTM comparison are in the paper.
+We ran roughly 1300 configurations over three public datasets, sampling rates from 5 to 50 Hz and window
+lengths from 1.5 to 6 seconds, with no participant in both training and test folds. On the smartphone dataset,
+logistic regression over statistical features climbs from 0.85 at the sparsest corner to about 0.94. It
+arrives there at 3 second windows and 20 Hz, and 6 seconds at 50 Hz gets no further on five times the samples.
+Chaining the field lifted the weakest configuration by about nine points to over 90 percent without touching
+the sensor, though one of the three datasets gains almost nothing from it. The full grids and the CNN and LSTM
+comparison are in the paper.
 
-All of this rests on laboratory recordings. Somebody in them walks a staircase for minutes at a time,
-and hardly anybody does that at home. Where the plateau sits once activities run that short and that
-interleaved is the question, and no public dataset can answer it. The ceiling is probably lower,
-because a window carries context only while one activity outlasts it, which is conjecture until
-somebody collects that data.
+All of this rests on laboratory recordings. Somebody in them walks a staircase for minutes at a time, and
+hardly anybody does that at home. Where the plateau sits once activities run that short and that interleaved
+is the question, and no public dataset can answer it. The ceiling is probably lower, because a window carries
+context only while one activity outlasts it, which is conjecture until somebody collects that data.

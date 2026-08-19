@@ -7,7 +7,13 @@ tags: ["javascript", "python"]
 published: false
 ---
 
-First, I needed to get a list of emails that routinely send me emails. I did some searching online and came across [this](https://helgeklein.com/blog/2015/02/extracting-all-email-addresses-from-a-gmail-label/) article that does 90% of what I needed. It used Google's <a href="https://script.google.com">scripting language</a> for <a href="https://docs.google.com/spreadsheets">Google Sheets</a> that a provides high-level API that queries Gmail. I edited the code a small bit for my own purposes. Specifically I wanted to introduce a semi-persistent cursor location and to dump the email addresses to a spreadsheet. My modified version of the code is at the bottom of this page.
+First, I needed to get a list of emails that routinely send me emails. I did some searching online and came
+across [this](https://helgeklein.com/blog/2015/02/extracting-all-email-addresses-from-a-gmail-label/) article
+that does 90% of what I needed. It used Google's <a href="https://script.google.com">scripting language</a>
+for <a href="https://docs.google.com/spreadsheets">Google Sheets</a> that a provides high-level API that
+queries Gmail. I edited the code a small bit for my own purposes. Specifically I wanted to introduce a
+semi-persistent cursor location and to dump the email addresses to a spreadsheet. My modified version of the
+code is at the bottom of this page.
 
 The following outlines the approach to get the email addresses:
 
@@ -20,7 +26,9 @@ The following outlines the approach to get the email addresses:
 7. Wait until the script ends. It could take some time.
 8. It's good practise to remove the permissions that you granted to the spreadsheet afterwards. This can be done here: [https://myaccount.google.com/security-checkup](https://myaccount.google.com/security-checkup).
 
-When the script terminates a new tab called `EmailAddresses` will be created. Dump the second column of this sheet to a file called `emails.csv`. If the python file below is in the same directory as `emails.csv` the list of the 50 most common email domains will be printed.
+When the script terminates a new tab called `EmailAddresses` will be created. Dump the second column of this
+sheet to a file called `emails.csv`. If the python file below is in the same directory as `emails.csv` the
+list of the 50 most common email domains will be printed.
 
 ```python
 from collections import Counter
@@ -34,9 +42,12 @@ for email, count in counts.most_common(50):
     print(f'{email:>40s}: {count}')
 ```
 
-This script obviously won't unsubscribe you from anything, but it will give you a priority list of the domains that email most frequently. My rationale is that it's unlikely that all of these have great value, so unsubscribing from them will help my inbox.
+This script obviously won't unsubscribe you from anything, but it will give you a priority list of the domains
+that email most frequently. My rationale is that it's unlikely that all of these have great value, so
+unsubscribing from them will help my inbox.
 
-I ended up deleting many the actual emails from the least important senders too, which freed up about 2 GB of storage space on my Google account.
+I ended up deleting many the actual emails from the least important senders too, which freed up about 2 GB of
+storage space on my Google account.
 
 The modified javascript code is:
 
@@ -147,4 +158,5 @@ function onOpen() {
 }
 ```
 
-Modifying the first agrument of `GmailApp.search` of the code below from `"to:me"` to `"unsubscribe"` instead prioritises the search for 'unsubscribe-able' emails.
+Modifying the first agrument of `GmailApp.search` of the code below from `"to:me"` to `"unsubscribe"` instead
+prioritises the search for 'unsubscribe-able' emails.

@@ -82,6 +82,58 @@ describe("notes", () => {
  * topic list itself is not, because the shape is mechanical and the choice of
  * topic is editorial. `.claude/skills/draft-note` carries the topics in use.
  */
+/**
+ * Mechanical properties of the prose. Deliberately only the ones a machine can
+ * decide: a line is or is not too long, a slug does or does not match its
+ * title. Nothing here judges the writing, because voice is not a property a
+ * test can hold, and a test that tries becomes a list of banned phrases that
+ * the next draft simply avoids.
+ */
+describe("note prose", () => {
+  /** Plain prose paragraphs only, since lists, tables and maths wrap by other rules. */
+  const proseLines = (source: string) => {
+    const body = source.replace(/^---\n[\s\S]*?\n---\n/, "");
+    const lines: { text: string; line: number }[] = [];
+    let fence: string | null = null;
+    body.split("\n").forEach((text, index) => {
+      const opener = text.match(/^(```|~~~)/)?.[1];
+      if (opener) {
+        fence = fence === opener ? null : (fence ?? opener);
+        return;
+      }
+      if (fence) return;
+      if (/^(#|\||>|-|\*|\$\$|<|import|export|\s)/.test(text) || /^\d+\./.test(text)) return;
+      lines.push({ text, line: index + 2 });
+    });
+    return lines;
+  };
+
+  it("wraps at a consistent width, so a diff shows the edit and not the reflow", () => {
+    for (const slug of slugs) {
+      for (const { text, line } of proseLines(sourceOf(slug))) {
+        expect(text.length, `${slug}:${line} is ${text.length} columns`).toBeLessThanOrEqual(120);
+      }
+    }
+  });
+
+  it("names its directory after its own title", () => {
+    for (const slug of slugs) {
+      const title = sourceOf(slug).match(/^title:\s*"(.*)"/m)?.[1];
+      expect(title, `${slug} has no title`).toBeDefined();
+      // The `A note on` prefix is dropped, which is the one difference between
+      // the title and the path. Everything else is the same string in two
+      // shapes, and that is what stops them drifting apart.
+      const derived = title!
+        .replace(/^A note on /i, "")
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      expect(derived, `${slug} is titled "${title}"`).toBe(slug);
+    }
+  });
+});
+
 describe("note tags", () => {
   const tagsOf = (slug: string) =>
     [...(sourceOf(slug).match(/^tags:\s*\[(.*)\]$/m)?.[1] ?? "").matchAll(/"([^"]*)"/g)].map((match) => match[1]!);

@@ -33,22 +33,13 @@ export type Note = NoteMeta & {
  * Frontmatter comes from the generated index; the prose is fetched on demand.
  * See scripts/notes-index.mjs for why the two are separate.
  */
-// MDX for prose, TSX for a note that is mostly a thing rather than mostly
-// words. An interactive demo is easier to write as a component than as MDX with
-// a component in it, and a note should not have to choose the harder shape to
-// stay a note. Both live at `content/notes/<slug>/index.*`, so nothing else
-// changes: same directory, same frontmatter contract, same assets beside them.
-const modules = import.meta.glob<{ default: ComponentType }>([
-  "../../content/notes/*/index.mdx",
-  "../../content/notes/*/index.tsx",
-]);
+const modules = import.meta.glob<{ default: ComponentType }>("../../content/notes/*/index.mdx");
 
 /** Every note in the repo, newest first, published or not. */
 export const allNotes: Note[] = (index as (NoteMeta & { slug: string })[])
   .map((meta) => ({
     ...meta,
-    load:
-      modules[`../../content/notes/${meta.slug}/index.mdx`] ?? modules[`../../content/notes/${meta.slug}/index.tsx`],
+    load: modules[`../../content/notes/${meta.slug}/index.mdx`],
   }))
   // An index entry with no MDX file behind it means the index is stale. Drop it
   // rather than throwing: one bad entry should not take the whole site down.

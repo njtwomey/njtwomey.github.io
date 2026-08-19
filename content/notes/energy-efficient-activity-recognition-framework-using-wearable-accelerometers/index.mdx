@@ -8,27 +8,26 @@ published: true
 
 <Paper id="elsts2020energy" />
 
-Activity recognition reads an accelerometer strapped to somebody's wrist and decides whether they
-were walking, sitting or lying down. Commercial wearables need frequent recharging, which a study
-running for weeks with ill or elderly participants cannot count on, and this paper says that
-requirement may even be unethical. What the device computes is fixed in firmware before it ships, so
-deferring that choice means sending raw acceleration and putting every sample on the radio.
+Activity recognition reads an accelerometer strapped to somebody's wrist and decides whether they were
+walking, sitting or lying down. Commercial wearables need frequent recharging, which a study running for weeks
+with ill or elderly participants cannot count on, and this paper says that requirement may even be unethical.
+What the device computes is fixed in firmware before it ships, so deferring that choice means sending raw
+acceleration and putting every sample on the radio.
 
-A group of features costs less than the sum of its members. The standard deviation cannot be
-computed without the mean, so a group holding both costs what the standard deviation alone costs,
-and everything computed on jerk-transformed data shares that transform. Our energy model prices a
-group as the individual costs minus what they share, where the usual proxy is a count of features.
+A group of features costs less than the sum of its members. The standard deviation cannot be computed without
+the mean, so a group holding both costs what the standard deviation alone costs, and everything computed on
+jerk-transformed data shares that transform. Our energy model prices a group as the individual costs minus
+what they share, where the usual proxy is a count of features.
 
-We timed a C library on an ARM Cortex-M3 wearable, where one window of raw acceleration costs 94.38
-µC. Held to a tenth of that, the best groups beat the same random forest given every feature on two
-of the three datasets, 0.875 against 0.833 on the smartphone data. The multi-objective swarm gives
-the best trade-off of the four search methods, and the Pareto front for each dataset is in the
-paper.
+We timed a C library on an ARM Cortex-M3 wearable, where one window of raw acceleration costs 94.38 µC. Held
+to a tenth of that, the best groups beat the same random forest given every feature on two of the three
+datasets, 0.875 against 0.833 on the smartphone data. The multi-objective swarm gives the best trade-off of
+the four search methods, and the Pareto front for each dataset is in the paper.
 
-Every charge figure belongs to one board, so a different radio or clock rewrites the table and
-leaves the dependency graph alone. Selection also runs offline on pilot data, so a device holds one
-point on that front rather than paying for the expensive features only where cheap ones are
-ambiguous. The oddest choice is the interquartile range of the jerk magnitude squared, which appears
-in no published work we could find and is the only feature to make the top ten in five of the six
-rankings by algorithm and by dataset. Its appeal is presumably that it is the cheapest of the
-features to transmit, and no comparison against equally cheap features was run to find out.
+Every charge figure belongs to one board, so a different radio or clock rewrites the table and leaves the
+dependency graph alone. Selection also runs offline on pilot data, so a device holds one point on that front
+rather than paying for the expensive features only where cheap ones are ambiguous. The oddest choice is the
+interquartile range of the jerk magnitude squared, which appears in no published work we could find and is the
+only feature to make the top ten in five of the six rankings by algorithm and by dataset. Its appeal is
+presumably that it is the cheapest of the features to transmit, and no comparison against equally cheap
+features was run to find out.

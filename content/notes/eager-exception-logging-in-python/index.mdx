@@ -7,7 +7,15 @@ tags: ["python"]
 published: false
 ---
 
-I am writing a large library for human activity recognition from sensor data at the moment. The library will hopefully be sufficiently generic to allow for a broad range of representation and prediction capabilities as well as delivering some kind of insight into the datasets and problems under consideration. However, every dataset is slightly different, and a pipeline that has been crafted for fusing a dataset consisting of wearable, video, environmental, electricity data streams is almost certainly going to fail (or at least not operate as expected) when applied to another dataset that only has wearable data, for example. Therefore, I do a reasonable amount of metadata validation: datasets are tagged as having (or not) particular data modalities, and pipelines likewise tag their requirements in terms of data modalities, and I insist that datasets provide the capabilities required by the various functions that I write.
+I am writing a large library for human activity recognition from sensor data at the moment. The library will
+hopefully be sufficiently generic to allow for a broad range of representation and prediction capabilities as
+well as delivering some kind of insight into the datasets and problems under consideration. However, every
+dataset is slightly different, and a pipeline that has been crafted for fusing a dataset consisting of
+wearable, video, environmental, electricity data streams is almost certainly going to fail (or at least not
+operate as expected) when applied to another dataset that only has wearable data, for example. Therefore, I do
+a reasonable amount of metadata validation: datasets are tagged as having (or not) particular data modalities,
+and pipelines likewise tag their requirements in terms of data modalities, and I insist that datasets provide
+the capabilities required by the various functions that I write.
 
 The example code below gives a flavour for how some of these checks might be implemented:
 
@@ -21,7 +29,8 @@ def do_something_with_wearable_data(dataset_name):
         )
 ```
 
-Since in the intro to this I also mentioned that I'm trying to use system logging (a great idea in large projects) the code above was modified to something like this at one stage:
+Since in the intro to this I also mentioned that I'm trying to use system logging (a great idea in large
+projects) the code above was modified to something like this at one stage:
 
 ```python
 from logger import get_logger
@@ -37,7 +46,11 @@ def do_something_with_wearable_data(dataset_name):
         raise ValueError(msg)
 ```
 
-I presume anybody that's familiar with the `logger.exception` will agree that this is useless code since it doesn't do what you'd hope it would. The `logger.exception` method is meant to be called when an exception has already been raised. Therefore, the code above will not log anything of use. If you'd like to get the stack trace, as well as the exception type, you'd need to do something like the following (I'm sure there's a better way, but I haven't come across one yet):
+I presume anybody that's familiar with the `logger.exception` will agree that this is useless code since it
+doesn't do what you'd hope it would. The `logger.exception` method is meant to be called when an exception has
+already been raised. Therefore, the code above will not log anything of use. If you'd like to get the stack
+trace, as well as the exception type, you'd need to do something like the following (I'm sure there's a better
+way, but I haven't come across one yet):
 
 ```python
 from logger import get_logger
@@ -59,9 +72,11 @@ def do_something_with_wearable_data(dataset_name):
             raise ex
 ```
 
-This pattern is so ugly that it should be hidden away deep in the library (if used at all) and certainly should never be duplicated in every function that wants it.
+This pattern is so ugly that it should be hidden away deep in the library (if used at all) and certainly
+should never be duplicated in every function that wants it.
 
-When thinking about what kind of interface I would _like_ to use to get the behaviour I want, I thought the following pattern would be quite acceptable:
+When thinking about what kind of interface I would _like_ to use to get the behaviour I want, I thought the
+following pattern would be quite acceptable:
 
 ```python
 from logger import get_logger
@@ -77,11 +92,16 @@ def do_something_with_wearable_data(dataset_name):
         ))
 ```
 
-The only change is that the `msg` argument is now allowed to be an exception, and the call to `logger.exception` would raise this for me.
+The only change is that the `msg` argument is now allowed to be an exception, and the call to
+`logger.exception` would raise this for me.
 
-I felt it would be tricky to ensure all edge cases were satisfied by sub-classing the base logger class since internally there's quite a lot of logic surrounding instantiation of loggers (see `Logger.manager.getLogger` in `logging.__init__.py`). I also wanted the interface to this new form of exception logging to be transparent to my use cases (so that I wouldn't have to import specific new functions).
+I felt it would be tricky to ensure all edge cases were satisfied by sub-classing the base logger class since
+internally there's quite a lot of logic surrounding instantiation of loggers (see `Logger.manager.getLogger`
+in `logging.__init__.py`). I also wanted the interface to this new form of exception logging to be transparent
+to my use cases (so that I wouldn't have to import specific new functions).
 
-The solution I eventually came up with is to write a factory function the delivers the behaviour I want, and to re-assign the `logger.exception` function in the `get_logger` function.
+The solution I eventually came up with is to write a factory function the delivers the behaviour I want, and
+to re-assign the `logger.exception` function in the `get_logger` function.
 
 ```python
 def logger_exception(logger):
@@ -111,7 +131,8 @@ def get_logger(logger_name):
     return logger
 ```
 
-Where the line marked with `*** here ***` over-writes the behaviour of the original `logger.exception` implementation.
+Where the line marked with `*** here ***` over-writes the behaviour of the original `logger.exception`
+implementation.
 
 Here's how it behaves with some basic examples:
 
@@ -178,7 +199,12 @@ ValueError: This is an exception
 
 Which, I think, has achieved what I wanted.
 
-It is worth taking a moment to discuss that this pattern isn't _really_ how exceptions are intended to be used. In most scenarios, exceptions should be handled and logged when they occur by the code that actually caused them. Instead, here I am letting the logger being 'proactive' in logging exceptions. This pattern definitely is strange (especially if in the parent code the exception is gracefully handled, although that would be challenging in my library with missing data modalities) but I've found this eager exception handling to be incredibly helpful for debugging several things in this library that I'm working on.
+It is worth taking a moment to discuss that this pattern isn't _really_ how exceptions are intended to be
+used. In most scenarios, exceptions should be handled and logged when they occur by the code that actually
+caused them. Instead, here I am letting the logger being 'proactive' in logging exceptions. This pattern
+definitely is strange (especially if in the parent code the exception is gracefully handled, although that
+would be challenging in my library with missing data modalities) but I've found this eager exception handling
+to be incredibly helpful for debugging several things in this library that I'm working on.
 
 And `logger.py` in full is now given as:
 

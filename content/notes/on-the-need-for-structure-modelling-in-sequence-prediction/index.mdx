@@ -8,27 +8,30 @@ published: false
 
 <Paper id="twomey2016need" />
 
-Some prediction problems attach a label to every position in a sequence rather than one to the
-whole, such as marking the syllable breaks in a word. A conditional random field lets neighbouring
-predictions influence one another, while logistic regression predicts each position alone and reads
-its neighbours as features instead. Nothing in the literature settles which one a dataset needs, so
-the question gets answered by fitting both, which costs the expense the choice was meant to avoid.
+Some prediction problems attach a label to every position in a sequence rather than one to the whole, such as
+marking the syllable breaks in a word. A conditional random field lets neighbouring predictions influence one
+another, while logistic regression predicts each position alone and reads its neighbours as features instead.
+Nothing in the literature settles which one a dataset needs, so the question gets answered by fitting both,
+which costs the expense the choice was meant to avoid.
 
-The auto-correlations answer it before either model is fitted. The excess risk incurred by ignoring
-the structure is tied to how fast a sequence's auto-correlations decay, and where that decay is
-geometric a classifier can be learned which behaves in the limit as though the data were
-independent. The two also differ in cost whatever a dataset turns out to need. A linear-chain conditional random field carries more parameters by the square of the label count, and its exact marginals arrive only once a sequence has ended, where logistic regression gives them at every position as it goes.
+The auto-correlations answer it before either model is fitted. The excess risk incurred by ignoring the
+structure is tied to how fast a sequence's auto-correlations decay, and where that decay is geometric a
+classifier can be learned which behaves in the limit as though the data were independent. The two also differ
+in cost whatever a dataset turns out to need. A linear-chain conditional random field carries more parameters
+by the square of the label count, and its exact marginals arrive only once a sequence has ended, where
+logistic regression gives them at every position as it goes.
 
-Word hyphenation, smart home activity recognition and a synthetic sequence of loaded die rolls all
-came out indistinguishable under baseline features. Hyphenation scored 0.963 against 0.966 in favour
-of logistic regression, and a two-way analysis of variance found no main effect significant at one percent, which leaves the cheaper model ahead on Occam's razor. Its auto-correlations run larger at positive lags than negative ones, so we weighted the
-templates towards the following substrings and improved both models on all ten folds. The mirror
-image emphasising the past degraded every metric instead. The activity recognition gains and the
+Word hyphenation, smart home activity recognition and a synthetic sequence of loaded die rolls all came out
+indistinguishable under baseline features. Hyphenation scored 0.963 against 0.966 in favour of logistic
+regression, and a two-way analysis of variance found no main effect significant at one percent, which leaves
+the cheaper model ahead on Occam's razor. Its auto-correlations run larger at positive lags than negative
+ones, so we weighted the templates towards the following substrings and improved both models on all ten folds.
+The mirror image emphasising the past degraded every metric instead. The activity recognition gains and the
 bounds are in the paper.
 
-The die rolls cut the other way. There the conditional random field peaks on three feature templates
-and overfits as more are added, because the structure encodes a simple generative process in fewer
-parameters than the features needed to match it. We picked the templates from those profiles by
-hand, and automating that is the open problem. Every correlation in those profiles is a linear one.
-Sequential data plausibly has a fundamental bandwidth, a span over which one position has marked
-influence on the rest, which this paper offers as speculation.
+The die rolls cut the other way. There the conditional random field peaks on three feature templates and
+overfits as more are added, because the structure encodes a simple generative process in fewer parameters than
+the features needed to match it. We picked the templates from those profiles by hand, and automating that is
+the open problem. Every correlation in those profiles is a linear one. Sequential data plausibly has a
+fundamental bandwidth, a span over which one position has marked influence on the rest, which this paper
+offers as speculation.

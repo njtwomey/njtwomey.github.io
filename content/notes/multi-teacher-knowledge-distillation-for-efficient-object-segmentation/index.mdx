@@ -8,23 +8,21 @@ published: true
 
 <Paper id="zeng2025multi" />
 
-Distillation trades accuracy for speed. A small encoder trained to imitate SAM2's large one runs 3.2
-times faster end to end and scores lower for it, and the obvious way to recover the accuracy is to
-grow the student, which returns less speedup the larger it gets.
+Distillation trades accuracy for speed. A small encoder trained to imitate SAM2's large one runs 3.2 times
+faster end to end and scores lower for it, and the obvious way to recover the accuracy is to grow the student,
+which returns less speedup the larger it gets.
 
-There is a cheaper source of accuracy, and it comes from the fact that a teacher only exists during
-the training run. Once training finishes the teacher is discarded, so the student's parameter count
-and its latency are identical whether one model supervised it or five did. Anything a teacher
-contributes is free at inference, in a way that a wider backbone or a higher input resolution never
-is.
+There is a cheaper source of accuracy, and it comes from the fact that a teacher only exists during the
+training run. Once training finishes the teacher is discarded, so the student's parameter count and its
+latency are identical whether one model supervised it or five did. Anything a teacher contributes is free at
+inference, in a way that a wider backbone or a higher input resolution never is.
 
-Distilling from several foundation teachers rather than one turns out to be worth 2.3 mIoU on COCO
-and 1.5 on LVIS, at exactly the same deployed cost. Whether that justifies the extra training
-complexity depends on what consumes the masks, and the video results and ablations that bear on it
-are in the paper.
+Distilling from several foundation teachers rather than one turns out to be worth 2.3 mIoU on COCO and 1.5 on
+LVIS, at exactly the same deployed cost. Whether that justifies the extra training complexity depends on what
+consumes the masks, and the video results and ablations that bear on it are in the paper.
 
-The mechanism is presumably diversity. Teachers built differently make different errors, so a target
-assembled from several of them sits closer to the truth on average than any one of them does, and
-the student inherits fewer of any single teacher's blind spots. That is a conjecture rather than a
-finding, since the experiments measure the outcome; separating the two would mean checking whether
-the student's errors track the places where the teachers disagree.
+The mechanism is presumably diversity. Teachers built differently make different errors, so a target assembled
+from several of them sits closer to the truth on average than any one of them does, and the student inherits
+fewer of any single teacher's blind spots. That is a conjecture rather than a finding, since the experiments
+measure the outcome; separating the two would mean checking whether the student's errors track the places
+where the teachers disagree.

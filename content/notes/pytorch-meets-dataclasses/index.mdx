@@ -6,8 +6,8 @@ tags: ["python", "pytorch"]
 published: true
 ---
 
-The most consistent mild irritation I have in writing torch code is that a variant of a module has
-to retype every argument its parent takes, purely so that it can hand them straight back up again.
+The most consistent mild irritation I have in writing torch code is that a variant of a module has to retype
+every argument its parent takes, purely so that it can hand them straight back up again.
 
 ```python
 class Base(nn.Module):
@@ -34,17 +34,17 @@ class Variant(Base):
 
 Five arguments are named three times in every `__init__`.
 
-None of this is a real problem, or even bad design. It is the shape that falls out of splitting a
-base class from the model that specialises it. It is just that with five variants of the same base,
-adding one argument becomes six edits, and if you miss one it either fails at the call site or
-carries on quietly with a stale default.
+None of this is a real problem, or even bad design. It is the shape that falls out of splitting a base class
+from the model that specialises it. It is just that with five variants of the same base, adding one argument
+becomes six edits, and if you miss one it either fails at the call site or carries on quietly with a stale
+default.
 
 ## Can dataclasses do this for us?
 
-Inheriting a set of declared fields is precisely what they are for. Whether one can also be an
-`nn.Module` is less obvious, given how particular `nn.Module` is about what happens in `__init__`.
-It can, because `__post_init__` runs after the generated `__init__` has assigned the fields, and
-that is exactly where `nn.Module.__init__` needs to go.
+Inheriting a set of declared fields is precisely what they are for. Whether one can also be an `nn.Module` is
+less obvious, given how particular `nn.Module` is about what happens in `__init__`. It can, because
+`__post_init__` runs after the generated `__init__` has assigned the fields, and that is exactly where
+`nn.Module.__init__` needs to go.
 
 ```python
 def build_net(sizes: list[int], n_classes: int) -> nn.Sequential:
@@ -80,8 +80,8 @@ class DropoutClassifier(Classifier):
         return self.net(nn.functional.dropout(x, p=self.p_dropout, training=self.training))
 ```
 
-Hyperparameters are now declared fields, so you can read them off a model without going anywhere
-near a constructor signature.
+Hyperparameters are now declared fields, so you can read them off a model without going anywhere near a
+constructor signature.
 
 ```python
 asdict(child)
@@ -92,43 +92,41 @@ A checkpoint becomes `Model(**config)` alongside a state dict.
 
 ## Why do you need `eq=False`?
 
-A dataclass writes an `__eq__` for you by default, and Python responds to any class defining
-`__eq__` by setting `__hash__` to `None`. That leaves the module unhashable and breaks torch a long
-way from wherever you caused it.
+A dataclass writes an `__eq__` for you by default, and Python responds to any class defining `__eq__` by
+setting `__hash__` to `None`. That leaves the module unhashable and breaks torch a long way from wherever you
+caused it.
 
-Setting `unsafe_hash=True` makes the error go away, and it is what I tried first, but it leaves you
-worse off than the crash did, because it fails silently. The hash comes from the field values, so
-two separately initialised models that share their hyperparameters and nothing else are treated as
-the same object.
+Setting `unsafe_hash=True` makes the error go away, and it is what I tried first, but it leaves you worse off
+than the crash did, because it fails silently. The hash comes from the field values, so two separately
+initialised models that share their hyperparameters and nothing else are treated as the same object.
 
 ```text
 unsafe_hash: hash(a) == hash(b) = True, a == b = True, same weights = False, len({a, b}) = 1
 ```
 
-Putting two models into a set and getting one of them back is the sort of bug that takes an
-afternoon to find. Setting `eq=False` leaves `nn.Module`'s identity semantics exactly as they were.
+Putting two models into a set and getting one of them back is the sort of bug that takes an afternoon to find.
+Setting `eq=False` leaves `nn.Module`'s identity semantics exactly as they were.
 
 ## Why is this a bad idea?
 
-It is a cute idea but probably not one to adopt, because it replaces a convention everyone already
-knows. Setup moves from `__init__` to `__post_init__`, the `super().__init__()` inside it reaches
-`nn.Module` rather than the parent dataclass, and `eq=False` is load bearing. None of it is hard to
-learn, but `__init__` is how torch is written and how every reader of torch expects to read it, and
-a handful of repeated arguments is not enough to justify asking otherwise.
+It is a cute idea but probably not one to adopt, because it replaces a convention everyone already knows.
+Setup moves from `__init__` to `__post_init__`, the `super().__init__()` inside it reaches `nn.Module` rather
+than the parent dataclass, and `eq=False` is load bearing. None of it is hard to learn, but `__init__` is how
+torch is written and how every reader of torch expects to read it, and a handful of repeated arguments is not
+enough to justify asking otherwise.
 
 Underneath those conventions, two construction protocols are competing for the same object.
-`nn.Module.__init__` installs the machinery that turns attribute assignment into parameter and
-submodule registration, and the dataclass writes an `__init__` that assigns fields, so whichever
-runs second has to tolerate the first. That is why `super().__init__()` has to open `__post_init__`,
-and why a field that is itself a module gets assigned before anything exists to register it with.
+`nn.Module.__init__` installs the machinery that turns attribute assignment into parameter and submodule
+registration, and the dataclass writes an `__init__` that assigns fields, so whichever runs second has to
+tolerate the first. That is why `super().__init__()` has to open `__post_init__`, and why a field that is
+itself a module gets assigned before anything exists to register it with.
 
-The obvious fix is a base type that hides the decorator, the flag and the convention behind one
-thing you subclass, and that means a metaclass. Python allows a class exactly one, and
-`torch.jit.ScriptModule` already brings `ScriptMeta`, so that route collides with scripting.
+The obvious fix is a base type that hides the decorator, the flag and the convention behind one thing you
+subclass, and that means a metaclass. Python allows a class exactly one, and `torch.jit.ScriptModule` already
+brings `ScriptMeta`, so that route collides with scripting.
 
-The alternative is to make the hyperparameters the dataclass and leave the module alone. Fields are
-declared and inherited exactly as before, and the module takes one argument, so nothing is fighting
-over `__init__`.
+The alternative is to make the hyperparameters the dataclass and leave the module alone. Fields are declared
+and inherited exactly as before, and the module takes one argument, so nothing is fighting over `__init__`.
 
 ```python
 @dataclass
@@ -145,17 +143,17 @@ class Classifier(nn.Module):
         self.net = build_net([config.n_input, *config.hidden], config.n_classes)
 ```
 
-That keeps what the version above was for. `asdict(model.config)` still reads the hyperparameters
-off a model, a checkpoint is still a config beside a state dict, and a variant still declares only
-the field it adds. It adds one indirection at every call site, and across a large repository a
-config type per model, most of them used once.
+That keeps what the version above was for. `asdict(model.config)` still reads the hyperparameters off a model,
+a checkpoint is still a config beside a state dict, and a variant still declares only the field it adds. It
+adds one indirection at every call site, and across a large repository a config type per model, most of them
+used once.
 
 ## So what do I actually do?
 
-Hyperparameters as a dataclass, with the module left alone, is roughly where I have ended up. The
-config often sits inside the model it configures, as `Classifier.Config`, which keeps it out of the
-global namespace and means the two get read, changed and versioned together. Whether that is
-genuinely tidier or just the same two objects with a dot between them, I have not decided.
+Hyperparameters as a dataclass, with the module left alone, is roughly where I have ended up. The config often
+sits inside the model it configures, as `Classifier.Config`, which keeps it out of the global namespace and
+means the two get read, changed and versioned together. Whether that is genuinely tidier or just the same two
+objects with a dot between them, I have not decided.
 
 ---
 

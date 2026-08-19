@@ -27,6 +27,11 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const NOTES_DIR = resolve(root, "content/notes");
 const OUT = resolve(root, "src/content/notes.json");
+// Counts alone, so anything needing only "are there notes" can have that
+// without importing the index. The site header is on every page, so importing
+// the index there put every title and description in the main bundle, growing
+// with each note written, to decide whether to show one nav item.
+const SUMMARY_OUT = resolve(root, "src/content/notes-summary.json");
 const ASSETS_OUT = resolve(root, "public/notes");
 
 const REQUIRED = ["title", "description", "date"];
@@ -42,40 +47,21 @@ export function buildNotesIndex({ write = true } = {}) {
     .map((slug) => {
       const dir = resolve(NOTES_DIR, slug);
 
-      // A note is `index.mdx` for prose, or `index.tsx` where the note is
-      // mostly a thing rather than mostly words and is easier written as a
-      // component. A TSX note cannot carry YAML frontmatter, so it puts the
-      // same fields in `meta.yaml` beside it; everything downstream is
-      // identical either way.
       const mdx = resolve(dir, "index.mdx");
-      const tsx = resolve(dir, "index.tsx");
-      const sidecar = resolve(dir, "meta.yaml");
-
-      let frontmatter;
-      if (existsSync(mdx)) {
-        const source = readFileSync(mdx, "utf8");
-        const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-        if (!match) {
-          problems.push(`${slug}: no frontmatter block`);
-          return null;
-        }
-        frontmatter = match[1];
-      } else if (existsSync(tsx)) {
-        if (!existsSync(sidecar)) {
-          problems.push(`${slug}: index.tsx needs a meta.yaml beside it, since TSX carries no frontmatter`);
-          return null;
-        }
-        frontmatter = readFileSync(sidecar, "utf8");
-      } else {
-        problems.push(`${slug}/: no index.mdx or index.tsx — a note is a directory containing one of them`);
+      if (!existsSync(mdx)) {
+        problems.push(`${slug}/: no index.mdx — a note is a directory containing one`);
         return null;
       }
 
-      const match = [null, frontmatter];
+      const block = readFileSync(mdx, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
+      if (!block) {
+        problems.push(`${slug}: no frontmatter block`);
+        return null;
+      }
 
       let meta;
       try {
-        meta = parse(match[1]) ?? {};
+        meta = parse(block[1]) ?? {};
       } catch (error) {
         problems.push(`${slug}: frontmatter is not valid YAML — ${error.message}`);
         return null;
@@ -119,6 +105,8 @@ export function buildNotesIndex({ write = true } = {}) {
 
   if (write) {
     writeFileSync(OUT, `${JSON.stringify(notes, null, 2)}\n`);
+    const summary = { total: notes.length, published: notes.filter((note) => note.published).length };
+    writeFileSync(SUMMARY_OUT, `${JSON.stringify(summary, null, 2)}\n`);
 
     // Staged in a sibling directory and swapped in by one rename.
     //
@@ -135,24 +123,19 @@ export function buildNotesIndex({ write = true } = {}) {
     rmSync(staging, { recursive: true, force: true });
     for (const slug of slugs) {
       const dir = resolve(NOTES_DIR, slug);
-      const INPUTS = /^(index\.(mdx|tsx)|meta\.yaml|.*\.bib)$/;
+      const INPUTS = /^(index\.mdx|.*\.(tsx?|bib))$/;
       if (readdirSync(dir).every((name) => INPUTS.test(name))) continue;
       // One recursive copy of the whole note directory, filtered, rather than a
       // call per file: the per-file form races with its own mkdir on macOS.
       cpSync(dir, resolve(staging, slug), {
         recursive: true,
-        // Everything beside a note is an asset to be served, except the prose
-        // itself and any TypeScript. A figure component living next to the note
-        // it belongs to is a build input, and copying it would publish the
-        // source verbatim under public/. It is also outside `tsconfig.json`,
-        // whose include list is `src`, so it would escape `make check` as well.
         // Everything beside a note is an asset to be served, except its build
-        // inputs: the prose itself, any TypeScript, the frontmatter sidecar and
-        // the note's own bibliography. Copying those would publish the source
-        // verbatim under public/. They are compiled, not served: `content` is in
+        // inputs: the prose itself, any TypeScript and the note's own
+        // bibliography. Copying those would publish the source verbatim under
+        // public/. They are compiled rather than served, and `content` is in
         // tsconfig's include list, so a component beside a note is typechecked
         // by `make check` exactly like one under src.
-        filter: (source) => !/\/index\.(mdx|tsx)$|\.tsx?$|\/meta\.yaml$|\.bib$/.test(source),
+        filter: (source) => !/\/index\.mdx$|\.tsx?$|\.bib$/.test(source),
       });
     }
     mkdirSync(staging, { recursive: true });

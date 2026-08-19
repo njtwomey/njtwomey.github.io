@@ -8,31 +8,28 @@ published: true
 
 <Paper id="twomey2019application" />
 
-Anomaly detection picks out the members of a collection that do not look like the rest, when nobody
-has said what the rest looks like. A light curve is the brightness of a star over time, and this
-catalogue holds 9,236 of them across three types of periodic variable star, an unknown number filed
-under the wrong type. Fitting a model of the normal ones is the obvious response, and its training
-set comes from that same uncounted catalogue, so the model learns the anomalies and stops flagging
-them.
+Anomaly detection picks out the members of a collection that do not look like the rest, when nobody has said
+what the rest looks like. A light curve is the brightness of a star over time, and this catalogue holds 9,236
+of them across three types of periodic variable star, an unknown number filed under the wrong type. Fitting a
+model of the normal ones is the obvious response, and its training set comes from that same uncounted
+catalogue, so the model learns the anomalies and stops flagging them.
 
-Normal is a shape shared across curves rather than any one curve. A Gaussian process is a
-distribution over functions rather than a single fitted curve, so it holds a whole family of shapes
-at once, and stacking two of them says exactly that: one draw fixes the underlying shape a star type
-follows, and each observed star is a second draw around that shape. Individual variation becomes
-part of the description instead of noise to be averaged out. Scoring a new curve is then only asking
-how probable it is under that description, which is its negative log marginal likelihood.
+Normal is a shape shared across curves rather than any one curve. A Gaussian process is a distribution over
+functions rather than a single fitted curve, so it holds a whole family of shapes at once, and stacking two of
+them says exactly that: one draw fixes the underlying shape a star type follows, and each observed star is a
+second draw around that shape. Individual variation becomes part of the description instead of noise to be
+averaged out. Scoring a new curve is then only asking how probable it is under that description, which is its
+negative log marginal likelihood.
 
-Both baselines score a curve by cross correlation against prototype centroids, which means fixing a
-distance measure and a number of clusters before starting. On the star catalogue they reached 0.44
-and 0.16 precision against 0.99 for the hierarchical model. Precision was still 0.98 with the model
-fitted on roughly seven curves, few enough to look at individually before training, and ten times as
-much data added 0.01. The final model has no periodic kernel, which we had expected to help, and the
-paper says why.
+Both baselines score a curve by cross correlation against prototype centroids, which means fixing a distance
+measure and a number of clusters before starting. On the star catalogue they reached 0.44 and 0.16 precision
+against 0.99 for the hierarchical model. Precision was still 0.98 with the model fitted on roughly seven
+curves, few enough to look at individually before training, and ten times as much data added 0.01. The final
+model has no periodic kernel, which we had expected to help, and the paper says why.
 
-Every precision figure here rests on a class held out as the outlier class, because the catalogue
-this work is aimed at carries no anomaly count to divide by. For that catalogue this paper ranks the
-curves and shows the strangest in each class. Scoring a detector where nobody knows the answer is
-what this leaves unresolved. Refitting on the least anomalous 80% of a validation set holds
-precision, and retaining more than that loses it, which the paper offers as a hint at the outlier
-proportion rather than a measurement. Nobody has a catalogue with a verified count to check it
-against.
+Every precision figure here rests on a class held out as the outlier class, because the catalogue this work is
+aimed at carries no anomaly count to divide by. For that catalogue this paper ranks the curves and shows the
+strangest in each class. Scoring a detector where nobody knows the answer is what this leaves unresolved.
+Refitting on the least anomalous 80% of a validation set holds precision, and retaining more than that loses
+it, which the paper offers as a hint at the outlier proportion rather than a measurement. Nobody has a
+catalogue with a verified count to check it against.

@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Personal site of Niall Twomey — publications, projects and notes.",
+  "description": "Personal site of Niall Twomey \u2014 publications, projects and notes.",
   "scripts": {
-    "publications": "node scripts/build-publications.mjs",
-    "prebuild": "npm run publications && npm run content",
-    "predev": "npm run publications && npm run content",
+    "prebuild": "npm run content",
+    "predev": "npm run content",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
@@ -17,7 +16,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "content": "node scripts/build-content.mjs",
-    "content:check": "node scripts/build-content.mjs --check && node scripts/build-publications.mjs --check"
+    "content:check": "node scripts/build-content.mjs --check"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

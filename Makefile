@@ -19,7 +19,6 @@ install: ## Install dependencies
 ## ---------------------------------------------------------------- content
 
 content: ## Compile content/ into the JSON the app imports
-	npm run publications
 	npm run content
 
 ## ---------------------------------------------------------------- develop

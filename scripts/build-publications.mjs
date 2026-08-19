@@ -261,35 +261,31 @@ function build() {
   return { publications, problems };
 }
 
-const check = process.argv.includes("--check");
-const { publications, problems } = build();
+/**
+ * Compile the bibliography, or validate it. Throws with every problem listed
+ * rather than exiting, so the orchestrator can report notes and publications
+ * together instead of dying on the first of them.
+ */
+export function buildPublications({ write = true } = {}) {
+  const { publications, problems } = build();
 
-if (problems.length > 0) {
-  console.error(`publications.bib has ${problems.length} problem(s):`);
-  for (const problem of problems) console.error(`  - ${problem}`);
-  process.exit(1);
+  if (problems.length > 0) {
+    throw new Error(`publications.bib has ${problems.length} problem(s):\n  - ${problems.join("\n  - ")}`);
+  }
+
+  const core = publications.map(({ abstract: _abstract, bibtex: _bibtex, ...rest }) => rest);
+  const details = Object.fromEntries(publications.map((p) => [p.key, { abstract: p.abstract, bibtex: p.bibtex }]));
+
+  if (write) {
+    mkdirSync(dirname(OUT), { recursive: true });
+    // No timestamp in either payload: a generated file that changes on every
+    // build makes every commit look like a content change.
+    writeFileSync(OUT, `${JSON.stringify(core, null, 2)}\n`);
+    writeFileSync(OUT_DETAILS, `${JSON.stringify(details)}\n`);
+    // The whole bibliography, downloadable. Copied rather than served from
+    // content/ because only public/ is published.
+    copyFileSync(BIB, resolve(root, "public/publications.bib"));
+  }
+
+  return publications;
 }
-
-const core = publications.map(({ abstract: _abstract, bibtex: _bibtex, ...rest }) => rest);
-const details = Object.fromEntries(publications.map((p) => [p.key, { abstract: p.abstract, bibtex: p.bibtex }]));
-
-if (!check) {
-  mkdirSync(dirname(OUT), { recursive: true });
-  // No timestamp in either payload: a generated file that changes on every
-  // build makes every commit look like a content change.
-  writeFileSync(OUT, `${JSON.stringify(core, null, 2)}\n`);
-  writeFileSync(OUT_DETAILS, `${JSON.stringify(details)}\n`);
-  // The whole bibliography, downloadable. Copied rather than served from
-  // content/ because only public/ is published.
-  copyFileSync(BIB, resolve(root, "public/publications.bib"));
-}
-
-const byKind = publications.reduce((acc, p) => ({ ...acc, [p.kind]: (acc[p.kind] ?? 0) + 1 }), {});
-const withPdf = publications.filter((p) => p.pdf).length;
-const kb = (value) => `${Math.round(JSON.stringify(value).length / 1024)}kB`;
-console.log(
-  `${publications.length} publications (${Object.entries(byKind)
-    .map(([k, n]) => `${n} ${k}`)
-    .join(", ")}), ${withPdf} with a PDF` +
-    (check ? " — check only" : ` → ${kb(core)} bundled, ${kb(details)} fetched`),
-);

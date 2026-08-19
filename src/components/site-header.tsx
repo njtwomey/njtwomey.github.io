@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { site } from "@/content/site";
-import { notes } from "@/lib/notes";
+import { hasNotes } from "@/lib/notes-summary";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,7 +18,7 @@ const links = [
   { to: "/publications", label: "Publications" },
   { to: "/practice", label: "ML Practice" },
   { to: "/technologies", label: "Technologies" },
-  ...(notes.length > 0 ? [{ to: "/notes", label: "Notes" }] : []),
+  ...(hasNotes ? [{ to: "/notes", label: "Notes" }] : []),
 ];
 
 export function SiteHeader() {

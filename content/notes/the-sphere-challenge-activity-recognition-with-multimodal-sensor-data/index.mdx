@@ -8,30 +8,26 @@ published: false
 
 <Paper id="twomey2016sphere" />
 
-Activity recognition in a house full of sensors decides, second by second, whether the person moving
-around it is walking, sitting or standing up out of a chair. A minute of steady walking is easy to
-annotate, and the exact second at which sitting becomes standing is where two careful annotators
-will disagree. Nine of the twenty labels here are transitions, so a vote handing the entrant one
-integer per second makes a second everybody agreed on indistinguishable from a second they split
-three ways.
+Activity recognition in a house full of sensors decides, second by second, whether the person moving around it
+is walking, sitting or standing up out of a chair. A minute of steady walking is easy to annotate, and the
+exact second at which sitting becomes standing is where two careful annotators will disagree. Nine of the
+twenty labels here are transitions, so a vote handing the entrant one integer per second makes a second
+everybody agreed on indistinguishable from a second they split three ways.
 
 This challenge releases the disagreement rather than resolving it. The target for each second is the
-proportion of annotators who assigned that second each of the twenty labels, and a submission is
-scored against those proportions by a weighted Brier score. The class weights are raised on the
-harder classes when the unscripted recordings join the scripted ones. Confidence is rewarded in the
-middle of a long walk and penalised on the second somebody stands up, so an entrant cannot win by
-being decisive.
+proportion of annotators who assigned that second each of the twenty labels, and a submission is scored
+against those proportions by a weighted Brier score. The class weights are raised on the harder classes when
+the unscripted recordings join the scripted ones. Confidence is rewarded in the middle of a long walk and
+penalised on the second somebody stands up, so an entrant cannot win by being decisive.
 
-Twelve annotators worked in ELAN from 4K head-camera footage that is not part of the release. Raw
-video from the three RGB-D cameras is withheld as well, to preserve the participants' anonymity, so
-vision reaches an entrant as bounding box corners in pixels and a three-dimensional centre of mass
-in millimetres. The floor plan, the wrist accelerometer, the infra-red sensors and the individual
-annotator files are in the paper.
+Twelve annotators worked in ELAN from 4K head-camera footage that is not part of the release. Raw video from
+the three RGB-D cameras is withheld as well, to preserve the participants' anonymity, so vision reaches an
+entrant as bounding box corners in pixels and a three-dimensional centre of mass in millimetres. The floor
+plan, the wrist accelerometer, the infra-red sensors and the individual annotator files are in the paper.
 
-A proportion is only as fine as the number of annotators behind it. The record the paper plots as an
-example was labelled by two of the twelve, which permits a target of nought, a half or one and
-nothing in between. How many annotators a soft label needs before it measures ambiguity rather than
-who was on shift is the open question. The disagreement presumably concentrates in the transitions,
-so extra annotators there and fewer elsewhere would sharpen the targets where they are split. That
-is conjecture from a document which sets the rules and reports no experiments, though the annotator
-files it releases would settle it.
+A proportion is only as fine as the number of annotators behind it. The record the paper plots as an example
+was labelled by two of the twelve, which permits a target of nought, a half or one and nothing in between. How
+many annotators a soft label needs before it measures ambiguity rather than who was on shift is the open
+question. The disagreement presumably concentrates in the transitions, so extra annotators there and fewer
+elsewhere would sharpen the targets where they are split. That is conjecture from a document which sets the
+rules and reports no experiments, though the annotator files it releases would settle it.

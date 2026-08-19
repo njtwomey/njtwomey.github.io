@@ -158,7 +158,7 @@ export const ICONS: Record<CapabilityIcon, LucideIcon> = {
  * Career order, earliest first. The content orders `orgs` that way already,
  * because a matrix column has to mean the same thing on every row.
  */
-export const ORG_ORDER: OrgKey[] = orgs.map((org) => org.key);
+const ORG_ORDER: OrgKey[] = orgs.map((org) => org.key);
 
 /**
  * When each place ran, for the column headers. A column already says where; the
@@ -166,7 +166,7 @@ export const ORG_ORDER: OrgKey[] = orgs.map((org) => org.key);
  * life rather than a bare assertion. Bristol continues as an honorary position
  * after 2020, so the employed span is what is shown.
  */
-export const ORG_YEARS: Record<OrgKey, string> = {
+const ORG_YEARS: Record<OrgKey, string> = {
   ucc: "2008–13",
   bristol: "2013–20",
   cookpad: "2020–21",
@@ -175,7 +175,7 @@ export const ORG_YEARS: Record<OrgKey, string> = {
 };
 
 /** Full names are too wide for a pill row or a matrix header. */
-export const ORG_SHORT: Record<OrgKey, string> = Object.fromEntries(orgs.map((org) => [org.key, org.short])) as Record<
+const ORG_SHORT: Record<OrgKey, string> = Object.fromEntries(orgs.map((org) => [org.key, org.short])) as Record<
   OrgKey,
   string
 >;
@@ -205,7 +205,7 @@ export type Row = {
  * because that array is kept in theme order. A stray entry filed out of place
  * still lands under its own heading, and reading the file makes that obvious.
  */
-export const GROUPED = themes
+const GROUPED = themes
   .map((theme) => ({
     ...theme,
     items: specialities
@@ -213,9 +213,6 @@ export const GROUPED = themes
       .map((speciality): Row => ({ ...speciality, depths: DEPTHS.get(speciality.slug) ?? {} })),
   }))
   .filter((theme) => theme.items.length > 0);
-
-/** Row order, for anything that wants a speciality without its grouping. */
-export const ROWS: Row[] = GROUPED.flatMap((theme) => theme.items);
 
 /**
  * The themes under each family, in page order.
