@@ -337,6 +337,13 @@ journey (figurative), testament, cornerstone, myriad, plethora, nexus, pinnacle,
 **Adverbs.** seamlessly, holistically, fundamentally, profoundly, meticulously, significantly
 (without a number), dramatically (without a number), remarkably
 
+**Bookkeeping metaphors.** cost, price, budget, bill, pay for, buys you, spend, in exchange for,
+where nothing is actually being counted. "The cost is unwritten conventions" dresses a list of
+gotchas as an accounting entry and adds a false precision, and the sentence underneath it is simply
+"it runs on conventions nobody wrote down". The word is fine where a real resource is being spent
+and named: milliseconds, joules, a forward pass per candidate, an index rebuild. The test is whether
+you could put a number on it.
+
 **Intensifiers and hedges**, maximum one hedge per claim. significant/significantly (without data),
 substantial, powerful, incredible, amazing, fascinating, genuinely, honestly, simply, truly,
 certainly, absolutely, undeniably

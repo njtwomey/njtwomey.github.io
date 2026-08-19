@@ -17,6 +17,15 @@ from torch import nn
 torch.manual_seed(0)
 
 
+def build_net(sizes: list[int], n_classes: int) -> nn.Sequential:
+    """An MLP over `sizes`, ending in a linear layer of `n_classes` outputs."""
+    layers: list[nn.Module] = []
+    for a, b in zip(sizes[:-1], sizes[1:], strict=True):
+        layers += [nn.Linear(a, b), nn.ReLU()]
+    layers.append(nn.Linear(sizes[-1], n_classes))
+    return nn.Sequential(*layers)
+
+
 def hparams(model: nn.Module) -> dict:
     """The model's hyperparameters, without touching its weights."""
     assert is_dataclass(model) and isinstance(model, nn.Module)
@@ -38,13 +47,7 @@ class Classifier(nn.Module):
         # dataclass gives us exactly one hook that is guaranteed to run after
         # the fields are set.
         super().__init__()
-
-        sizes = [self.n_input, *self.hidden]
-        layers: list[nn.Module] = []
-        for a, b in zip(sizes[:-1], sizes[1:], strict=True):
-            layers += [nn.Linear(a, b), nn.ReLU()]
-        layers.append(nn.Linear(sizes[-1], self.n_classes))
-        self.net = nn.Sequential(*layers)
+        self.net = build_net([self.n_input, *self.hidden], self.n_classes)
 
     def forward(self, x):
         return self.net(x)
