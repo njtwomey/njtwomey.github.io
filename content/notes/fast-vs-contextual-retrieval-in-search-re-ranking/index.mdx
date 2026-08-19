@@ -9,41 +9,52 @@ published: true
 import "./references.bib";
 import { DepthPlot } from "./DepthPlot";
 
-Search is two stages because the function that ranks best cannot be run over a whole
-corpus. <Ref id="khattab2020colbert" /> put that at 10.7 s for BERT-base over a thousand candidates against 61
-ms for a cheaper scorer. So a first stage sweeps millions of documents for a few hundred candidates, and a
-second reads that shortlist and orders it. I worked on ranking for recipe search a few years
-ago <Ref id="takiguchi2021multifield" paren /> and stopped following it after that. A friend asked me over
-dinner how re-ranking had changed and I had nothing to say. I knew the retrievers had got stronger (everybody
-knew that), but not what it had done to the division between the two.
+Search has had the same shape for a long time: a cheap stage sweeps millions of documents and returns a few
+hundred candidates, and an expensive stage reads that shortlist carefully and puts it in order. The split
+exists because the scoring function that ranks best is far too expensive to run over a whole corpus. BERT-base
+scoring a thousand candidates took 10.7 s against 61 ms for a cheaper
+scorer <Ref id="khattab2020colbert" paren />. I worked on ranking for recipe search a few years
+ago <Ref id="takiguchi2021multifield" paren /> and have not kept up since. A friend asked me over dinner how
+re-ranking had changed, and I did not have an answer. I knew the retrievers had been getting stronger, but not
+what that had done to the overall picture. I looked into it out of curiosity, and this note is what came of
+it. The two stages are still chosen separately, but the better the first stage, the less the second stage adds
+and the shorter the shortlist it needs.
 
-The change moved the decision upstream. <Ref id="meng2024ranked" /> held the re-ranker fixed and swapped only
-the first stage, and the depth at which re-ranking stops helping moved with it: still climbing at a thousand
-candidates behind `BM25`, and peaking at twenty behind a strong learned sparse retriever. Same second stage,
-fifty times fewer candidates, depending only on what feeds it.
+That pattern is already in the literature. <Ref id="meng2024ranked" /> held the re-ranker fixed and swapped
+only the first stage, and the depth at which re-ranking stopped helping moved with it. Behind `BM25` quality
+was still climbing at a thousand candidates, and behind a strong learned sparse retriever it peaked at twenty
+candidates. How deep to re-rank is a property of the retriever in front rather than a setting on the
+re-ranker.
 
-I swept depth on SciFact <Ref id="wadden2020fact" paren /> to see how far that generalises. It judges 300
-queries over 5,183 abstracts, so you can sweep the whole thing end to end. `all-MiniLM-L6-v2`, `BM25` and
-`bge-small-en-v1.5` each supplied candidates, and one cross-encoder, `ms-marco-MiniLM-L-6-v2`, re-ranked all
-three (holding the second stage fixed is what attributes a change to the retriever). Every number is nDCG@10.
+I wanted to see how generally that holds, so I swept candidate depth on
+SciFact <Ref id="wadden2020fact" paren />. It is a claim-verification set of 300 judged queries over 5,183 abstracts,
+small enough to sweep from end to end. `all-MiniLM-L6-v2`, `BM25` and `bge-small-en-v1.5` retrieved the
+candidates, and one cross-encoder, `ms-marco-MiniLM-L-6-v2`, re-ranked the output of all three. Holding the
+second stage fixed is what attributes a change to the retriever. Every number here is nDCG@10 over the 300
+queries.
 
 <DepthPlot />
 
-The three arms converge at the deep end, landing within 0.0007 of each other at 0.683. By then the re-ranker
-has re-scored nearly everything any of them would have returned, so the ranking is entirely its own. That
-figure is what it scores unconstrained, and each retriever's fate follows from which side of it that retriever
-starts on. `all-MiniLM-L6-v2` at 0.645 gains from depth, `BM25` at 0.676 sits close enough to do neither, and
-`bge-small-en-v1.5` at 0.713 loses 0.030 (the only movement on that arm whose interval excludes zero).
+At a thousand candidates the three pipelines land within 0.0007 of each other, at 0.683. By then the re-ranker
+has re-scored nearly everything any of the three retrievers would have returned, so the ranking is entirely
+its own. That number is what the re-ranker scores once the retriever has stopped constraining it, so a
+retriever whose own score sits below it gains from depth and one above it loses. `all-MiniLM-L6-v2` at 0.645
+gains, `BM25` at 0.676 sits close enough to do neither, and `bge-small-en-v1.5` at 0.713 loses. Behind the
+strongest retriever of the three, re-ranking made things worse rather than better. The 0.030 it costs at the
+deepest setting is the only movement behind that retriever whose interval excludes zero.
 
-Behind the strongest of the three the solid line never reaches its own dashed baseline, so the second stage
-can come out. What you are left with is a dense retriever serving its own ranking, paying once to vectorise
-the corpus and then vectorising a query and taking its neighbours. The architecture barely moves, and what
-differs is how the two fail: `BM25` tokenises "curry, but not too spicy", drops the stopwords, and searches
-for "curry spicy". The encoder reads the string in sequence, so the qualification survives into the vector.
+On the `bge-small-en-v1.5` arm the solid line never reaches its own dashed baseline, so re-ranking buys
+nothing at any depth and the second stage can come out. That leaves a dense retriever serving its own ranking.
+It pays a one-off cost to vectorise every document, and at query time it vectorises the query and looks for
+the nearest of them, so the shape of the thing is much the same. Their properties differ, though. `BM25`
+tokenises "curry, but not too spicy", drops the stopwords and searches for "curry spicy", roughly the opposite
+of the request. The encoder reads the string in sequence, so "not too spicy" arrives as a phrase and the
+vector carries the qualification rather than losing it.
 
-A hundred candidates is inherited, not measured. On this collection it was roughly right behind `BM25`, three
-times deeper than `all-MiniLM-L6-v2` needed, and past the point of harm behind `bge-small-en-v1.5`. The two
-stages are trained, benchmarked and swapped apart (they have been separate models built by separate teams for
-as long as the architecture has existed), but the output of the system is not separable in the same way. Where
-the crossing point sits once the second stage is a current re-ranker, and not a 22.7M checkpoint from 2021, is
-what this does not say, and it is the number anyone holding one would want first.
+Retrieval and re-ranking are trained, benchmarked and swapped independently, which is reasonable enough given
+that they have historically been separate models built by separate teams, but the output of the system is not
+independent. A hundred candidates is an inherited default rather than a measured one. On this collection it is
+roughly right behind `BM25`, three times deeper than `all-MiniLM-L6-v2` needs, and past the point of harm
+behind `bge-small-en-v1.5`. Upgrading the retriever here removed the case for the second stage rather than
+shortening the shortlist. The two stages can be trained apart, but they have to be configured and measured
+together.
