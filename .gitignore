@@ -59,3 +59,4 @@ repositories/
 .claude/skills/note-review
 .claude/skills/persona-read
 .claude/skills/voice-check
+.claude/skills/pattern-record
