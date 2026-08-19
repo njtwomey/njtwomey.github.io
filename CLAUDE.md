@@ -149,22 +149,23 @@ hard-code a base. Because routing is client-side, the build writes `404.html` as
 
 ## Skills
 
-| skill              | e.g.                                                                      |
-| ------------------ | ------------------------------------------------------------------------- |
-| `add-publications` | "add my new papers", "check Scholar for anything missing", "add this PDF" |
-| `draft-note`       | "draft a note about the ordinal regression paper", "rewrite this note"    |
-| `review-note`      | "review this note", "does this read", "actually read the thing"           |
-| `writing`          | any user-facing prose                                                     |
+| skill              | e.g.                                                                         |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `add-publications` | "add my new papers", "check Scholar for anything missing", "add this PDF"    |
+| `note-draft`       | "draft a note about the ordinal regression paper", "write something about X" |
+| `note-revise`      | any correction to note prose                                                 |
+| `note-review`      | "review this note", "does this read", "actually read the thing"              |
+| `persona-read`     | "read this as a generalist", "how does this land for a recruiter"            |
+| `voice-check`      | "does this sound like me", "any banned phrases"                              |
 
-**The three prose skills live in `repositories/note-authoring`** and are symlinked into
-`.claude/skills/` so they are discoverable here. That repository is where notes are drafted and
-reviewed, and it holds `reference/negative-examples.md`, the catalogue of every construction struck
-out of a real draft, and `reference/voice-profile.md`, the voice measured from the notes written
-before any of it was generated. A finished note is copied into `content/notes/<slug>/`.
+**The note skills live in `repositories/note-authoring`** and are symlinked into `.claude/skills/` so
+they are discoverable here. That repository is where notes are drafted and reviewed. It holds the
+reference the skills operate over: sentence patterns with a verdict, the two note templates, six
+reader personas, catalogues of constructions that work and that do not, a definition of complexity,
+and the measured voice profile. A finished note is copied into `content/notes/<slug>/`.
 
-`review-note` reads a finished draft the way a stranger meets it, forwards and once, which is the one
-thing its author can no longer do. It exists because a sentence like "that pattern is already in the
-literature" passes every other check on this site and is empty to anybody who has not read the note.
+There is no longer a `writing` skill. Prose rules for the rest of the site live in that reference
+too, and `voice-check` is what applies them.
 
 `add-publications` reconciles `content/publications.bib` against Google Scholar and PDFs dropped in
 `inbox/`. It must **never invent a field**: an entry with a guessed venue or a fabricated DOI is

@@ -54,6 +54,8 @@ repositories/
 # The prose skills live in repositories/note-authoring and are symlinked here so
 # they are discoverable while working on the site. The link targets an ignored
 # path, so committing it would leave a dangling symlink in a fresh clone.
-.claude/skills/writing
-.claude/skills/draft-note
-.claude/skills/review-note
+.claude/skills/note-draft
+.claude/skills/note-revise
+.claude/skills/note-review
+.claude/skills/persona-read
+.claude/skills/voice-check
