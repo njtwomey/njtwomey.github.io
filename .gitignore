@@ -47,3 +47,7 @@ __pycache__/
 # Logs
 *.log
 npm-debug.log*
+
+# Prototype work and literature reviews. Developed here, published nowhere:
+# a review is raw material for a note, and the note is what ships.
+repositories/

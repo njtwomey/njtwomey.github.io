@@ -1,0 +1,2583 @@
+{
+  "generated_at": "2026-08-18T17:14:09+00:00",
+  "commit": "1db651f76b487099f16b8d244bb22fa7aad024b9",
+  "wall_clock_seconds": 4041.807782832999,
+  "config": {
+    "depths": [3, 10, 30, 100, 300, 1000],
+    "metrics": ["ndcg@10", "recall@10"],
+    "bootstrap": {
+      "resamples": 2000,
+      "confidence": 0.95,
+      "seed": 20240418,
+      "unit": "query"
+    },
+    "retrievers": {
+      "bm25": {
+        "implementation": "bm25s",
+        "method": "lucene",
+        "k1": 0.9,
+        "b": 0.4,
+        "tokeniser": "bm25s default pattern, english stopwords, snowball english stemmer"
+      },
+      "dense": {
+        "model": "sentence-transformers/all-MiniLM-L6-v2",
+        "max_seq_length": 256
+      },
+      "dense_strong": {
+        "model": "BAAI/bge-small-en-v1.5",
+        "max_seq_length": 512,
+        "query_prefix": "Represent this sentence for searching relevant passages: ",
+        "note": "not part of the brief; added because bm25 and dense measured equally strong"
+      }
+    },
+    "reranker": {
+      "model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+      "max_length": 512,
+      "batch_size": 32
+    }
+  },
+  "environment": {
+    "python": "3.12.7",
+    "platform": "Darwin 24.6.0 arm64",
+    "torch_device": "mps",
+    "packages": {
+      "bm25s": "0.3.10",
+      "numpy": "2.5.2",
+      "pystemmer": "3.1.0",
+      "pytrec-eval-terrier": "0.5.10",
+      "scipy": "1.18.0",
+      "sentence-transformers": "6.0.0",
+      "tokenizers": "0.22.2",
+      "torch": "2.13.0",
+      "transformers": "5.15.0"
+    }
+  },
+  "model_revisions": {
+    "sentence-transformers/all-MiniLM-L6-v2": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "BAAI/bge-small-en-v1.5": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+    "cross-encoder/ms-marco-MiniLM-L-6-v2": "233902d25c440f23af6f7d6e94d2946bac0bee0a"
+  },
+  "published_reference": {
+    "scifact": {
+      "bm25": {
+        "ndcg@10": 0.679,
+        "source": "Kamalloo et al. 2024, arXiv 2306.07471, Anserini BM25 k1=0.9 b=0.4, flat index",
+        "note": "the BEIR paper's 0.665 indexes title and body as separate fields; this repo concatenates them"
+      },
+      "dense": {
+        "ndcg@10": 0.6451,
+        "source": "MTEB, Muennighoff et al. arXiv 2210.07316, sentence-transformers/all-MiniLM-L6-v2"
+      },
+      "dense_strong": {
+        "ndcg@10": 0.7127,
+        "source": "MTEB results repository, BAAI/bge-small-en-v1.5, mteb 1.20.0"
+      },
+      "bm25+ce@100": {
+        "ndcg@10": 0.688,
+        "source": "BEIR, Thakur et al. arXiv 2104.08663, table 2, BM25 top-100 reranked by cross-encoder/ms-marco-MiniLM-L-6-v2"
+      }
+    },
+    "nfcorpus": {
+      "bm25": {
+        "ndcg@10": 0.322,
+        "source": "Kamalloo et al. 2024, arXiv 2306.07471, flat index"
+      },
+      "dense": {
+        "ndcg@10": 0.3159,
+        "source": "MTEB, arXiv 2210.07316"
+      },
+      "dense_strong": {
+        "ndcg@10": 0.3426,
+        "source": "MTEB results repository, mteb 1.20.0"
+      },
+      "bm25+ce@100": {
+        "ndcg@10": 0.35,
+        "source": "BEIR, arXiv 2104.08663, table 2"
+      }
+    }
+  },
+  "datasets": {
+    "scifact": {
+      "n_docs": 5183,
+      "n_queries": 300,
+      "first_stage": {
+        "bm25": {
+          "ndcg@10_full": 0.6761883106409642,
+          "index_build_ms": 541.6782080137637,
+          "rerank_scoring_seconds": 1320.8645849239256,
+          "rerank_scores_from_cache": false
+        },
+        "dense": {
+          "ndcg@10_full": 0.6450816521455774,
+          "index_build_ms": 13286.534542014124,
+          "rerank_scoring_seconds": 1271.6613274655247,
+          "rerank_scores_from_cache": false
+        },
+        "dense_strong": {
+          "ndcg@10_full": 0.7127069247605036,
+          "index_build_ms": 40823.785665998,
+          "rerank_scoring_seconds": 1355.8967056523834,
+          "rerank_scores_from_cache": false
+        }
+      }
+    }
+  },
+  "points": [
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.6986111111111111,
+      "scored_candidates": 3.0,
+      "system": "rerank",
+      "mean": 0.6422424353729006,
+      "ci_low": 0.5932581543132122,
+      "ci_high": 0.6919362826254474,
+      "latency_ms": {
+        "retrieval": 0.16854150453582406,
+        "rerank": 25.53468750556931,
+        "total": 25.703229010105133,
+        "retrieval_p95": 0.22135829640319574,
+        "rerank_p95": 44.53140900586732
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.6986111111111111,
+      "scored_candidates": 3.0,
+      "system": "no_rerank",
+      "mean": 0.6369361930673618,
+      "ci_low": 0.5872824763909757,
+      "ci_high": 0.6871122219631706,
+      "latency_ms": {
+        "retrieval": 0.16854150453582406,
+        "rerank": 0.0,
+        "total": 0.16854150453582406,
+        "retrieval_p95": 0.22135829640319574,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.6986111111111111,
+      "scored_candidates": 3.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.005306242305538721,
+      "ci_low": -0.010778937039224147,
+      "ci_high": 0.020966263440372924,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.6986111111111111,
+      "scored_candidates": 3.0,
+      "system": "rerank",
+      "mean": 0.6986111111111111,
+      "ci_low": 0.6466597222222222,
+      "ci_high": 0.7494513888888887,
+      "latency_ms": {
+        "retrieval": 0.16854150453582406,
+        "rerank": 25.53468750556931,
+        "total": 25.703229010105133,
+        "retrieval_p95": 0.22135829640319574,
+        "rerank_p95": 44.53140900586732
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.6986111111111111,
+      "scored_candidates": 3.0,
+      "system": "no_rerank",
+      "mean": 0.6986111111111111,
+      "ci_low": 0.6466597222222222,
+      "ci_high": 0.7494513888888887,
+      "latency_ms": {
+        "retrieval": 0.16854150453582406,
+        "rerank": 0.0,
+        "total": 0.16854150453582406,
+        "retrieval_p95": 0.22135829640319574,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.6986111111111111,
+      "scored_candidates": 3.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8013333333333332,
+      "scored_candidates": 10.0,
+      "system": "rerank",
+      "mean": 0.6836951279072232,
+      "ci_low": 0.6398040038336759,
+      "ci_high": 0.728550477252901,
+      "latency_ms": {
+        "retrieval": 0.16033300198614597,
+        "rerank": 73.77283400273882,
+        "total": 73.93316700472496,
+        "retrieval_p95": 0.19826874631689861,
+        "rerank_p95": 100.28561874496518
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8013333333333332,
+      "scored_candidates": 10.0,
+      "system": "no_rerank",
+      "mean": 0.6761883106409642,
+      "ci_low": 0.6316800185756108,
+      "ci_high": 0.7214336335778313,
+      "latency_ms": {
+        "retrieval": 0.16033300198614597,
+        "rerank": 0.0,
+        "total": 0.16033300198614597,
+        "retrieval_p95": 0.19826874631689861,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8013333333333332,
+      "scored_candidates": 10.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0075068172662588525,
+      "ci_low": -0.012735638397513384,
+      "ci_high": 0.02827505742791781,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8013333333333332,
+      "scored_candidates": 10.0,
+      "system": "rerank",
+      "mean": 0.8013333333333332,
+      "ci_low": 0.7573305555555555,
+      "ci_high": 0.8458944444444444,
+      "latency_ms": {
+        "retrieval": 0.16033300198614597,
+        "rerank": 73.77283400273882,
+        "total": 73.93316700472496,
+        "retrieval_p95": 0.19826874631689861,
+        "rerank_p95": 100.28561874496518
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8013333333333332,
+      "scored_candidates": 10.0,
+      "system": "no_rerank",
+      "mean": 0.8013333333333332,
+      "ci_low": 0.7573305555555555,
+      "ci_high": 0.8458944444444444,
+      "latency_ms": {
+        "retrieval": 0.16033300198614597,
+        "rerank": 0.0,
+        "total": 0.16033300198614597,
+        "retrieval_p95": 0.19826874631689861,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8013333333333332,
+      "scored_candidates": 10.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8642777777777777,
+      "scored_candidates": 30.0,
+      "system": "rerank",
+      "mean": 0.6847711197952394,
+      "ci_low": 0.6404877560016173,
+      "ci_high": 0.7284609542191832,
+      "latency_ms": {
+        "retrieval": 0.1636045053601265,
+        "rerank": 188.90229149837978,
+        "total": 189.0658960037399,
+        "retrieval_p95": 0.20510863687377426,
+        "rerank_p95": 216.19451631995616
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8642777777777777,
+      "scored_candidates": 30.0,
+      "system": "no_rerank",
+      "mean": 0.6761883106409642,
+      "ci_low": 0.6316800185756108,
+      "ci_high": 0.7214336335778313,
+      "latency_ms": {
+        "retrieval": 0.1636045053601265,
+        "rerank": 0.0,
+        "total": 0.1636045053601265,
+        "retrieval_p95": 0.20510863687377426,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8642777777777777,
+      "scored_candidates": 30.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.008582809154275261,
+      "ci_low": -0.017188788272388594,
+      "ci_high": 0.03417734657304712,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8642777777777777,
+      "scored_candidates": 30.0,
+      "system": "rerank",
+      "mean": 0.8009444444444445,
+      "ci_low": 0.7575513888888888,
+      "ci_high": 0.8430611111111111,
+      "latency_ms": {
+        "retrieval": 0.1636045053601265,
+        "rerank": 188.90229149837978,
+        "total": 189.0658960037399,
+        "retrieval_p95": 0.20510863687377426,
+        "rerank_p95": 216.19451631995616
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8642777777777777,
+      "scored_candidates": 30.0,
+      "system": "no_rerank",
+      "mean": 0.8013333333333332,
+      "ci_low": 0.7573305555555555,
+      "ci_high": 0.8458944444444444,
+      "latency_ms": {
+        "retrieval": 0.1636045053601265,
+        "rerank": 0.0,
+        "total": 0.1636045053601265,
+        "retrieval_p95": 0.20510863687377426,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8642777777777777,
+      "scored_candidates": 30.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.000388888888888889,
+      "ci_low": -0.028723611111111113,
+      "ci_high": 0.02861388888888887,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9126666666666667,
+      "scored_candidates": 99.88666666666667,
+      "system": "rerank",
+      "mean": 0.6879551368206963,
+      "ci_low": 0.6445289342643847,
+      "ci_high": 0.731647662209349,
+      "latency_ms": {
+        "retrieval": 0.165229503181763,
+        "rerank": 540.0332930148579,
+        "total": 540.1985225180397,
+        "retrieval_p95": 0.20300558098824698,
+        "rerank_p95": 580.7715780218132
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9126666666666667,
+      "scored_candidates": 99.88666666666667,
+      "system": "no_rerank",
+      "mean": 0.6761883106409642,
+      "ci_low": 0.6316800185756108,
+      "ci_high": 0.7214336335778313,
+      "latency_ms": {
+        "retrieval": 0.165229503181763,
+        "rerank": 0.0,
+        "total": 0.165229503181763,
+        "retrieval_p95": 0.20300558098824698,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9126666666666667,
+      "scored_candidates": 99.88666666666667,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.011766826179732038,
+      "ci_low": -0.01715705170160866,
+      "ci_high": 0.03998988771287102,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9126666666666667,
+      "scored_candidates": 99.88666666666667,
+      "system": "rerank",
+      "mean": 0.803888888888889,
+      "ci_low": 0.7596583333333334,
+      "ci_high": 0.8464444444444443,
+      "latency_ms": {
+        "retrieval": 0.165229503181763,
+        "rerank": 540.0332930148579,
+        "total": 540.1985225180397,
+        "retrieval_p95": 0.20300558098824698,
+        "rerank_p95": 580.7715780218132
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9126666666666667,
+      "scored_candidates": 99.88666666666667,
+      "system": "no_rerank",
+      "mean": 0.8013333333333332,
+      "ci_low": 0.7573305555555555,
+      "ci_high": 0.8458944444444444,
+      "latency_ms": {
+        "retrieval": 0.165229503181763,
+        "rerank": 0.0,
+        "total": 0.165229503181763,
+        "retrieval_p95": 0.20300558098824698,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9126666666666667,
+      "scored_candidates": 99.88666666666667,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.002555555555555556,
+      "ci_low": -0.03234166666666665,
+      "ci_high": 0.035674999999999964,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9466666666666667,
+      "scored_candidates": 298.50333333333333,
+      "system": "rerank",
+      "mean": 0.6849324441546909,
+      "ci_low": 0.6409867694190087,
+      "ci_high": 0.729488159579672,
+      "latency_ms": {
+        "retrieval": 0.1855209848145023,
+        "rerank": 1431.7944790091133,
+        "total": 1431.9799999939278,
+        "retrieval_p95": 0.2395306451944635,
+        "rerank_p95": 1547.487512868247
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9466666666666667,
+      "scored_candidates": 298.50333333333333,
+      "system": "no_rerank",
+      "mean": 0.6761883106409642,
+      "ci_low": 0.6316800185756108,
+      "ci_high": 0.7214336335778313,
+      "latency_ms": {
+        "retrieval": 0.1855209848145023,
+        "rerank": 0.0,
+        "total": 0.1855209848145023,
+        "retrieval_p95": 0.2395306451944635,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9466666666666667,
+      "scored_candidates": 298.50333333333333,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.008744133513726776,
+      "ci_low": -0.02102487324775617,
+      "ci_high": 0.03781580461796089,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9466666666666667,
+      "scored_candidates": 298.50333333333333,
+      "system": "rerank",
+      "mean": 0.8005555555555556,
+      "ci_low": 0.7549972222222222,
+      "ci_high": 0.8440027777777778,
+      "latency_ms": {
+        "retrieval": 0.1855209848145023,
+        "rerank": 1431.7944790091133,
+        "total": 1431.9799999939278,
+        "retrieval_p95": 0.2395306451944635,
+        "rerank_p95": 1547.487512868247
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9466666666666667,
+      "scored_candidates": 298.50333333333333,
+      "system": "no_rerank",
+      "mean": 0.8013333333333332,
+      "ci_low": 0.7573305555555555,
+      "ci_high": 0.8458944444444444,
+      "latency_ms": {
+        "retrieval": 0.1855209848145023,
+        "rerank": 0.0,
+        "total": 0.1855209848145023,
+        "retrieval_p95": 0.2395306451944635,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9466666666666667,
+      "scored_candidates": 298.50333333333333,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.0007777777777777772,
+      "ci_low": -0.03744444444444444,
+      "ci_high": 0.034113888888888874,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.97,
+      "scored_candidates": 972.8866666666667,
+      "system": "rerank",
+      "mean": 0.6826433027544997,
+      "ci_low": 0.6390158545893527,
+      "ci_high": 0.7272510742775499,
+      "latency_ms": {
+        "retrieval": 0.24262501392513514,
+        "rerank": 4386.284250504104,
+        "total": 4386.52687551803,
+        "retrieval_p95": 0.28815558907808736,
+        "rerank_p95": 4718.229569371033
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.97,
+      "scored_candidates": 972.8866666666667,
+      "system": "no_rerank",
+      "mean": 0.6761883106409642,
+      "ci_low": 0.6316800185756108,
+      "ci_high": 0.7214336335778313,
+      "latency_ms": {
+        "retrieval": 0.24262501392513514,
+        "rerank": 0.0,
+        "total": 0.24262501392513514,
+        "retrieval_p95": 0.28815558907808736,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.97,
+      "scored_candidates": 972.8866666666667,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.006454992113535561,
+      "ci_low": -0.023509692375199065,
+      "ci_high": 0.03591044959556784,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.97,
+      "scored_candidates": 972.8866666666667,
+      "system": "rerank",
+      "mean": 0.7922222222222223,
+      "ci_low": 0.7466666666666667,
+      "ci_high": 0.8368916666666667,
+      "latency_ms": {
+        "retrieval": 0.24262501392513514,
+        "rerank": 4386.284250504104,
+        "total": 4386.52687551803,
+        "retrieval_p95": 0.28815558907808736,
+        "rerank_p95": 4718.229569371033
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.97,
+      "scored_candidates": 972.8866666666667,
+      "system": "no_rerank",
+      "mean": 0.8013333333333332,
+      "ci_low": 0.7573305555555555,
+      "ci_high": 0.8458944444444444,
+      "latency_ms": {
+        "retrieval": 0.24262501392513514,
+        "rerank": 0.0,
+        "total": 0.24262501392513514,
+        "retrieval_p95": 0.28815558907808736,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.97,
+      "scored_candidates": 972.8866666666667,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.009111111111111111,
+      "ci_low": -0.046002777777777774,
+      "ci_high": 0.02744722222222221,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.6603333333333333,
+      "scored_candidates": 3.0,
+      "system": "rerank",
+      "mean": 0.6256011164503654,
+      "ci_low": 0.5761129049006886,
+      "ci_high": 0.6749843677361057,
+      "latency_ms": {
+        "retrieval": 7.515312507166527,
+        "rerank": 25.157333497190848,
+        "total": 32.672646004357375,
+        "retrieval_p95": 9.64489759207936,
+        "rerank_p95": 61.145069042686394
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.6603333333333333,
+      "scored_candidates": 3.0,
+      "system": "no_rerank",
+      "mean": 0.5947062656963861,
+      "ci_low": 0.5459223467533592,
+      "ci_high": 0.642610191213968,
+      "latency_ms": {
+        "retrieval": 7.515312507166527,
+        "rerank": 0.0,
+        "total": 7.515312507166527,
+        "retrieval_p95": 9.64489759207936,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.6603333333333333,
+      "scored_candidates": 3.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.03089485075397935,
+      "ci_low": 0.01473386370770332,
+      "ci_high": 0.046995187248937656,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.6603333333333333,
+      "scored_candidates": 3.0,
+      "system": "rerank",
+      "mean": 0.6603333333333333,
+      "ci_low": 0.6099972222222222,
+      "ci_high": 0.7111277777777777,
+      "latency_ms": {
+        "retrieval": 7.515312507166527,
+        "rerank": 25.157333497190848,
+        "total": 32.672646004357375,
+        "retrieval_p95": 9.64489759207936,
+        "rerank_p95": 61.145069042686394
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.6603333333333333,
+      "scored_candidates": 3.0,
+      "system": "no_rerank",
+      "mean": 0.6603333333333333,
+      "ci_low": 0.6099972222222222,
+      "ci_high": 0.7111277777777777,
+      "latency_ms": {
+        "retrieval": 7.515312507166527,
+        "rerank": 0.0,
+        "total": 7.515312507166527,
+        "retrieval_p95": 9.64489759207936,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.6603333333333333,
+      "scored_candidates": 3.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.7833333333333333,
+      "scored_candidates": 10.0,
+      "system": "rerank",
+      "mean": 0.6805505557837073,
+      "ci_low": 0.636237489020601,
+      "ci_high": 0.7271673214854566,
+      "latency_ms": {
+        "retrieval": 7.534208489232697,
+        "rerank": 74.77556249068584,
+        "total": 82.30977097991854,
+        "retrieval_p95": 9.501472297415605,
+        "rerank_p95": 128.2257931045024
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.7833333333333333,
+      "scored_candidates": 10.0,
+      "system": "no_rerank",
+      "mean": 0.6450816521455774,
+      "ci_low": 0.600427918819533,
+      "ci_high": 0.6882734039515411,
+      "latency_ms": {
+        "retrieval": 7.534208489232697,
+        "rerank": 0.0,
+        "total": 7.534208489232697,
+        "retrieval_p95": 9.501472297415605,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.7833333333333333,
+      "scored_candidates": 10.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.035468903638129705,
+      "ci_low": 0.01464488583560877,
+      "ci_high": 0.05702509026493092,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.7833333333333333,
+      "scored_candidates": 10.0,
+      "system": "rerank",
+      "mean": 0.7833333333333333,
+      "ci_low": 0.7393250000000001,
+      "ci_high": 0.8273499999999998,
+      "latency_ms": {
+        "retrieval": 7.534208489232697,
+        "rerank": 74.77556249068584,
+        "total": 82.30977097991854,
+        "retrieval_p95": 9.501472297415605,
+        "rerank_p95": 128.2257931045024
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.7833333333333333,
+      "scored_candidates": 10.0,
+      "system": "no_rerank",
+      "mean": 0.7833333333333333,
+      "ci_low": 0.7393250000000001,
+      "ci_high": 0.8273499999999998,
+      "latency_ms": {
+        "retrieval": 7.534208489232697,
+        "rerank": 0.0,
+        "total": 7.534208489232697,
+        "retrieval_p95": 9.501472297415605,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.7833333333333333,
+      "scored_candidates": 10.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8653333333333334,
+      "scored_candidates": 30.0,
+      "system": "rerank",
+      "mean": 0.6906053988122384,
+      "ci_low": 0.6483504125234588,
+      "ci_high": 0.733981674962236,
+      "latency_ms": {
+        "retrieval": 7.44370800384786,
+        "rerank": 193.19081246794667,
+        "total": 200.63452047179453,
+        "retrieval_p95": 9.70008573931409,
+        "rerank_p95": 252.07408234564357
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8653333333333334,
+      "scored_candidates": 30.0,
+      "system": "no_rerank",
+      "mean": 0.6450816521455774,
+      "ci_low": 0.600427918819533,
+      "ci_high": 0.6882734039515411,
+      "latency_ms": {
+        "retrieval": 7.44370800384786,
+        "rerank": 0.0,
+        "total": 7.44370800384786,
+        "retrieval_p95": 9.70008573931409,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8653333333333334,
+      "scored_candidates": 30.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.04552374666666089,
+      "ci_low": 0.01769063347906041,
+      "ci_high": 0.07426037481707931,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8653333333333334,
+      "scored_candidates": 30.0,
+      "system": "rerank",
+      "mean": 0.8102222222222222,
+      "ci_low": 0.767213888888889,
+      "ci_high": 0.8516666666666667,
+      "latency_ms": {
+        "retrieval": 7.44370800384786,
+        "rerank": 193.19081246794667,
+        "total": 200.63452047179453,
+        "retrieval_p95": 9.70008573931409,
+        "rerank_p95": 252.07408234564357
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8653333333333334,
+      "scored_candidates": 30.0,
+      "system": "no_rerank",
+      "mean": 0.7833333333333333,
+      "ci_low": 0.7393250000000001,
+      "ci_high": 0.8273499999999998,
+      "latency_ms": {
+        "retrieval": 7.44370800384786,
+        "rerank": 0.0,
+        "total": 7.44370800384786,
+        "retrieval_p95": 9.70008573931409,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8653333333333334,
+      "scored_candidates": 30.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.02688888888888889,
+      "ci_low": -0.007111111111111111,
+      "ci_high": 0.05866666666666667,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.925,
+      "scored_candidates": 100.0,
+      "system": "rerank",
+      "mean": 0.6891952249193345,
+      "ci_low": 0.6469638502428726,
+      "ci_high": 0.7320437593186737,
+      "latency_ms": {
+        "retrieval": 7.416395994368941,
+        "rerank": 522.5539369712351,
+        "total": 529.970332965604,
+        "retrieval_p95": 9.06829969317187,
+        "rerank_p95": 601.3837446109392
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.925,
+      "scored_candidates": 100.0,
+      "system": "no_rerank",
+      "mean": 0.6450816521455774,
+      "ci_low": 0.600427918819533,
+      "ci_high": 0.6882734039515411,
+      "latency_ms": {
+        "retrieval": 7.416395994368941,
+        "rerank": 0.0,
+        "total": 7.416395994368941,
+        "retrieval_p95": 9.06829969317187,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.925,
+      "scored_candidates": 100.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.04411357277375699,
+      "ci_low": 0.013507828640513952,
+      "ci_high": 0.07633337371409503,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.925,
+      "scored_candidates": 100.0,
+      "system": "rerank",
+      "mean": 0.813888888888889,
+      "ci_low": 0.7715472222222223,
+      "ci_high": 0.8558972222222221,
+      "latency_ms": {
+        "retrieval": 7.416395994368941,
+        "rerank": 522.5539369712351,
+        "total": 529.970332965604,
+        "retrieval_p95": 9.06829969317187,
+        "rerank_p95": 601.3837446109392
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.925,
+      "scored_candidates": 100.0,
+      "system": "no_rerank",
+      "mean": 0.7833333333333333,
+      "ci_low": 0.7393250000000001,
+      "ci_high": 0.8273499999999998,
+      "latency_ms": {
+        "retrieval": 7.416395994368941,
+        "rerank": 0.0,
+        "total": 7.416395994368941,
+        "retrieval_p95": 9.06829969317187,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.925,
+      "scored_candidates": 100.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.030555555555555555,
+      "ci_low": -0.01,
+      "ci_high": 0.07,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9733333333333334,
+      "scored_candidates": 300.0,
+      "system": "rerank",
+      "mean": 0.6895761389328252,
+      "ci_low": 0.6463547323482296,
+      "ci_high": 0.7325781419526516,
+      "latency_ms": {
+        "retrieval": 7.416312480927445,
+        "rerank": 1358.8618120265892,
+        "total": 1366.2781245075166,
+        "retrieval_p95": 9.597573567589281,
+        "rerank_p95": 1552.4005389394006
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9733333333333334,
+      "scored_candidates": 300.0,
+      "system": "no_rerank",
+      "mean": 0.6450816521455774,
+      "ci_low": 0.600427918819533,
+      "ci_high": 0.6882734039515411,
+      "latency_ms": {
+        "retrieval": 7.416312480927445,
+        "rerank": 0.0,
+        "total": 7.416312480927445,
+        "retrieval_p95": 9.597573567589281,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9733333333333334,
+      "scored_candidates": 300.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.04449448678724766,
+      "ci_low": 0.013326344625932204,
+      "ci_high": 0.07728228699619047,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9733333333333334,
+      "scored_candidates": 300.0,
+      "system": "rerank",
+      "mean": 0.818888888888889,
+      "ci_low": 0.7755527777777779,
+      "ci_high": 0.8592305555555555,
+      "latency_ms": {
+        "retrieval": 7.416312480927445,
+        "rerank": 1358.8618120265892,
+        "total": 1366.2781245075166,
+        "retrieval_p95": 9.597573567589281,
+        "rerank_p95": 1552.4005389394006
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9733333333333334,
+      "scored_candidates": 300.0,
+      "system": "no_rerank",
+      "mean": 0.7833333333333333,
+      "ci_low": 0.7393250000000001,
+      "ci_high": 0.8273499999999998,
+      "latency_ms": {
+        "retrieval": 7.416312480927445,
+        "rerank": 0.0,
+        "total": 7.416312480927445,
+        "retrieval_p95": 9.597573567589281,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9733333333333334,
+      "scored_candidates": 300.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.035555555555555556,
+      "ci_low": -0.007777777777777778,
+      "ci_high": 0.07833333333333334,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9933333333333333,
+      "scored_candidates": 1000.0,
+      "system": "rerank",
+      "mean": 0.6833745499089499,
+      "ci_low": 0.6395422270070444,
+      "ci_high": 0.7275345268427283,
+      "latency_ms": {
+        "retrieval": 7.584687497001141,
+        "rerank": 4203.63475047634,
+        "total": 4211.219437973341,
+        "retrieval_p95": 29.83097704127431,
+        "rerank_p95": 4682.582542279852
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9933333333333333,
+      "scored_candidates": 1000.0,
+      "system": "no_rerank",
+      "mean": 0.6450816521455774,
+      "ci_low": 0.600427918819533,
+      "ci_high": 0.6882734039515411,
+      "latency_ms": {
+        "retrieval": 7.584687497001141,
+        "rerank": 0.0,
+        "total": 7.584687497001141,
+        "retrieval_p95": 29.83097704127431,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9933333333333333,
+      "scored_candidates": 1000.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0382928977633724,
+      "ci_low": 0.006835411873393567,
+      "ci_high": 0.07076734870791555,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9933333333333333,
+      "scored_candidates": 1000.0,
+      "system": "rerank",
+      "mean": 0.7955555555555556,
+      "ci_low": 0.7491111111111112,
+      "ci_high": 0.8400055555555554,
+      "latency_ms": {
+        "retrieval": 7.584687497001141,
+        "rerank": 4203.63475047634,
+        "total": 4211.219437973341,
+        "retrieval_p95": 29.83097704127431,
+        "rerank_p95": 4682.582542279852
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9933333333333333,
+      "scored_candidates": 1000.0,
+      "system": "no_rerank",
+      "mean": 0.7833333333333333,
+      "ci_low": 0.7393250000000001,
+      "ci_high": 0.8273499999999998,
+      "latency_ms": {
+        "retrieval": 7.584687497001141,
+        "rerank": 0.0,
+        "total": 7.584687497001141,
+        "retrieval_p95": 29.83097704127431,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9933333333333333,
+      "scored_candidates": 1000.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.012222222222222221,
+      "ci_low": -0.030013888888888864,
+      "ci_high": 0.05333333333333334,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.7064444444444444,
+      "scored_candidates": 3.0,
+      "system": "rerank",
+      "mean": 0.6581250376332274,
+      "ci_low": 0.6074009836940734,
+      "ci_high": 0.7055247131982707,
+      "latency_ms": {
+        "retrieval": 12.330687502981164,
+        "rerank": 26.69922899804078,
+        "total": 39.029916501021944,
+        "retrieval_p95": 16.95396043796791,
+        "rerank_p95": 163.41656425793192
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.7064444444444444,
+      "scored_candidates": 3.0,
+      "system": "no_rerank",
+      "mean": 0.662739916282155,
+      "ci_low": 0.6126036545679364,
+      "ci_high": 0.7090101761266603,
+      "latency_ms": {
+        "retrieval": 12.330687502981164,
+        "rerank": 0.0,
+        "total": 12.330687502981164,
+        "retrieval_p95": 16.95396043796791,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.7064444444444444,
+      "scored_candidates": 3.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.004614878648927612,
+      "ci_low": -0.019486765814318692,
+      "ci_high": 0.010914073743911804,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.7064444444444444,
+      "scored_candidates": 3.0,
+      "system": "rerank",
+      "mean": 0.7064444444444444,
+      "ci_low": 0.6535555555555556,
+      "ci_high": 0.7546736111111112,
+      "latency_ms": {
+        "retrieval": 12.330687502981164,
+        "rerank": 26.69922899804078,
+        "total": 39.029916501021944,
+        "retrieval_p95": 16.95396043796791,
+        "rerank_p95": 163.41656425793192
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.7064444444444444,
+      "scored_candidates": 3.0,
+      "system": "no_rerank",
+      "mean": 0.7064444444444444,
+      "ci_low": 0.6535555555555556,
+      "ci_high": 0.7546736111111112,
+      "latency_ms": {
+        "retrieval": 12.330687502981164,
+        "rerank": 0.0,
+        "total": 12.330687502981164,
+        "retrieval_p95": 16.95396043796791,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 3,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.7064444444444444,
+      "scored_candidates": 3.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8362222222222222,
+      "scored_candidates": 10.0,
+      "system": "rerank",
+      "mean": 0.7086467275704575,
+      "ci_low": 0.666919861389208,
+      "ci_high": 0.7512685020637919,
+      "latency_ms": {
+        "retrieval": 12.362083012703806,
+        "rerank": 75.4629165166989,
+        "total": 87.8249995294027,
+        "retrieval_p95": 15.002348566486045,
+        "rerank_p95": 225.3557583797374
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8362222222222222,
+      "scored_candidates": 10.0,
+      "system": "no_rerank",
+      "mean": 0.7127069247605036,
+      "ci_low": 0.6700616607494582,
+      "ci_high": 0.7540347652770087,
+      "latency_ms": {
+        "retrieval": 12.362083012703806,
+        "rerank": 0.0,
+        "total": 12.362083012703806,
+        "retrieval_p95": 15.002348566486045,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8362222222222222,
+      "scored_candidates": 10.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.004060197190046075,
+      "ci_low": -0.02500254617834288,
+      "ci_high": 0.016957489939691008,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8362222222222222,
+      "scored_candidates": 10.0,
+      "system": "rerank",
+      "mean": 0.8362222222222222,
+      "ci_low": 0.7958833333333333,
+      "ci_high": 0.8747888888888888,
+      "latency_ms": {
+        "retrieval": 12.362083012703806,
+        "rerank": 75.4629165166989,
+        "total": 87.8249995294027,
+        "retrieval_p95": 15.002348566486045,
+        "rerank_p95": 225.3557583797374
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8362222222222222,
+      "scored_candidates": 10.0,
+      "system": "no_rerank",
+      "mean": 0.8362222222222222,
+      "ci_low": 0.7958833333333333,
+      "ci_high": 0.8747888888888888,
+      "latency_ms": {
+        "retrieval": 12.362083012703806,
+        "rerank": 0.0,
+        "total": 12.362083012703806,
+        "retrieval_p95": 15.002348566486045,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 10,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8362222222222222,
+      "scored_candidates": 10.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8993333333333333,
+      "scored_candidates": 30.0,
+      "system": "rerank",
+      "mean": 0.7038832024189117,
+      "ci_low": 0.6611894322925814,
+      "ci_high": 0.7467631132142453,
+      "latency_ms": {
+        "retrieval": 12.368645999231376,
+        "rerank": 192.8808330121683,
+        "total": 205.24947901139967,
+        "retrieval_p95": 15.649975002452267,
+        "rerank_p95": 348.2878908282146
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8993333333333333,
+      "scored_candidates": 30.0,
+      "system": "no_rerank",
+      "mean": 0.7127069247605036,
+      "ci_low": 0.6700616607494582,
+      "ci_high": 0.7540347652770087,
+      "latency_ms": {
+        "retrieval": 12.368645999231376,
+        "rerank": 0.0,
+        "total": 12.368645999231376,
+        "retrieval_p95": 15.649975002452267,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.8993333333333333,
+      "scored_candidates": 30.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.008823722341591898,
+      "ci_low": -0.03576351583727785,
+      "ci_high": 0.018237067809243817,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8993333333333333,
+      "scored_candidates": 30.0,
+      "system": "rerank",
+      "mean": 0.8352222222222222,
+      "ci_low": 0.7942222222222222,
+      "ci_high": 0.8741166666666667,
+      "latency_ms": {
+        "retrieval": 12.368645999231376,
+        "rerank": 192.8808330121683,
+        "total": 205.24947901139967,
+        "retrieval_p95": 15.649975002452267,
+        "rerank_p95": 348.2878908282146
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8993333333333333,
+      "scored_candidates": 30.0,
+      "system": "no_rerank",
+      "mean": 0.8362222222222222,
+      "ci_low": 0.7958833333333333,
+      "ci_high": 0.8747888888888888,
+      "latency_ms": {
+        "retrieval": 12.368645999231376,
+        "rerank": 0.0,
+        "total": 12.368645999231376,
+        "retrieval_p95": 15.649975002452267,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 30,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.8993333333333333,
+      "scored_candidates": 30.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.0010000000000000002,
+      "ci_low": -0.0293361111111111,
+      "ci_high": 0.02578888888888883,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9416666666666667,
+      "scored_candidates": 100.0,
+      "system": "rerank",
+      "mean": 0.6944192987526312,
+      "ci_low": 0.6516803477253481,
+      "ci_high": 0.7387660408782668,
+      "latency_ms": {
+        "retrieval": 12.079708511009812,
+        "rerank": 555.1320834783837,
+        "total": 567.2117919893935,
+        "retrieval_p95": 13.351083328598179,
+        "rerank_p95": 746.6747017315357
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9416666666666667,
+      "scored_candidates": 100.0,
+      "system": "no_rerank",
+      "mean": 0.7127069247605036,
+      "ci_low": 0.6700616607494582,
+      "ci_high": 0.7540347652770087,
+      "latency_ms": {
+        "retrieval": 12.079708511009812,
+        "rerank": 0.0,
+        "total": 12.079708511009812,
+        "retrieval_p95": 13.351083328598179,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9416666666666667,
+      "scored_candidates": 100.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.018287626007872416,
+      "ci_low": -0.04648378919715332,
+      "ci_high": 0.009909253236691382,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9416666666666667,
+      "scored_candidates": 100.0,
+      "system": "rerank",
+      "mean": 0.818888888888889,
+      "ci_low": 0.77555,
+      "ci_high": 0.8608888888888888,
+      "latency_ms": {
+        "retrieval": 12.079708511009812,
+        "rerank": 555.1320834783837,
+        "total": 567.2117919893935,
+        "retrieval_p95": 13.351083328598179,
+        "rerank_p95": 746.6747017315357
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9416666666666667,
+      "scored_candidates": 100.0,
+      "system": "no_rerank",
+      "mean": 0.8362222222222222,
+      "ci_low": 0.7958833333333333,
+      "ci_high": 0.8747888888888888,
+      "latency_ms": {
+        "retrieval": 12.079708511009812,
+        "rerank": 0.0,
+        "total": 12.079708511009812,
+        "retrieval_p95": 13.351083328598179,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 100,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9416666666666667,
+      "scored_candidates": 100.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.017333333333333333,
+      "ci_low": -0.051666666666666666,
+      "ci_high": 0.012669444444444431,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9833333333333333,
+      "scored_candidates": 300.0,
+      "system": "rerank",
+      "mean": 0.6869481972797626,
+      "ci_low": 0.6435288445232179,
+      "ci_high": 0.7319660240636557,
+      "latency_ms": {
+        "retrieval": 12.992395524634048,
+        "rerank": 1466.6251659800764,
+        "total": 1479.6175615047105,
+        "retrieval_p95": 15.253821131773298,
+        "rerank_p95": 1744.1472436912593
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9833333333333333,
+      "scored_candidates": 300.0,
+      "system": "no_rerank",
+      "mean": 0.7127069247605036,
+      "ci_low": 0.6700616607494582,
+      "ci_high": 0.7540347652770087,
+      "latency_ms": {
+        "retrieval": 12.992395524634048,
+        "rerank": 0.0,
+        "total": 12.992395524634048,
+        "retrieval_p95": 15.253821131773298,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9833333333333333,
+      "scored_candidates": 300.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.025758727480740876,
+      "ci_low": -0.05357716352097908,
+      "ci_high": 0.002684628022054498,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9833333333333333,
+      "scored_candidates": 300.0,
+      "system": "rerank",
+      "mean": 0.8055555555555556,
+      "ci_low": 0.7619972222222222,
+      "ci_high": 0.8496694444444445,
+      "latency_ms": {
+        "retrieval": 12.992395524634048,
+        "rerank": 1466.6251659800764,
+        "total": 1479.6175615047105,
+        "retrieval_p95": 15.253821131773298,
+        "rerank_p95": 1744.1472436912593
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9833333333333333,
+      "scored_candidates": 300.0,
+      "system": "no_rerank",
+      "mean": 0.8362222222222222,
+      "ci_low": 0.7958833333333333,
+      "ci_high": 0.8747888888888888,
+      "latency_ms": {
+        "retrieval": 12.992395524634048,
+        "rerank": 0.0,
+        "total": 12.992395524634048,
+        "retrieval_p95": 15.253821131773298,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 300,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9833333333333333,
+      "scored_candidates": 300.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.030666666666666665,
+      "ci_low": -0.06634166666666665,
+      "ci_high": 0.00167777777777772,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9966666666666667,
+      "scored_candidates": 1000.0,
+      "system": "rerank",
+      "mean": 0.6832207599550641,
+      "ci_low": 0.6399082946958512,
+      "ci_high": 0.7277646325127917,
+      "latency_ms": {
+        "retrieval": 13.483624992659315,
+        "rerank": 4482.155020028586,
+        "total": 4495.638645021245,
+        "retrieval_p95": 16.766212492075287,
+        "rerank_p95": 4993.256636426668
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9966666666666667,
+      "scored_candidates": 1000.0,
+      "system": "no_rerank",
+      "mean": 0.7127069247605036,
+      "ci_low": 0.6700616607494582,
+      "ci_high": 0.7540347652770087,
+      "latency_ms": {
+        "retrieval": 13.483624992659315,
+        "rerank": 0.0,
+        "total": 13.483624992659315,
+        "retrieval_p95": 16.766212492075287,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "ndcg@10",
+      "recall_at_depth": 0.9966666666666667,
+      "scored_candidates": 1000.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.02948616480543951,
+      "ci_low": -0.05801373833078679,
+      "ci_high": -9.819093035351117e-5,
+      "latency_ms": null
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9966666666666667,
+      "scored_candidates": 1000.0,
+      "system": "rerank",
+      "mean": 0.7955555555555556,
+      "ci_low": 0.7499916666666667,
+      "ci_high": 0.8398916666666667,
+      "latency_ms": {
+        "retrieval": 13.483624992659315,
+        "rerank": 4482.155020028586,
+        "total": 4495.638645021245,
+        "retrieval_p95": 16.766212492075287,
+        "rerank_p95": 4993.256636426668
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9966666666666667,
+      "scored_candidates": 1000.0,
+      "system": "no_rerank",
+      "mean": 0.8362222222222222,
+      "ci_low": 0.7958833333333333,
+      "ci_high": 0.8747888888888888,
+      "latency_ms": {
+        "retrieval": 13.483624992659315,
+        "rerank": 0.0,
+        "total": 13.483624992659315,
+        "retrieval_p95": 16.766212492075287,
+        "rerank_p95": 0.0
+      }
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "depth": 1000,
+      "n_queries": 300,
+      "metric": "recall@10",
+      "recall_at_depth": 0.9966666666666667,
+      "scored_candidates": 1000.0,
+      "system": "rerank_minus_no_rerank",
+      "mean": -0.04066666666666666,
+      "ci_low": -0.079,
+      "ci_high": -0.005108333333333349,
+      "latency_ms": null
+    }
+  ],
+  "comparisons": [
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 3
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.045712701447795705,
+      "ci_low": -0.07310150905297477,
+      "ci_high": -0.017405729805617297,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.004260008913473185,
+      "ci_low": -0.02293837924301314,
+      "ci_high": 0.014167229421396903,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.0031840170254567764,
+      "ci_low": -0.015752305757171636,
+      "ci_high": 0.008658294881425025,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.0030226926660052583,
+      "ci_low": -0.008924575515961491,
+      "ci_high": 0.0027704228511309416,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 1000
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.0053118340661964724,
+      "ci_low": -0.013445623543280818,
+      "ci_high": 0.0024688152322181567,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 3
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.10527777777777779,
+      "ci_low": -0.1441125,
+      "ci_high": -0.0651638888888889,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.002555555555555556,
+      "ci_low": -0.03567499999999999,
+      "ci_high": 0.03234166666666662,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.0029444444444444444,
+      "ci_low": -0.024611111111111108,
+      "ci_high": 0.01900277777777776,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.0033333333333333335,
+      "ci_low": -0.016666666666666666,
+      "ci_high": 0.01,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "bm25",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 1000
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "diff": -0.011666666666666667,
+      "ci_low": -0.03333333333333333,
+      "ci_high": 0.008333333333333333,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 3
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "diff": -0.065004282361873,
+      "ci_low": -0.0945790766738371,
+      "ci_high": -0.03766951396487595,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "diff": -0.010054843028531196,
+      "ci_low": -0.031015671941920276,
+      "ci_high": 0.009932081205764083,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "diff": -0.0014101738929039097,
+      "ci_low": -0.013524929469266804,
+      "ci_high": 0.011446650559165258,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "diff": -0.0010292598794132376,
+      "ci_low": -0.015587054412885777,
+      "ci_high": 0.013885573056750665,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 1000
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "diff": -0.0072308489032884985,
+      "ci_low": -0.022831915711859444,
+      "ci_high": 0.00880873012975322,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 3
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "diff": -0.15855555555555556,
+      "ci_low": -0.205225,
+      "ci_high": -0.11277500000000001,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "diff": -0.035555555555555556,
+      "ci_low": -0.07833333333333334,
+      "ci_high": 0.007777777777777778,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "diff": -0.008666666666666666,
+      "ci_low": -0.04100833333333332,
+      "ci_high": 0.025333333333333333,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "diff": -0.005,
+      "ci_low": -0.02666666666666667,
+      "ci_high": 0.016666666666666666,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 1000
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "diff": -0.023333333333333334,
+      "ci_low": -0.043333333333333335,
+      "ci_high": -0.006666666666666667,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 3
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.05052168993723013,
+      "ci_low": -0.07589167717450777,
+      "ci_high": -0.0260343434704767,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.00476352515154582,
+      "ci_low": -0.018767795861008404,
+      "ci_high": 0.009837254527980665,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.014227428817826336,
+      "ci_low": -0.02911801021374111,
+      "ci_high": 0.0008450806086297359,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.021698530290694806,
+      "ci_low": -0.0376375159967647,
+      "ci_high": -0.005528101051857724,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "ndcg@10",
+      "a": {
+        "system": "rerank",
+        "depth": 1000
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.02542596761539343,
+      "ci_low": -0.04177005392376343,
+      "ci_high": -0.007688617256827253,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 3
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.1297777777777778,
+      "ci_low": -0.16855694444444444,
+      "ci_high": -0.0941055555555556,
+      "significant": true
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 30
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.0010000000000000002,
+      "ci_low": -0.0293361111111111,
+      "ci_high": 0.02578888888888883,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 100
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.017333333333333333,
+      "ci_low": -0.051666666666666666,
+      "ci_high": 0.012669444444444431,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 300
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.030666666666666665,
+      "ci_low": -0.06634166666666665,
+      "ci_high": 0.00167777777777772,
+      "significant": false
+    },
+    {
+      "dataset": "scifact",
+      "retriever": "dense_strong",
+      "metric": "recall@10",
+      "a": {
+        "system": "rerank",
+        "depth": 1000
+      },
+      "b": {
+        "system": "rerank",
+        "depth": 10
+      },
+      "diff": -0.04066666666666666,
+      "ci_low": -0.079,
+      "ci_high": -0.005108333333333349,
+      "significant": true
+    }
+  ]
+}

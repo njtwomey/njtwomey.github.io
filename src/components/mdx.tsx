@@ -1,10 +1,12 @@
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, ExternalLink } from "lucide-react";
 import * as React from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import { Link } from "react-router-dom";
 import { Paper } from "@/components/paper";
 import { Button } from "@/components/ui/button";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useCopy } from "@/hooks/use-copy";
+import { bibtex, citeAuthors, displayAuthors, reference, type Reference } from "@/content/references";
 import { publication } from "@/lib/publications";
 import { cn } from "@/lib/utils";
 
@@ -135,6 +137,92 @@ export function Cite({ id }: { id: string }) {
   );
 }
 
+/**
+ * The card behind an inline citation: everything the BibTeX record holds, so a
+ * reader can judge the source without leaving the sentence.
+ *
+ * Deliberately the same furniture as a `Paper` card on the publications page, a
+ * title, an author list, a venue and a BibTeX button, because a citation on a
+ * note and a citation on that page are the same act and should not look like
+ * two different features.
+ */
+function ReferenceCard({ id, ref }: { id: string; ref: Reference }) {
+  const { copy, copied } = useCopy();
+  return (
+    <div className="space-y-2">
+      <a href={ref.url} target="_blank" rel="noreferrer" className="text-foreground block font-medium no-underline">
+        {ref.title}
+      </a>
+      <p className="text-muted-foreground text-xs leading-snug">{displayAuthors(ref)}</p>
+      <p className="text-muted-foreground text-xs italic">
+        {ref.venueShort} · {ref.year}
+      </p>
+      <div className="flex items-center gap-1.5 pt-1">
+        <Button asChild variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
+          <a href={ref.url} target="_blank" rel="noreferrer">
+            <ExternalLink className="size-3" />
+            Paper
+          </a>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1 px-2 text-xs"
+          onClick={() => copy(bibtex(id, ref))}
+          aria-label={`Copy the BibTeX record for ${ref.title}`}
+        >
+          {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+          {copied ? "Copied" : "BibTeX"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Cite somebody else's paper.
+ *
+ * `Cite` is the same idea for Niall's own work and links to the publications
+ * page; this links out, because there is no page here to link to. Two forms,
+ * and the distinction is the one natbib makes: `<Ref id="x" />` renders "Meng
+ * et al. (2024)" for when the citation is the subject of the sentence, and
+ * `paren` renders "(Meng et al., 2024)" for support at the end of a clause. A
+ * sentence that opens with a parenthetical citation reads as a document
+ * assembled rather than written.
+ *
+ * Hovering opens the full record rather than a browser tooltip. The native
+ * `title` attribute took a plain string, which meant the title and venue were
+ * present but unreadable, and it offered no way to take the citation with you.
+ *
+ * An unknown key is loud in dev and silent in production, as `Cite` is and for
+ * the same reason: a broken citation should stop the person writing, not the
+ * person reading.
+ */
+export function Ref({ id, paren = false }: { id: string; paren?: boolean }) {
+  const ref = reference(id);
+  if (!ref) {
+    return import.meta.env.DEV ? (
+      <span className="bg-destructive/10 text-destructive rounded-sm px-1 font-mono text-sm">unknown ref: {id}</span>
+    ) : null;
+  }
+
+  const authors = citeAuthors(ref);
+  const label = paren ? `(${authors}, ${ref.year})` : `${authors} (${ref.year})`;
+
+  return (
+    <HoverCard openDelay={120} closeDelay={80}>
+      <HoverCardTrigger asChild>
+        <a href={ref.url} target="_blank" rel="noreferrer" className="whitespace-nowrap">
+          {label}
+        </a>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-96">
+        <ReferenceCard id={id} ref={ref} />
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
 /** Paths that are files in `public/`, not routes — a `<Link>` to one 404s. */
 const STATIC_PREFIXES = ["/pdf/", "/notes/", "/img/", "/publications.bib"];
 
@@ -242,6 +330,31 @@ function NotePaper(props: React.ComponentProps<typeof Paper>) {
  * the same bibliography the publications page reads, so it cannot drift out of
  * date.
  */
+/**
+ * A slot in a note for something that is not built yet.
+ *
+ * Notes here are usually written after the work, so a placeholder is normally a
+ * smell. This one exists because the search re-ranking note is being drafted
+ * deliberately ahead of its demo, to decide what the demo has to do before
+ * anybody writes it: the prose names the question, the box marks where the
+ * answer goes, and the shape of the box is the specification.
+ *
+ * It renders as an obviously unfinished panel rather than as a broken feature,
+ * because a draft note is on the dev server where it will be read by the person
+ * who has to build the thing. `published: false` keeps it off the live site,
+ * and this should be gone before that changes.
+ */
+export function Placeholder({ title, children }: { title: string; children?: React.ReactNode }) {
+  return (
+    <div className="bg-muted/30 my-6 rounded-xl border border-dashed p-5">
+      <p className="text-muted-foreground mb-2 text-[0.7rem] font-semibold tracking-widest uppercase">
+        Placeholder · {title}
+      </p>
+      <div className="text-muted-foreground text-sm leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">{children}</div>
+    </div>
+  );
+}
+
 export const mdxComponents = {
   a: Anchor,
   img: MarkdownImage,
@@ -250,4 +363,6 @@ export const mdxComponents = {
   Figure,
   Figures,
   Cite,
+  Ref,
+  Placeholder,
 } as const;

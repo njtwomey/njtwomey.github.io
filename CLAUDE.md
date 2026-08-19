@@ -25,6 +25,18 @@ set, no CSS-in-JS.
 - **Icons from `lucide-react`.** Google Scholar and ORCID are the two exceptions lucide does not
   carry; they live in `src/components/icons.tsx` on lucide's 24×24 grid. Check lucide before adding
   a third.
+- **Charts are Apache ECharts**, and it is the one exception to the rule above, because shadcn has
+  no chart that does what a result plot needs. Import from `echarts/core` and register only the
+  pieces a chart uses, since the full bundle is about a megabyte and the modular one is a fraction
+  of it. Import it from a component inside the note that needs it, so it lands in that note's chunk
+  rather than in the bundle every reader downloads.
+- **Every chart takes its look from `src/lib/chart-theme.ts`, and a hex value never appears in a
+  chart.** `darkgrid(resolved)` returns the shared option fragment to spread, and `palette(resolved)`
+  the series colours in order, both keyed on what `useTheme` resolved to. ECharts paints its own
+  canvas and knows nothing about the CSS tokens, so a chart that is legible in light and invisible in
+  dark is the failure mode here, and it is invisible to anyone testing in one theme. The palettes are
+  seaborn's, copied verbatim and lightened for dark by a shared helper, so the nth series is the same
+  hue it would be in a figure from the Python side and there is one place to correct.
 
 ## Content is compiled, not hand-written into the app
 
@@ -55,7 +67,10 @@ alongside their own chunk (`withPaperDetails` in `App.tsx`).
 ## Papers are referenced by citation key, everywhere
 
 `<Paper id="twomey2019neural" />` renders a publication; `<Cite id="..." />` is the inline-prose
-form. Referring to a paper by key rather than copying its details means a corrected venue or a new
+form. `<Ref id="..." />` is the same for **other people's** papers, keyed off
+`src/content/references.ts` and linking out rather than to the publications page; it shows the full
+record on hover, with the BibTeX. Which of its two forms to use is a grammar question and is settled
+in the `writing` skill. Referring to a paper by key rather than copying its details means a corrected venue or a new
 PDF appears everywhere at once. `src/content/references.test.ts` fails the build if a key used in a
 note or the front page's `SELECTED` list stops resolving.
 
@@ -140,7 +155,12 @@ hard-code a base. Because routing is client-side, the build writes `404.html` as
 | ------------------ | ------------------------------------------------------------------------- |
 | `add-publications` | "add my new papers", "check Scholar for anything missing", "add this PDF" |
 | `draft-note`       | "draft a note about the ordinal regression paper", "rewrite this note"    |
+| `review-note`      | "review this note", "does this read", "actually read the thing"           |
 | `writing`          | any user-facing prose                                                     |
+
+`review-note` reads a finished draft the way a stranger meets it, forwards and once, which is the one
+thing its author can no longer do. It exists because a sentence like "that pattern is already in the
+literature" passes every other check on this site and is empty to anybody who has not read the note.
 
 `add-publications` reconciles `content/publications.bib` against Google Scholar and PDFs dropped in
 `inbox/`. It must **never invent a field**: an entry with a guessed venue or a fabricated DOI is

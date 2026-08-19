@@ -209,6 +209,37 @@ rather than being enticed.
 Where a title changes and leaves the `description` redundant or contradictory, rewrite the
 description, because it renders directly underneath.
 
+## Citations
+
+Two forms, and which one to use is a question about grammar rather than about style. The citation is
+either **the subject of the sentence** or **the evidence for it**, and the form follows.
+
+| the citation is                                     | write                    | renders             |
+| --------------------------------------------------- | ------------------------ | ------------------- |
+| the subject: the authors did something              | `<Ref id="key" />`       | Meng et al. (2024)  |
+| the evidence: you claimed something, they showed it | `<Ref id="key" paren />` | (Meng et al., 2024) |
+
+```
+Meng et al. (2024) swept candidate depth and found the plateau moves.
+The plateau moves with the retriever in front of it (Meng et al., 2024).
+```
+
+**The test is to delete the citation.** If the sentence still has a subject and a verb, the citation
+was evidence and belongs in parentheses. If the sentence collapses into a fragment, the citation was
+the subject and belongs in the running text.
+
+> ~~measured the gap at 10,700 milliseconds~~ — collapsed, so: Khattab and Zaharia (2020) measured…
+
+> The gap has not closed since. — stands up, so: The gap has not closed since (Khattab and Zaharia, 2020).
+
+The failure this prevents is a sentence whose only subject is inside brackets, which reads as a
+document assembled rather than written. It is easy to miss, because "(Sun et al., 2023) showed that…"
+scans perfectly well until you look for the subject.
+
+`<Cite id="…" />` is the same idea for Niall's own papers and links to the publications page;
+`<Ref>` is for everyone else's and links out to the paper. Keys for external work live in
+`src/content/references.ts`.
+
 ## Rhythm
 
 Vary sentence length, mixing shorter sentences with longer ones that develop an idea across a
@@ -333,6 +364,12 @@ the thing). "We believe" (state the data or the assumption).
 
 **Applause lines.** Short punchy declaratives used as emotional punctuation. "Structure matters."
 "That's where meaning lives." "Full stop." Delete them.
+
+**Counted-noun openers.** "Three things limit this." "One arm runs against the literature." "Two
+problems here." Announcing a fact by tallying it, when the fact itself is the sentence you were about
+to write. The count is almost never what the reader needed, and where a genuine enumeration follows,
+the items carry their own count. Say the thing: "Most of the chart is suggestive rather than
+measured", "the BM25 arm runs against the literature".
 
 **Tricolon abuse.** Three-part lists used for rhetorical effect rather than information.
 "Innovation. Impact. Scale." Break the pattern or use a different count.

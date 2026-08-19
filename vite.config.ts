@@ -15,6 +15,8 @@ import { defineConfig } from "vitest/config";
 import { buildNotesIndex, NOTES_DIR } from "./scripts/notes-index.mjs";
 // @ts-expect-error — as above.
 import remarkCodeFile from "./scripts/remark-code-file.mjs";
+// @ts-expect-error — as above.
+import bibtex from "./scripts/vite-plugin-bibtex.mjs";
 
 /**
  * Syntax highlighting, done by Shiki at build time.
@@ -112,6 +114,9 @@ export default defineConfig({
   // escape hatch for previewing under a subpath.
   base: process.env.VITE_BASE ?? "/",
   plugins: [
+    // Before the MDX transform, so a note's `import "./references.bib"` is a
+    // real module by the time MDX resolves it.
+    bibtex(),
     // MDX must run before the react plugin so the JSX it emits gets transformed.
     {
       enforce: "pre",

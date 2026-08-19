@@ -59,8 +59,19 @@ export const KIND_LABEL: Record<PublicationKind, string> = {
 
 export const years = [...new Set(publications.map((p) => p.year))].sort((a, b) => b - a);
 
-export const kinds = (Object.keys(KIND_LABEL) as PublicationKind[]).filter((kind) =>
-  publications.some((p) => p.kind === kind),
+/**
+ * The kinds worth offering as a filter, which is not the same as the kinds that
+ * exist. A control that narrows sixty-one entries to one is a link to that entry
+ * wearing a filter's clothes, and it costs a slot in a segmented control that a
+ * reader scans as a set of real choices. Thesis is the case in point, at one
+ * entry. The threshold is data-driven rather than a hardcoded exclusion, so a
+ * second thesis would put the filter back without anyone remembering to.
+ *
+ * `KIND_LABEL` still carries every kind, because a card still has to print the
+ * badge for a paper the filter no longer offers.
+ */
+export const kinds = (Object.keys(KIND_LABEL) as PublicationKind[]).filter(
+  (kind) => publications.filter((p) => p.kind === kind).length > 1,
 );
 
 const byKey = new Map(publications.map((p) => [p.key, p]));

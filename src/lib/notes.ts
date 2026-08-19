@@ -33,11 +33,23 @@ export type Note = NoteMeta & {
  * Frontmatter comes from the generated index; the prose is fetched on demand.
  * See scripts/notes-index.mjs for why the two are separate.
  */
-const modules = import.meta.glob<{ default: ComponentType }>("../../content/notes/*/index.mdx");
+// MDX for prose, TSX for a note that is mostly a thing rather than mostly
+// words. An interactive demo is easier to write as a component than as MDX with
+// a component in it, and a note should not have to choose the harder shape to
+// stay a note. Both live at `content/notes/<slug>/index.*`, so nothing else
+// changes: same directory, same frontmatter contract, same assets beside them.
+const modules = import.meta.glob<{ default: ComponentType }>([
+  "../../content/notes/*/index.mdx",
+  "../../content/notes/*/index.tsx",
+]);
 
 /** Every note in the repo, newest first, published or not. */
 export const allNotes: Note[] = (index as (NoteMeta & { slug: string })[])
-  .map((meta) => ({ ...meta, load: modules[`../../content/notes/${meta.slug}/index.mdx`] }))
+  .map((meta) => ({
+    ...meta,
+    load:
+      modules[`../../content/notes/${meta.slug}/index.mdx`] ?? modules[`../../content/notes/${meta.slug}/index.tsx`],
+  }))
   // An index entry with no MDX file behind it means the index is stale. Drop it
   // rather than throwing: one bad entry should not take the whole site down.
   .filter((note): note is Note => Boolean(note.load));
@@ -89,25 +101,82 @@ export function formatDate(iso: string): string {
 }
 
 /**
- * A title with every word capitalised.
+ * Titles are authored in sentence case and displayed in title case.
  *
- * Titles arrive in whatever case the source used. A paper title copied out of
- * the bibliography might be "Low-Count Time Series Anomaly Detection" or
- * "Automated detection of perturbed cardiac physiology", because publishers
- * disagree, and a list mixing the two reads as though half of it is broken.
- * Casing at render rather than in the content leaves the frontmatter matching
- * the paper exactly, which is what the `A note on <exact title>` convention is
- * for.
+ * Sentence case is what the writing skill asks an author for, because a title
+ * being drafted is a sentence and capitalising it as you type gets in the way.
+ * Title case is what a heading should look like on the page. Doing the
+ * conversion here means one representation in the source and the other on
+ * screen, rather than every author remembering the house style.
  *
- * A word containing any capital already is left completely alone, which is what
- * protects SAM2, mIoU, arXiv, ECML-PKDD and Infer.NET from being flattened into
- * Sam2 and Arxiv. Hyphenated words are capitalised on both sides of the hyphen.
+ * Two things it has to get right, and an earlier version got neither. Minor
+ * words stay lowercase: "What a Better Retriever Does to Re-Ranking", not "What
+ * A Better Retriever Does To Re-Ranking", which is the tell of a naive
+ * capitalise-every-word. And a word the source already capitalised is left
+ * alone, which is what protects SAM2, mIoU, arXiv and BERT without a list of
+ * them.
+ *
+ * The first and last word are always capitalised however minor, as is the word
+ * after a colon, which are the standard exceptions.
  */
+const MINOR = new Set([
+  "a",
+  "an",
+  "the",
+  "and",
+  "but",
+  "or",
+  "nor",
+  "for",
+  "yet",
+  "so",
+  "as",
+  "at",
+  "by",
+  "in",
+  "of",
+  "off",
+  "on",
+  "per",
+  "to",
+  "up",
+  "via",
+  "from",
+  "into",
+  "like",
+  "near",
+  "onto",
+  "over",
+  "than",
+  "vs",
+  "versus",
+  "upon",
+  "with",
+]);
+
 export function titleCase(title: string): string {
-  return title.replace(/[^\s]+/g, (word) =>
-    // Any existing capital means the source cased this word deliberately.
-    /[A-Z]/.test(word) ? word : word.replace(/(^|-)([a-z])/g, (_, lead, letter) => lead + letter.toUpperCase()),
-  );
+  const words = title.split(/(\s+)/);
+  const lastIndex = words.length - 1;
+
+  let startsClause = true;
+  return words
+    .map((word, index) => {
+      if (/^\s+$/.test(word)) return word;
+
+      const isEdge = index === 0 || index === lastIndex;
+      const opensClause = startsClause;
+      startsClause = /[:.?!]$/.test(word);
+
+      // Any existing capital means the source cased this word deliberately:
+      // SAM2, mIoU, arXiv, a paper's own title.
+      if (/[A-Z]/.test(word)) return word;
+
+      const bare = word.replace(/[^a-z-]/g, "");
+      if (!isEdge && !opensClause && MINOR.has(bare)) return word;
+
+      return word.replace(/(^|-)([a-z])/g, (_, lead, letter) => lead + letter.toUpperCase());
+    })
+    .join("");
 }
 
 /**

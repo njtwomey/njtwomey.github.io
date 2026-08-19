@@ -41,19 +41,37 @@ export function buildNotesIndex({ write = true } = {}) {
   const notes = slugs
     .map((slug) => {
       const dir = resolve(NOTES_DIR, slug);
-      const file = resolve(dir, "index.mdx");
 
-      if (!existsSync(file)) {
-        problems.push(`${slug}/: no index.mdx — a note is a directory containing index.mdx`);
+      // A note is `index.mdx` for prose, or `index.tsx` where the note is
+      // mostly a thing rather than mostly words and is easier written as a
+      // component. A TSX note cannot carry YAML frontmatter, so it puts the
+      // same fields in `meta.yaml` beside it; everything downstream is
+      // identical either way.
+      const mdx = resolve(dir, "index.mdx");
+      const tsx = resolve(dir, "index.tsx");
+      const sidecar = resolve(dir, "meta.yaml");
+
+      let frontmatter;
+      if (existsSync(mdx)) {
+        const source = readFileSync(mdx, "utf8");
+        const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+        if (!match) {
+          problems.push(`${slug}: no frontmatter block`);
+          return null;
+        }
+        frontmatter = match[1];
+      } else if (existsSync(tsx)) {
+        if (!existsSync(sidecar)) {
+          problems.push(`${slug}: index.tsx needs a meta.yaml beside it, since TSX carries no frontmatter`);
+          return null;
+        }
+        frontmatter = readFileSync(sidecar, "utf8");
+      } else {
+        problems.push(`${slug}/: no index.mdx or index.tsx — a note is a directory containing one of them`);
         return null;
       }
 
-      const source = readFileSync(file, "utf8");
-      const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-      if (!match) {
-        problems.push(`${slug}: no frontmatter block`);
-        return null;
-      }
+      const match = [null, frontmatter];
 
       let meta;
       try {
@@ -117,7 +135,8 @@ export function buildNotesIndex({ write = true } = {}) {
     rmSync(staging, { recursive: true, force: true });
     for (const slug of slugs) {
       const dir = resolve(NOTES_DIR, slug);
-      if (readdirSync(dir).every((name) => name === "index.mdx")) continue;
+      const INPUTS = /^(index\.(mdx|tsx)|meta\.yaml|.*\.bib)$/;
+      if (readdirSync(dir).every((name) => INPUTS.test(name))) continue;
       // One recursive copy of the whole note directory, filtered, rather than a
       // call per file: the per-file form races with its own mkdir on macOS.
       cpSync(dir, resolve(staging, slug), {
@@ -127,7 +146,13 @@ export function buildNotesIndex({ write = true } = {}) {
         // it belongs to is a build input, and copying it would publish the
         // source verbatim under public/. It is also outside `tsconfig.json`,
         // whose include list is `src`, so it would escape `make check` as well.
-        filter: (source) => !/\/index\.mdx$|\.tsx?$/.test(source),
+        // Everything beside a note is an asset to be served, except its build
+        // inputs: the prose itself, any TypeScript, the frontmatter sidecar and
+        // the note's own bibliography. Copying those would publish the source
+        // verbatim under public/. They are compiled, not served: `content` is in
+        // tsconfig's include list, so a component beside a note is typechecked
+        // by `make check` exactly like one under src.
+        filter: (source) => !/\/index\.(mdx|tsx)$|\.tsx?$|\/meta\.yaml$|\.bib$/.test(source),
       });
     }
     mkdirSync(staging, { recursive: true });
