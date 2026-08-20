@@ -7,7 +7,7 @@ import * as React from "react";
 import { useAsset } from "@/components/mdx";
 import { Slider } from "@/components/ui/slider";
 import { useTheme } from "@/hooks/use-theme";
-import { darkgrid, mix, palette, rgb, tokens, type Mode } from "@/lib/chart-theme";
+import { darkgrid, fills, mix, palette, rgb, tokens, type Mode } from "@/lib/chart-theme";
 import demo from "./demo.json";
 // The runtime is fetched rather than inlined. `onnxruntime-web/wasm` resolves to a
 // 73 kB loader that expects to find its WebAssembly binary at a URL, and `?url` hands
@@ -72,6 +72,17 @@ const SETTLE = 200;
 /** Roughly the widest either chart column gets, so the painted image is never upscaled. */
 const PAINTED = 480;
 
+/**
+ * How far a point is pulled away from the shading it sits on, per theme.
+ *
+ * The shading is `fills()`, the palette unadjusted, in both themes. The point is
+ * `palette()`, which already lightens by a third for dark, and that lift is the whole of
+ * the separation it needs there. In light the palette is the same mid-toned colour as the
+ * fill, so the point has to be darkened or it disappears into the region that agrees with
+ * it, and the only points you can see are the misclassified ones.
+ */
+const POINT_TOWARDS_INK = { light: 0.45, dark: 0 } as const;
+
 const { extent, points, labels, models } = demo;
 const [baseXMin, baseXMax, baseYMin, baseYMax] = extent as [number, number, number, number];
 
@@ -119,7 +130,8 @@ function gridBatch(n: number, at: Extent): Float32Array {
  * point the model is unsure about disappears into the background. The line is where that
  * probability crosses a half, found by looking for a sign change against the neighbour to
  * the right or below, which is a marching-squares boundary at grid resolution and is what
- * a contour of the same field would draw.
+ * a contour of the same field would draw. It is dark in both themes, because it only ever
+ * lands where the scale is at its light middle.
  *
  * Alpha is per pixel rather than a single opacity on the whole image, because the line
  * has to stay full strength while the shading is washed enough to read gridlines through.
@@ -130,16 +142,20 @@ function gridBatch(n: number, at: Extent): Float32Array {
  * to a 400 px panel would round off exactly the corners the note is pointing at.
  */
 function paint(surface: Float32Array, n: number, mode: Mode): string {
-  const colours = palette(mode);
   const c = tokens(mode);
-  const [low, high] = [colours[0]!, colours[1]!];
+  // Unadjusted in either theme: this is a filled region rather than a mark.
+  const region = fills();
+  const [low, high] = [region[0]!, region[1]!];
 
   // A lookup rather than a mix per pixel: up to 57,600 pixels against 256 entries.
   const ramp = Array.from({ length: 256 }, (_, i) => {
     const p = i / 255;
-    return rgb(p < 0.5 ? mix(low, c.panel, p * 2) : mix(c.panel, high, (p - 0.5) * 2));
+    // Through `neutral` rather than the panel. On a pale panel the two are the same value
+    // and this is the scale it always was; on a dark one the panel would put a near-black
+    // valley everywhere the model is unsure, which is most of the interesting area.
+    return rgb(p < 0.5 ? mix(low, c.neutral, p * 2) : mix(c.neutral, high, (p - 0.5) * 2));
   });
-  const ink = rgb(c.ink);
+  const contour = rgb(c.contour);
 
   const source = document.createElement("canvas");
   source.width = n;
@@ -155,7 +171,7 @@ function paint(surface: Float32Array, n: number, mode: Mode): string {
       const below = row + 1 < n ? surface[at + n]! : p;
       const onBoundary = (p - 0.5) * (right - 0.5) < 0 || (p - 0.5) * (below - 0.5) < 0;
 
-      const [r, g, b] = onBoundary ? ink : ramp[Math.round(p * 255)]!;
+      const [r, g, b] = onBoundary ? contour : ramp[Math.round(p * 255)]!;
       const px = at * 4;
       image.data[px] = r;
       image.data[px + 1] = g;
@@ -433,7 +449,7 @@ export function Boundaries() {
                 // point in the plain palette colour sits at the saturated end of its own
                 // shading and vanishes into the region that agrees with it, so the only
                 // points you could see were the misclassified ones.
-                color: mix(colours[klass]!, c.ink, 0.45),
+                color: mix(colours[klass]!, c.ink, POINT_TOWARDS_INK[resolved]),
                 // No border. At a symbol this small ECharts strokes the path heavily
                 // enough that a nominal 1 px border swallowed most of the disc, and every
                 // point that agreed with the region under it read as a white ring. The

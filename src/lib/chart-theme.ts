@@ -98,10 +98,44 @@ export function palette(mode: Mode, name: PaletteName = "deep"): string[] {
 }
 
 /**
+ * The same colours as seaborn wrote them, for a filled region rather than a mark.
+ *
+ * `palette()` lightens by a third for dark, which is right for a line or a point on a
+ * dark page and wrong for a fill: a fill lightened that way lands at nearly the lightness
+ * of the marks sitting on top of it, and the obvious correction, mixing back towards the
+ * panel, drags the chroma out and turns the orange into mud. Neither is a colour anybody
+ * chose.
+ *
+ * A fill wants the colour unadjusted in either theme. It is already mid-toned, so it
+ * reads against a pale panel and against a dark one, and only the mark on top of it has
+ * to move with the theme. The nth fill is then the nth seaborn colour in both themes and
+ * in any figure from the Python side, which is the whole reason the palettes are copied
+ * verbatim.
+ */
+export function fills(name: PaletteName = "deep"): string[] {
+  return [...PALETTES[name]];
+}
+
+/**
  * Everything that is not a series colour: ink, gridlines and the panel behind
  * the plot. `panel` is seaborn's `axes.facecolor` in light, and its dark
  * counterpart is a lift off the page rather than a drop, since the page itself
  * is already near black.
+ *
+ * `neutral` is the middle of a diverging scale, and it is light in both themes.
+ * It reads as the panel in light and is a separate value in dark, which is the
+ * whole point of it: a scale that runs from one colour through the panel to
+ * another works on a pale panel and fails on a dark one, where it drops into
+ * near black at the midpoint and puts a dirty valley through every transition.
+ * A diverging scale passes through a light neutral whatever the page is, which
+ * is what `RdBu` and every scale like it does, and it is what makes the middle
+ * read as "no evidence either way" rather than as a hole.
+ *
+ * `contour` is a line marking a level on such a scale, and it is the one value
+ * here that does not change with the theme. It has no need to: a level line sits
+ * where the scale is at its middle, and the middle is light in both, so a dark
+ * line is legible in both and a line following the ink would go white on dark and
+ * disappear into the neutral it is drawn on.
  */
 export function tokens(mode: Mode) {
   return mode === "dark"
@@ -111,6 +145,8 @@ export function tokens(mode: Mode) {
         panel: "#22252d",
         grid: "#3a3f4b",
         surface: "#111827",
+        neutral: "#e5e7eb",
+        contour: "#1f2937",
       }
     : {
         ink: "#1f2937",
@@ -118,6 +154,8 @@ export function tokens(mode: Mode) {
         panel: "#eaeaf2",
         grid: "#ffffff",
         surface: "#ffffff",
+        neutral: "#eaeaf2",
+        contour: "#1f2937",
       };
 }
 
