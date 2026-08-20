@@ -64,10 +64,12 @@ The directory name must be a citation key that exists, or the build fails.
 
 ## Write a note
 
-**A note is a directory**: `content/notes/<slug>/index.mdx`, plus every image that belongs to it.
+**A note is a directory**: `content/notes/<yyyy>-<mm>-<slug>/index.mdx`, plus every image that
+belongs to it. The date prefix keeps the listing chronological and has to match the note's own
+`date`; it is dropped to make the URL, so the note below is served at `/notes/my-note`.
 
 ```
-content/notes/my-note/
+content/notes/2026-08-my-note/
   index.mdx
   hero.png
   result.gif

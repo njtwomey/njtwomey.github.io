@@ -47,8 +47,8 @@ imports. Nothing in `src/content/*.json` is edited by hand.
 content/publications.bib             →  src/content/publications.json     (bundled: titles, authors, venues, summaries)
                                      →  public/publications-details.json  (fetched: abstracts, BibTeX)
                                      →  public/publications.bib           (published whole, no longer linked from the UI)
-content/notes/<slug>/index.mdx       →  src/content/notes.json            (frontmatter index)
-content/notes/<slug>/*               →  public/notes/<slug>/              (copied)
+content/notes/<yyyy>-<mm>-<slug>/index.mdx  →  src/content/notes.json     (frontmatter index)
+content/notes/<yyyy>-<mm>-<slug>/*          →  public/notes/<slug>/       (copied, prefix dropped)
 src/content/site.ts                      bio, role, focus areas, social links — plain TS
 src/content/practice.ts                  the ML Practice page — plain TS
 ```
@@ -82,14 +82,19 @@ falls back to the abstract, so there is no obligation to write one for every pap
 
 ## Notes
 
-**A note is a directory**: `content/notes/<slug>/index.mdx` plus every image, notebook and archive
-belonging to it, copied at build time to `public/notes/<slug>/`.
+**A note is a directory**: `content/notes/<yyyy>-<mm>-<slug>/index.mdx` plus every image, notebook
+and archive belonging to it, copied at build time to `public/notes/<slug>/`.
+
+**The date prefix files the note and is not part of any URL.** It is there so that
+`ls content/notes` is chronological, which is how anyone looks for a note, and it has to agree with
+the note's own `date` or the build fails. The slug is the directory with the prefix dropped, and it
+is the published path, so renaming a directory to correct a date does not move the page.
 
 **The slug is the title slugified**, and for a note about a paper the title is the paper's own, so
 `A note on Low-Count Time Series Anomaly Detection` lives in
-`content/notes/low-count-time-series-anomaly-detection/` with the `A note on` prefix dropped. Name
-and title are one string in two shapes, which is what stops them drifting apart. Long paper titles
-make long directory names and that is accepted.
+`content/notes/2023-09-low-count-time-series-anomaly-detection/` with the `A note on` prefix
+dropped. Name and title are one string in two shapes, which is what stops them drifting apart. Long
+paper titles make long directory names and that is accepted.
 
 That is what lets a note refer to its own files by bare name, resolved against its own directory by
 `NoteSlugContext` and `useAsset` in `src/components/mdx.tsx`. A leading `/` still means the site
@@ -112,6 +117,17 @@ absence of the first. The venue tag is copied from the bibliography entry for th
 because that is the fact and a hand-typed venue is how a note ends up still saying "preprint" two
 years after the paper appeared. `src/content/references.test.ts` fails the build when a tag
 disagrees with the bib, and the topics in use are listed in the `draft-note` skill.
+
+**`hero` is the index thumbnail and, by default, a banner at the top of the note.** `heroOnPage:
+false` keeps the thumbnail and drops the banner, for a picture that survives being small and does
+not survive being cropped wide.
+
+**A full source listing goes in `<SourceCode path="..." />`**, which folds it away behind a bar
+carrying the filename, a copy button, a link to the file on GitHub and an optional download. The one
+`path` is repo-relative and does everything: `scripts/remark-code-file.mjs` reads the file at build
+time and injects the fence, numbers its lines, and suppresses the block's own furniture so the panel
+reads as one component rather than a box inside a box. Import it like any other component, since a
+reader of the MDX should be able to see where it came from.
 
 **`published: false` is the default and means the note is not on the live site.** It is on the dev
 server badged "Draft". Keep stale notes in the repo set back to `false` rather than deleting them.

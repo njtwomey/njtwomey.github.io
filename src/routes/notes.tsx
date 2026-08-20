@@ -44,14 +44,30 @@ export function Notes() {
                     >
                       {/* The hero doubles as the index thumbnail, so a note
                           needs one image rather than an image and a separate
-                          thumbnail. */}
+                          thumbnail.
+
+                          As tall as the row it sits in: a fixed 80px box left
+                          the picture floating against a card three times its
+                          height, which read as a stray icon rather than as the
+                          note's picture.
+
+                          Fixed width and a stretched height, rather than a
+                          square that takes its width from its height. The
+                          second is what you want and it does not work: the row
+                          is only as tall as its tallest item, so an item sizing
+                          itself from the row height has nothing to measure and
+                          grows without bound. Pinning the width breaks that
+                          loop, and `object-cover` crops whatever aspect the
+                          hero happens to be to whatever shape the row ends up. */}
                       {note.hero && (
-                        <img
-                          src={asset(note.hero)}
-                          alt=""
-                          loading="lazy"
-                          className="hidden size-20 shrink-0 rounded-lg border object-cover sm:block"
-                        />
+                        <div className="relative hidden w-28 shrink-0 self-stretch sm:block">
+                          <img
+                            src={asset(note.hero)}
+                            alt=""
+                            loading="lazy"
+                            className="absolute inset-0 h-full w-full rounded-lg border object-cover"
+                          />
+                        </div>
                       )}
 
                       <div className="min-w-0">

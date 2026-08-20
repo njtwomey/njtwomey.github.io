@@ -11,9 +11,16 @@ import { publication } from "@/lib/publications";
  */
 const NOTES_DIR = resolve(import.meta.dirname, "../../content/notes");
 
+/**
+ * Note directories, named `YYYY-MM-<slug>`. The prefix files them chronologically
+ * and is dropped to make the URL, so everything here works in directory names and
+ * only the slug tests take it off.
+ */
 const slugs = readdirSync(NOTES_DIR, { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
+
+const DATED = /^(\d{4})-(\d{2})-(?=.)/;
 
 const sourceOf = (slug: string) => readFileSync(resolve(NOTES_DIR, slug, "index.mdx"), "utf8");
 
@@ -129,7 +136,18 @@ describe("note prose", () => {
         .replace(/&/g, "and")
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-      expect(derived, `${slug} is titled "${title}"`).toBe(slug);
+      expect(derived, `${slug} is titled "${title}"`).toBe(slug.replace(DATED, ""));
+    }
+  });
+
+  it("is filed under the month it says it was written", () => {
+    for (const slug of slugs) {
+      // The prefix is what sorts `content/notes`, and the frontmatter date is
+      // what the page prints. One fact, so a note corrected in one place and not
+      // the other should fail here rather than sit misfiled.
+      expect(slug, `${slug} should be named YYYY-MM-<slug>`).toMatch(DATED);
+      const date = sourceOf(slug).match(/^date:\s*"(\d{4}-\d{2})/m)?.[1];
+      expect(slug.slice(0, 7), `${slug} is dated "${date}"`).toBe(date);
     }
   });
 });

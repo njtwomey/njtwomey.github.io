@@ -54,6 +54,32 @@ export type PaletteName = "deep" | "colorblind";
 const PALETTES: Record<PaletteName, readonly string[]> = { deep: DEEP, colorblind: COLORBLIND };
 
 /**
+ * The three channels of a `#rrggbb` string, 0 to 255.
+ *
+ * Exported because a chart drawing a continuous surface has to write pixels
+ * rather than hand ECharts a colour, and the alternative is every such chart
+ * parsing hex for itself.
+ */
+export function rgb(hex: string): [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/**
+ * A colour `t` of the way from `a` to `b`, both `#rrggbb`.
+ *
+ * Straight sRGB interpolation, which is not perceptually uniform and is right
+ * anyway: the endpoints here are always palette colours, and a fancier space
+ * would shift the hues away from the ones the rest of the site uses.
+ */
+export function mix(a: string, b: string, t: number): string {
+  const [ar, ag, ab] = rgb(a);
+  const [br, bg, bb] = rgb(b);
+  const channel = (x: number, y: number) => Math.round(x + (y - x) * t);
+  return `#${[channel(ar, br), channel(ag, bg), channel(ab, bb)].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
  * Lighten a hex colour towards white by `amount`.
  *
  * seaborn's palettes are chosen against a light panel, and on a dark one the
@@ -62,10 +88,7 @@ const PALETTES: Record<PaletteName, readonly string[]> = { deep: DEEP, colorblin
  * palette means correcting it once, and the two can never drift apart.
  */
 function lighten(hex: string, amount: number): string {
-  const n = Number.parseInt(hex.slice(1), 16);
-  const mix = (c: number) => Math.round(c + (255 - c) * amount);
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  return `#${[mix(r), mix(g), mix(b)].map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+  return mix(hex, "#ffffff", amount);
 }
 
 /** The series colours for a chart, in order, already adjusted for the theme. */

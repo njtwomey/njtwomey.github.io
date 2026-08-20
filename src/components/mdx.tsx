@@ -3,6 +3,7 @@ import * as React from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import { Link } from "react-router-dom";
 import { Paper } from "@/components/paper";
+import { InSourceCodeContext } from "@/components/source-code";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { useCopy } from "@/hooks/use-copy";
@@ -282,10 +283,23 @@ function MarkdownImage({ src, alt, ...rest }: ComponentPropsWithoutRef<"img">) {
  * The button is invisible until the block is hovered or the button itself takes
  * focus, so it stays out of the way while reading without becoming unreachable
  * from the keyboard. On touch, where there is no hover, it is always shown.
+ *
+ * Inside a `<SourceCode>` none of that applies: the panel already has a bar with
+ * a copy button on it, and a second one floating over the listing was two
+ * controls for one job. The block renders bare and lets the panel be the panel.
  */
 function CodeBlock({ children, className, ...rest }: ComponentPropsWithoutRef<"pre">) {
   const ref = React.useRef<HTMLPreElement>(null);
   const { copied, copy } = useCopy();
+  const inSourceCode = React.useContext(InSourceCodeContext);
+
+  if (inSourceCode) {
+    return (
+      <pre className={className} {...rest}>
+        {children}
+      </pre>
+    );
+  }
 
   return (
     <div className="group/code relative">

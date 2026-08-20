@@ -5,7 +5,7 @@ Run it:
     uv run python/demos/torch_dataclass.py
 
 Everything printed by this file is quoted verbatim in
-content/notes/pytorch-meets-dataclasses/index.mdx. If you change one, rerun and
+content/notes/2026-07-pytorch-meets-dataclasses/index.mdx. If you change one, rerun and
 update the other.
 """
 

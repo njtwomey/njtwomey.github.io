@@ -16,6 +16,13 @@ export type NoteMeta = {
   hero?: string;
   heroAlt?: string;
   /**
+   * Whether the hero also runs full width at the top of the note. Defaults to
+   * true; set `heroOnPage: false` where the image earns its place as a thumbnail
+   * but not as a banner, such as a grid of small panels that goes unreadable
+   * when it is cropped to a letterbox.
+   */
+  heroOnPage?: boolean;
+  /**
    * Notes are written and kept whether or not they go up. Only `true` reaches
    * the built site — an old note that has gone stale is set back to false
    * rather than deleted, so the writing survives without being published.
@@ -24,7 +31,10 @@ export type NoteMeta = {
 };
 
 export type Note = NoteMeta & {
+  /** The published path segment: the directory name with its date prefix dropped. */
   slug: string;
+  /** The directory the prose lives in, `YYYY-MM-<slug>`, which is not the URL. */
+  dir: string;
   /** Fetches the note's own chunk. */
   load: () => Promise<{ default: ComponentType }>;
 };
@@ -36,10 +46,10 @@ export type Note = NoteMeta & {
 const modules = import.meta.glob<{ default: ComponentType }>("../../content/notes/*/index.mdx");
 
 /** Every note in the repo, newest first, published or not. */
-export const allNotes: Note[] = (index as (NoteMeta & { slug: string })[])
+export const allNotes: Note[] = (index as (NoteMeta & { slug: string; dir: string })[])
   .map((meta) => ({
     ...meta,
-    load: modules[`../../content/notes/${meta.slug}/index.mdx`],
+    load: modules[`../../content/notes/${meta.dir}/index.mdx`],
   }))
   // An index entry with no MDX file behind it means the index is stale. Drop it
   // rather than throwing: one bad entry should not take the whole site down.

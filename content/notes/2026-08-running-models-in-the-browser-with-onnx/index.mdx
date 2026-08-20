@@ -1,0 +1,64 @@
+---
+title: "Running models in the browser with ONNX"
+description: "Serving a model normally means a Python process, a load balancer and a network hop for every prediction. A small model can be exported to ONNX and run in the page instead, and the four decision boundaries in this note were computed in your browser as it loaded."
+date: "2026-08-20"
+tags: ["deployment", "onnx"]
+hero: boundaries.png
+heroAlt: "Four decision boundaries on the same two moons, one for each family of model"
+# Four small panels, which survive as a thumbnail and go unreadable stretched across
+# the top of the note. The live charts are the same picture at a size worth reading.
+heroOnPage: false
+published: false
+---
+
+import { Boundaries } from "./Boundaries";
+import { SourceCode } from "@/components/source-code";
+
+Four models are running in this page. Each was fitted on the same hundred and fifty points, exported to ONNX and
+fetched as an ordinary file, and the browser put a grid through all four to draw them. The dials change the window
+and how finely it is sampled, and every change runs the four again.
+
+<Boundaries />
+
+Almost everything I have read about putting a model into production assumes a Python process at the other end of an
+HTTP call: you train the model, save it, wrap it in FastAPI and put that behind a load balancer. The saved file is
+usually a pickle of Python objects, so it only loads back under the library versions that wrote it, and whatever
+serves it has to be Python as well. You are now running a server, keeping its environment matched to the one the model
+was trained in, paying for it while it sits idle, and putting a network hop in front of every prediction. A small
+model needs none of it.
+
+ONNX is what makes that possible. A model exported to it becomes a graph of operators with a versioned opset, rather
+than a pickle of the objects that happened to be in memory, and any runtime implementing that opset can run the graph.
+`onnxruntime-web` is one of those runtimes, compiled to WebAssembly and loaded like any other JavaScript dependency.
+
+The demo is two moons, 150 points from scikit-learn's `make_moons` at a noise of 0.2, with four classifiers fitted on
+the same points: logistic regression, an SVM with an RBF kernel, a random forest of a hundred trees, and an MLP with
+two hidden layers of sixteen units. `skl2onnx` exported all four, and the conversion is where the work is (its default
+wraps a classifier's probabilities in a `ZipMap`, which reaches JavaScript as a sequence of maps until you turn it
+off). Past that point nothing knows scikit-learn exists. The same call loads a linear model, a kernel machine, a tree
+ensemble and a neural network, because by the time the file is written they are all a graph.
+
+All four fitted the same points, so what separates the charts is the shape each family can draw. The forest's
+rectangles and the creases in the MLP are the hypothesis class showing through rather than anything about the data,
+which is why the forest goes on drawing stripes out in the corners where it has nothing left to split on.
+
+Whether this is worth doing is something you can check before you start. The model has to be small enough that a
+reader will wait for it, and the largest here is 124 kB against 2.7 kB for the MLP and 379 bytes for the logistic
+regression. The prediction has to be cheap enough to run on whatever machine opened the page. And the weights have to
+be something you are willing to hand over, since anyone who loads the page has the file. Where those hold, putting the
+model into production is copying a file next to the page, and there is no server, nothing pinned to a library version,
+and nothing between the reader and the answer.
+
+The same file is also what a server would load. Triton runs ONNX through an ONNX Runtime backend, KServe lists it
+among the formats it serves, and TorchServe takes it as well, though that one has been in limited maintenance since
+2025 and is no longer taking fixes. No two of them run it the same way, which is what a format is for. Putting this
+model in the page rather than behind one of them changed the hosting and nothing about the model.
+
+The whole Python side is one script. It fits the four models, exports them, and draws the same four boundaries
+under the Python runtime so that the picture and the page can be compared.
+
+<SourceCode
+  path="content/notes/2026-08-running-models-in-the-browser-with-onnx/train.py"
+  summary="Fits the four models, exports them to ONNX and draws the boundaries"
+  download="train.py"
+/>

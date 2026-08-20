@@ -216,6 +216,50 @@
   .prose-note [data-rehype-pretty-code-title] + div > pre {
     @apply rounded-t-none;
   }
+
+  /*
+   * A listing inside a `<SourceCode>` panel gives up its own furniture.
+   *
+   * A fence in prose is a panel: tinted, bordered, rounded, with its own margins.
+   * All four are wrong once it is inside a panel that already has them, and the
+   * result was a box drawn inside a box with a gap of page colour between the
+   * two. Stripping them here rather than on the component keeps the rule beside
+   * the rules it is overriding, where the ordering is visible.
+   */
+  .prose-note [data-slot="source-code"] figure[data-rehype-pretty-code-figure],
+  .prose-note [data-slot="source-code"] pre {
+    @apply my-0 rounded-none border-0 bg-transparent;
+  }
+  .prose-note [data-slot="source-code"] pre {
+    @apply px-0 py-3;
+  }
+
+  /*
+   * Line numbers, for a whole file rather than the few lines a fence in prose
+   * carries. `showLineNumbers` in the fence meta is what puts the attribute on
+   * the element; a counter is what turns it into numbers, since the lines are
+   * spans and there is no list for the browser to number.
+   *
+   * The gutter widens with the line count rather than being fixed, so a
+   * three-digit file does not push its own code sideways relative to a
+   * two-digit one.
+   */
+  .prose-note code[data-line-numbers] {
+    counter-reset: line;
+  }
+  .prose-note code[data-line-numbers] > [data-line]::before {
+    counter-increment: line;
+    content: counter(line);
+    @apply text-muted-foreground/60 mr-4 inline-block w-8 text-right tabular-nums select-none;
+  }
+  .prose-note code[data-line-numbers-max-digits="3"] > [data-line]::before {
+    @apply w-10;
+  }
+  /* The gutter is inside the scrolling box, so it needs the padding `pre` gave
+     up when it flattened into the panel. */
+  .prose-note [data-slot="source-code"] code[data-line-numbers] > [data-line]::before {
+    @apply ml-3;
+  }
   .prose-note img,
   .prose-note video {
     @apply mx-auto rounded-lg border;

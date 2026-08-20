@@ -85,7 +85,7 @@ export function Note() {
               have read. The hero therefore follows the title directly, rather
               than sitting above it where a full-width image would push the
               title below the fold on a phone. */}
-          {note.hero && (
+          {note.hero && note.heroOnPage !== false && (
             <img
               src={asset(note.hero)}
               alt={note.heroAlt ?? ""}
