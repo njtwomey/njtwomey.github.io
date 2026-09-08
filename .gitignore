@@ -60,3 +60,7 @@ repositories/
 .claude/skills/persona-read
 .claude/skills/voice-check
 .claude/skills/pattern-record
+.claude/skills/context-free-read
+.claude/skills/humanise
+.claude/skills/note-audit
+.claude/skills/reference-audit
