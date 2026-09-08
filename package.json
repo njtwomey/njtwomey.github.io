@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Personal site of Niall Twomey — publications, projects and notes.",
+  "description": "Personal site of Niall Twomey \u2014 publications, projects and notes.",
   "scripts": {
     "prebuild": "npm run content",
     "predev": "npm run content",
@@ -25,7 +25,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "echarts": "^6.1.0",
-    "katex": "^0.18.4",
+    "katex": "^0.16.47",
     "lucide-react": "^0.550.0",
     "onnxruntime-web": "^1.27.0",
     "radix-ui": "^1.6.7",
@@ -50,6 +50,7 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "rehype-katex": "^7.0.1",
     "rehype-pretty-code": "^0.14.5",
+    "rehype-slug": "^6.0.0",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
@@ -65,5 +66,8 @@
   },
   "allowScripts": {
     "esbuild@0.28.2": true
+  },
+  "overrides": {
+    "toml": "^5.0.0"
   }
 }
