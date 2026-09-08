@@ -9,22 +9,21 @@ published: true
 import "./references.bib";
 import { DepthPlot } from "./DepthPlot";
 
-Search has had the same shape for a long time: a cheap stage sweeps millions of documents and returns a few
-hundred candidates, and an expensive stage reads that shortlist carefully and puts it in order. The split
-exists because the scoring function that ranks best is far too expensive to run over a whole corpus. BERT-base
-scoring a thousand candidates took 10.7 s against 61 ms for a cheaper
+Search has had the same shape for a long time: a cheap stage sweeps millions of documents and returns a few hundred
+candidates, and an expensive stage reads that shortlist carefully and puts it in order. The split exists because the
+scoring function that ranks best is far too expensive to run over a whole corpus. Expensive here is seconds against
+milliseconds. BERT-base scoring a thousand candidates took 10.7 s against 61 ms for a cheaper
 scorer <Ref id="khattab2020colbert" paren />. I worked on ranking for recipe search a few years
 ago <Ref id="takiguchi2021multifield" paren /> and have not kept up since. A friend asked me over dinner how
-re-ranking had changed, and I did not have an answer. I knew the retrievers had been getting stronger, but not
-what that had done to the overall picture. I looked into it out of curiosity, and this note is what came of
-it. The two stages are still chosen separately, but the better the first stage, the less the second stage adds
-and the shorter the shortlist it needs.
+re-ranking had changed, and I did not have an answer. I knew the retrievers had been getting stronger, but not what
+that had done to the overall picture. I looked into it out of curiosity, and this note is what came of it. The two
+stages are still chosen separately, but the better the first stage, the less the second stage adds and the shorter the
+shortlist it needs.
 
-That pattern is already in the literature. <Ref id="meng2024ranked" /> held the re-ranker fixed and swapped
-only the first stage, and the depth at which re-ranking stopped helping moved with it. Behind `BM25` quality
-was still climbing at a thousand candidates, and behind a strong learned sparse retriever it peaked at twenty
-candidates. How deep to re-rank is a property of the retriever in front rather than a setting on the
-re-ranker.
+Holding the re-ranker fixed and swapping only the first stage, <Ref id="meng2024ranked" /> found that the depth at
+which re-ranking stopped helping moved with it. Behind `BM25` quality was still climbing at a thousand candidates, and
+behind a strong learned sparse retriever it peaked at twenty candidates. How deep to re-rank is a property of the
+retriever in front rather than a setting on the re-ranker.
 
 I wanted to see how generally that holds, so I swept candidate depth on
 SciFact <Ref id="wadden2020fact" paren />. It is a claim-verification set of 300 judged queries over 5,183 abstracts,
