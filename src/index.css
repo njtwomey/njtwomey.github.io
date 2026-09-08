@@ -235,30 +235,14 @@
   }
 
   /*
-   * Line numbers, for a whole file rather than the few lines a fence in prose
-   * carries. `showLineNumbers` in the fence meta is what puts the attribute on
-   * the element; a counter is what turns it into numbers, since the lines are
-   * spans and there is no list for the browser to number.
-   *
-   * The gutter widens with the line count rather than being fixed, so a
-   * three-digit file does not push its own code sideways relative to a
-   * two-digit one.
+   * The listing sits to the right of the gutter, which is drawn by the component rather
+   * than by a counter on each line. Generated content follows the selection into the
+   * clipboard in WebKit whatever `user-select` says, so a reader copying ten lines got
+   * ten line numbers mixed into their code. Numbering from outside the element being
+   * selected is the only version of this that cannot do that.
    */
-  .prose-note code[data-line-numbers] {
-    counter-reset: line;
-  }
-  .prose-note code[data-line-numbers] > [data-line]::before {
-    counter-increment: line;
-    content: counter(line);
-    @apply text-muted-foreground/60 mr-4 inline-block w-8 text-right tabular-nums select-none;
-  }
-  .prose-note code[data-line-numbers-max-digits="3"] > [data-line]::before {
-    @apply w-10;
-  }
-  /* The gutter is inside the scrolling box, so it needs the padding `pre` gave
-     up when it flattened into the panel. */
-  .prose-note [data-slot="source-code"] code[data-line-numbers] > [data-line]::before {
-    @apply ml-3;
+  .prose-note [data-slot="source-code"] pre {
+    padding-left: calc(var(--gutter) + 0.75rem);
   }
   .prose-note img,
   .prose-note video {

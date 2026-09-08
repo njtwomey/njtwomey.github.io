@@ -69,7 +69,7 @@ alongside their own chunk (`withPaperDetails` in `App.tsx`).
 form. `<Ref id="..." />` is the same for **other people's** papers, keyed off
 `src/content/references.ts` and linking out rather than to the publications page; it shows the full
 record on hover, with the BibTeX. Which of its two forms to use is a grammar question and is settled
-in the `writing` skill. Referring to a paper by key rather than copying its details means a corrected venue or a new
+in `repositories/note-authoring/reference/`. Referring to a paper by key rather than copying its details means a corrected venue or a new
 PDF appears everywhere at once. `src/content/references.test.ts` fails the build if a key used in a
 note or the front page's `SELECTED` list stops resolving.
 
@@ -108,7 +108,10 @@ root. Never write `/notes/<slug>/moons.gif` by hand, since removing that prefix 
 `CodeFile` inlines a real file during the MDX transform, so a quoted snippet cannot drift from the
 file it came from, and an unreadable path fails the build. Code fences are highlighted by Shiki at
 build time in both themes, so always declare a language and use ```text for program output. `Paper`,
-`Cite`, `Figure`, `Figures` and `CodeFile` need no import. Maths is KaTeX.
+`Cite`, `Figure`, `Figures` and `CodeFile` need no import. Maths is KaTeX, and the `katex` dependency is
+pinned to the version `rehype-katex` renders with, because the two number their size steps under
+different class names and a mismatch sets every subscript and superscript at full size without
+erroring anywhere.
 
 **Tags are three slots in a fixed order**, one to four in all: `research` where the note is built on
 a paper, then the venue and year for that paper, then one or two lowercase topics in alphabetical
@@ -116,7 +119,7 @@ order. A note that cites no paper carries topics alone, because a second kind wo
 absence of the first. The venue tag is copied from the bibliography entry for the key the note cites,
 because that is the fact and a hand-typed venue is how a note ends up still saying "preprint" two
 years after the paper appeared. `src/content/references.test.ts` fails the build when a tag
-disagrees with the bib, and the topics in use are listed in the `draft-note` skill.
+disagrees with the bib, and the topics in use are listed in the `note-draft` skill.
 
 **`hero` is the index thumbnail and, by default, a banner at the top of the note.** `heroOnPage:
 false` keeps the thumbnail and drops the banner, for a picture that survives being small and does
@@ -125,9 +128,18 @@ not survive being cropped wide.
 **A full source listing goes in `<SourceCode path="..." />`**, which folds it away behind a bar
 carrying the filename, a copy button, a link to the file on GitHub and an optional download. The one
 `path` is repo-relative and does everything: `scripts/remark-code-file.mjs` reads the file at build
-time and injects the fence, numbers its lines, and suppresses the block's own furniture so the panel
-reads as one component rather than a box inside a box. Import it like any other component, since a
+time and injects the fence, and suppresses the block's own furniture so the panel reads as one component
+rather than a box inside a box. Line numbers are drawn beside the listing rather than by a CSS counter on
+it, because generated content follows a selection into the clipboard and a reader copying ten lines was
+getting ten line numbers with them. Import it like any other component, since a
 reader of the MDX should be able to see where it came from.
+
+**A link off the site goes in `<ExternalLink href="..." title="...">`**, a full-width card carrying the
+title, the host and a sentence on what is there, opening in a new tab. `<ExternalLinks>` wraps several
+into one bordered block with divided rows, and a card inside a group drops its own border and margins
+so three links read as one list rather than three interruptions. The host is shown deliberately: a
+reader is entitled to know where a link goes before spending a click on it. Import both like any other
+component.
 
 **`published: false` is the default and means the note is not on the live site.** It is on the dev
 server badged "Draft". Keep stale notes in the repo set back to `false` rather than deleting them.
@@ -135,7 +147,7 @@ The Notes nav item only appears once at least one note is published. The `hero` 
 thumbnail, so a note needs one image rather than two.
 
 The vocabulary is **notes** throughout, in files, routes, identifiers and UI. Not "posts", not
-"blog". Frontmatter fields and the house shape of a note are in the `draft-note` skill.
+"blog". Frontmatter fields and the house shape of a note are in the `note-draft` skill.
 
 ## Commands
 
@@ -165,14 +177,17 @@ hard-code a base. Because routing is client-side, the build writes `404.html` as
 
 ## Skills
 
-| skill              | e.g.                                                                         |
-| ------------------ | ---------------------------------------------------------------------------- |
-| `add-publications` | "add my new papers", "check Scholar for anything missing", "add this PDF"    |
-| `note-draft`       | "draft a note about the ordinal regression paper", "write something about X" |
-| `note-revise`      | any correction to note prose                                                 |
-| `note-review`      | "review this note", "does this read", "actually read the thing"              |
-| `persona-read`     | "read this as a generalist", "how does this land for a recruiter"            |
-| `voice-check`      | "does this sound like me", "any banned phrases"                              |
+| skill               | e.g.                                                                         |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `add-publications`  | "add my new papers", "check Scholar for anything missing", "add this PDF"    |
+| `note-draft`        | "draft a note about the ordinal regression paper", "write something about X" |
+| `note-revise`       | any correction to note prose                                                 |
+| `note-review`       | "review this note", "does this read", "actually read the thing"              |
+| `persona-read`      | "read this as a generalist", "how does this land for a recruiter"            |
+| `context-free-read` | "cold read this", "does this stand on its own"                               |
+| `reference-audit`   | "is any of this working", "which rules should go"                            |
+| `humanise`          | "clean this up", "make this sound less like AI wrote it"                     |
+| `voice-check`       | "does this sound like me", "any banned phrases"                              |
 
 **The note skills live in `repositories/note-authoring`** and are symlinked into `.claude/skills/` so
 they are discoverable here. That repository is where notes are drafted and reviewed. It holds the
@@ -181,7 +196,9 @@ reader personas, catalogues of constructions that work and that do not, a defini
 and the measured voice profile. A finished note is copied into `content/notes/<slug>/`.
 
 There is no longer a `writing` skill. Prose rules for the rest of the site live in that reference
-too, and `voice-check` is what applies them.
+too, and `voice-check` is what applies them. The reference is organised by **when a file loads**
+rather than by subject: `card.md` holds the twenty rules carried while writing, and everything else
+is reached by a named condition. `repositories/note-authoring/reference/README.md` is the map.
 
 `add-publications` reconciles `content/publications.bib` against Google Scholar and PDFs dropped in
 `inbox/`. It must **never invent a field**: an entry with a guessed venue or a fabricated DOI is
@@ -189,11 +206,14 @@ worse than one that is missing them.
 
 ## Writing
 
-**Load the `writing` skill before writing or editing any user-facing prose**, meaning the bio, the
-ML Practice page, publication summaries, note prose and page ledes. Two rules outrank the rest: every
-sentence must be a complete sentence, and em dashes are banned in favour of a comma, a colon, a
-semicolon or a full stop. `uv run python/tools/prose_stats.py <file>` measures a draft against the
-voice. Code comments are exempt and should explain why at whatever length it takes.
+**Read `repositories/note-authoring/reference/card.md` before writing or editing any user-facing
+prose**, meaning the bio, the ML Practice page, publication summaries, note prose and page ledes.
+Twenty rules, and two of them outrank the rest: every sentence must be a complete sentence, and em
+dashes are banned in favour of a comma, a colon, a semicolon or a full stop.
+
+`uv run scripts/lint_prose.py <file>`, **run from `repositories/note-authoring/`**, catches every
+mechanical rule including those two. Code comments are exempt and should explain why at whatever
+length it takes.
 
 ## Conventions
 

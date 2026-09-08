@@ -57,10 +57,17 @@ export function Figure({
   caption,
   width,
   className,
+  children,
 }: {
   src: string;
   alt?: string;
+  /** A plain-text caption. Prefer children where the caption has maths or emphasis in it. */
   caption?: string;
+  /**
+   * The caption, as MDX. A caption is prose and often carries a symbol or a number set as
+   * maths, and a string prop renders `$\ell_1$` as those five characters.
+   */
+  children?: React.ReactNode;
   /** A CSS width, for figures that should not fill the column. */
   width?: string;
   className?: string;
@@ -75,7 +82,9 @@ export function Figure({
         style={width ? { width, margin: "0 auto" } : undefined}
         className="mx-auto rounded-lg border"
       />
-      {caption && <figcaption className="text-muted-foreground mt-2 text-center text-xs">{caption}</figcaption>}
+      {(children ?? caption) && (
+        <figcaption className="text-muted-foreground mt-2 text-center text-xs">{children ?? caption}</figcaption>
+      )}
     </figure>
   );
 }
@@ -243,6 +252,17 @@ function Anchor({ href = "", children, ...rest }: ComponentPropsWithoutRef<"a">)
 
   const isAbsolute = /^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(href);
   const isRoot = href.startsWith("/");
+
+  // A fragment points at a heading on this page. It counted as absolute, which is true
+  // and put it down the same branch as an off-site URL, so a note linking to its own
+  // appendix opened that appendix in a second tab.
+  if (href.startsWith("#")) {
+    return (
+      <a href={href} {...rest}>
+        {children}
+      </a>
+    );
+  }
 
   if (!isAbsolute && !isRoot && slug) {
     return (

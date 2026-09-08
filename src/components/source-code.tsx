@@ -60,8 +60,17 @@ export function SourceCode({
   const [open, setOpen] = React.useState(defaultOpen);
   const body = React.useRef<HTMLDivElement>(null);
   const { copied, copy } = useCopy();
+  const [lines, setLines] = React.useState(0);
 
   const name = file ?? path?.split("/").pop() ?? "source";
+  const digits = String(Math.max(lines, 1)).length;
+
+  // Counted off the rendered listing rather than passed in, because the fence arrives as
+  // a tree of highlighted spans and only the DOM knows how many lines it came to. The
+  // content is force-mounted, so this is right even while the panel is folded.
+  React.useLayoutEffect(() => {
+    setLines(body.current?.querySelectorAll("[data-line]").length ?? 0);
+  }, [children]);
 
   return (
     <Collapsible
@@ -112,11 +121,44 @@ export function SourceCode({
           copy button work from the closed state. Radix stamps the state, so hiding it is
           a class rather than an unmount. */}
       <CollapsibleContent forceMount className="data-[state=closed]:hidden">
-        <div ref={body} className="border-t">
-          <InSourceCodeContext.Provider value={true}>{children}</InSourceCodeContext.Provider>
+        <div className="relative border-t" style={{ "--gutter": `${digits + 2.25}ch` } as React.CSSProperties}>
+          <Gutter lines={lines} />
+          {/* The ref is on the listing alone, so neither the copy button nor a selection
+              can pick up the gutter sitting beside it. */}
+          <div ref={body}>
+            <InSourceCodeContext.Provider value={true}>{children}</InSourceCodeContext.Provider>
+          </div>
         </div>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+/**
+ * The line numbers, drawn beside the listing rather than inside it.
+ *
+ * They were a CSS counter on each line's `::before`, which is the usual way and is wrong
+ * here: generated content is copied along with the selection in WebKit and in some
+ * Chrome builds whatever `user-select` says, so anybody dragging over ten lines got ten
+ * line numbers interleaved with their code. Sitting outside the element the selection
+ * covers, these cannot be picked up at all, by a drag or by the copy button.
+ *
+ * Absolutely positioned so the listing keeps its own layout, and the code is padded past
+ * it. It does not scroll with the code, so a long line slides underneath it. The
+ * background has to be fully opaque for that: at `bg-muted/60` the scrolled code showed
+ * straight through the numbers.
+ */
+function Gutter({ lines }: { lines: number }) {
+  if (lines === 0) return null;
+  return (
+    <div
+      aria-hidden
+      className="bg-muted text-muted-foreground/70 pointer-events-none absolute inset-y-0 left-0 z-10 w-[var(--gutter)] border-r py-3 pr-2 text-right font-mono text-[0.825rem]/6 tabular-nums select-none"
+    >
+      {Array.from({ length: lines }, (_, i) => (
+        <div key={i}>{i + 1}</div>
+      ))}
+    </div>
   );
 }
 

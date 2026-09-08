@@ -1,9 +1,10 @@
 import mdx from "@mdx-js/rollup";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { copyFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { copyFileSync, existsSync, readdirSync, readFileSync } from "node:fs";
+import { relative, resolve, sep } from "node:path";
 import rehypeKatex from "rehype-katex";
+import rehypeSlug from "rehype-slug";
 import rehypePrettyCode, { type Options as PrettyCodeOptions } from "rehype-pretty-code";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
@@ -109,6 +110,43 @@ function notesIndex(): Plugin {
   };
 }
 
+/**
+ * Reload a note when a file it inlines changes.
+ *
+ * `<CodeFile>` and `<SourceCode>` read their target off disk during the MDX transform, so
+ * the listing a reader sees is a copy taken at build time. That is the point of them, and
+ * it leaves vite with no idea that the note depends on the file: editing the script
+ * invalidates nothing and the dev server goes on serving the listing it compiled earlier.
+ * The build is always correct, which is what makes this hard to notice and easy to spend
+ * an hour on.
+ *
+ * The dependency is recovered here by reading it back out of the note, which is cheap and
+ * needs no cooperation from the remark plugin. Anything inlining a path that changed gets
+ * its module invalidated alongside whatever vite was already going to update.
+ */
+function inlinedCodeFiles(): Plugin {
+  return {
+    name: "site:inlined-code-files",
+    apply: "serve",
+    handleHotUpdate({ file, server, modules }) {
+      const root = resolve(import.meta.dirname);
+      const changed = relative(root, file).split(sep).join("/");
+      if (changed.startsWith("..")) return;
+
+      const dependents = readdirSync(NOTES_DIR, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => resolve(NOTES_DIR, entry.name, "index.mdx"))
+        .filter((mdx) => existsSync(mdx) && readFileSync(mdx, "utf8").includes(`path="${changed}"`));
+
+      const extra = dependents.flatMap((mdx) => [...(server.moduleGraph.getModulesByFile(mdx) ?? [])]);
+      if (extra.length === 0) return;
+      for (const mod of extra) server.moduleGraph.invalidateModule(mod);
+      server.config.logger.info(`reloading ${dependents.length} note(s) that inline ${changed}`);
+      return [...modules, ...extra];
+    },
+  };
+}
+
 export default defineConfig({
   // A user site served from a custom domain lives at the root. VITE_BASE is the
   // escape hatch for previewing under a subpath.
@@ -132,13 +170,17 @@ export default defineConfig({
           // metadata and its prose stay in one file.
           [remarkMdxFrontmatter, { name: "meta" }],
         ],
-        rehypePlugins: [rehypeKatex, [rehypePrettyCode, prettyCode]],
+        // Headings get an id, so a note can link to its own section. Without it a
+        // `#some-heading` link resolves to nothing and the browser stays put or
+        // scrolls somewhere arbitrary, which is what a note doing this first found.
+        rehypePlugins: [rehypeSlug, rehypeKatex, [rehypePrettyCode, prettyCode]],
         providerImportSource: "@mdx-js/react",
       }),
     },
     react({ include: /\.(jsx|js|mdx|md|tsx|ts)$/ }),
     tailwindcss(),
     notesIndex(),
+    inlinedCodeFiles(),
     spaFallback(),
   ],
   resolve: {

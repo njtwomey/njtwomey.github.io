@@ -111,12 +111,11 @@ export default function remarkCodeFile() {
       if (node.name === "SourceCode") {
         const found = attributes(node);
         if (!found.path || node.children.length > 0) return;
-        // No title: the panel's own bar already names the file, and a second
-        // banner inside it was the thing that made one component look like two.
-        // Line numbers, because a `<SourceCode>` is a whole file rather than the few
-        // lines a fence in prose carries, and a reader referring to part of it
-        // needs a way to say which part.
-        const block = fence(node, file, found, "showLineNumbers");
+        // No title and no meta: the panel's own bar names the file, and a second
+        // banner inside it was what made one component look like two. The line
+        // numbers are drawn by the component beside the listing, not by
+        // `showLineNumbers`, so that they stay out of anything a reader copies.
+        const block = fence(node, file, found, undefined);
         if (block) node.children = [block];
         return;
       }
