@@ -37,6 +37,10 @@ const OUT = resolve(root, "public/projects");
  */
 const SITES = {
   "ai-field-notes": "https://www.nialltwomey.com/ai-field-notes/",
+  // The render gallery rather than the landing page, because the figures are what
+  // the engine is for and the front door is three boxes of prose. The card still
+  // links to the root: this URL is the picture, not the destination.
+  "aifn-engine": "https://www.nialltwomey.com/aifn-engine/render",
   dpc: "https://www.nialltwomey.com/dpc/",
   whazzon: "https://www.nialltwomey.com/whazzon/",
   chess: "https://www.nialltwomey.com/chess/",

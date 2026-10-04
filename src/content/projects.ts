@@ -63,6 +63,16 @@ export const projects: readonly Project[] = [
     alt: "A reference site listing machine learning topics by group, each with a note count",
   },
   {
+    name: "AIFN Engine",
+    href: "https://www.nialltwomey.com/aifn-engine/",
+    blurb:
+      "The code underneath the figures in AI Field Notes, published on its own because it stands up without them. Move a slider or drag a point and the model refits and redraws where you are looking, since the numerics, the methods and the drawing all run in the browser and nothing goes to a server.",
+    stat: "3 packages · 188 modules · 15 compute families",
+    image: "aifn-engine.jpg",
+    imageDark: "aifn-engine-dark.jpg",
+    alt: "A gallery of live chart recipes, each showing the chart and the question it answers",
+  },
+  {
     name: "DPC Gallery",
     subtitle: "DPChallenge Award Gallery",
     href: "https://www.nialltwomey.com/dpc/",
