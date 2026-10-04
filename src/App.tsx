@@ -26,6 +26,7 @@ async function withPaperDetails<T>(load: Promise<T>, pick: (module: T) => React.
 const Publications = React.lazy(() => withPaperDetails(import("@/routes/publications"), (m) => m.Publications));
 const Note = React.lazy(() => withPaperDetails(import("@/routes/note"), (m) => m.Note));
 const Projects = React.lazy(() => import("@/routes/projects").then((m) => ({ default: m.Projects })));
+const Career = React.lazy(() => import("@/routes/career").then((m) => ({ default: m.Career })));
 const Practice = React.lazy(() => import("@/routes/practice").then((m) => ({ default: m.Practice })));
 const Technologies = React.lazy(() => import("@/routes/technologies").then((m) => ({ default: m.Technologies })));
 const Notes = React.lazy(() => import("@/routes/notes").then((m) => ({ default: m.Notes })));
@@ -104,6 +105,7 @@ export default function App() {
               <Route path="/" element={<About />} />
               <Route path="/publications" element={<Publications />} />
               <Route path="/projects" element={<Projects />} />
+              <Route path="/career" element={<Career />} />
               <Route path="/practice" element={<Practice />} />
               <Route path="/technologies" element={<Technologies />} />
               {/* /domains was this page's path until it was renamed. The

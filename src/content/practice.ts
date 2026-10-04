@@ -83,11 +83,11 @@
  * rename in every cell.
  */
 export const orgs = [
-  { key: "ucc", short: "UCC", name: "University College Cork" },
-  { key: "bristol", short: "Bristol", name: "University of Bristol" },
-  { key: "cookpad", short: "Cookpad", name: "Cookpad" },
-  { key: "kidsloop", short: "KidsLoop", name: "KidsLoop" },
-  { key: "amazon", short: "Amazon", name: "Amazon" },
+  { key: "ucc", short: "UCC", name: "University College Cork", where: "Cork, Ireland" },
+  { key: "bristol", short: "Bristol", name: "University of Bristol", where: "Bristol, UK" },
+  { key: "cookpad", short: "Cookpad", name: "Cookpad", where: "Bristol, UK" },
+  { key: "kidsloop", short: "KidsLoop", name: "KidsLoop", where: "London, UK" },
+  { key: "amazon", short: "Amazon", name: "Amazon", where: "London, UK" },
 ] as const;
 
 export type OrgKey = (typeof orgs)[number]["key"];
@@ -127,6 +127,70 @@ export const ORG_YEARS: Record<OrgKey, string> = {
   kidsloop: "2021–22",
   amazon: "2022–",
 };
+
+/**
+ * The timeline on `/career`, newest first.
+ *
+ * High level on purpose. The page exists to say where the work happened and
+ * for how long, and the two pages beside it already answer what the work
+ * consisted of in detail. A third list of achievements here would be a CV
+ * pasted into a website.
+ *
+ * A list rather than one entry per organisation, because a spell somewhere is
+ * not the same thing as a column in the matrix: UCC is one column there and
+ * two entries here, a doctorate and the postdoctoral year after it. Keying
+ * this on `OrgKey` instead would have forced the two to be one, which is why
+ * it is not.
+ *
+ * `years` is only given where an entry covers part of an organisation's span.
+ * Everywhere else it comes from `ORG_YEARS`, so the timeline and the matrix
+ * columns cannot disagree about a date.
+ *
+ * `role` is filled in only where the title can be sourced: the current one from
+ * `site.role`, the Bristol one from the fellowship that funded it, and the two
+ * at UCC from what a doctorate and the year after it are called. Cookpad and
+ * KidsLoop were left blank until Niall supplied them, rather than guessed: a
+ * title nobody checked is the kind of error that surfaces in an interview. The
+ * heading falls back to the organisation alone, so a missing one costs nothing
+ * and the next addition needs no code change.
+ *
+ * The confidentiality rules at the top of this file apply here, and apply
+ * hardest to the first entry.
+ */
+export const career: readonly { org: OrgKey; years?: string; role?: string; what: string }[] = [
+  {
+    org: "amazon",
+    role: "Senior Applied Scientist",
+    what: "Leading science initiatives across a portfolio of applications: anomaly detection, information retrieval, audio-visual AI and agentic systems.",
+  },
+  {
+    org: "kidsloop",
+    role: "Principal Applied Scientist",
+    what: "Learner models and simulation for education technology.",
+  },
+  {
+    org: "cookpad",
+    role: "Research Lead",
+    what: "Recommendation, personalisation and search, serving millions of people across several languages.",
+  },
+  {
+    org: "bristol",
+    role: "MRC Research Fellow / Assistant Professor (Lecturer)",
+    what: "Founded and led a research group on an MRC Fellowship, working on health sensing, activity recognition from wearable and in-home sensors, and behavioural signatures of early-stage dementia.",
+  },
+  {
+    org: "ucc",
+    years: "2012–13",
+    role: "Postdoctoral Researcher",
+    what: "Postdoctoral research on ultra-low-power machine learning for edge devices.",
+  },
+  {
+    org: "ucc",
+    years: "2008–12",
+    role: "PhD Student",
+    what: "Doctoral research in digital signal processing and health sensing.",
+  },
+];
 
 export type Row = {
   slug: string;

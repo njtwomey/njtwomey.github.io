@@ -5,8 +5,7 @@ import { Page } from "@/components/page";
 import { Paper } from "@/components/paper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { groupByYear, KIND_LABEL, kinds, publications, search, type PublicationKind } from "@/lib/publications";
+import { groupByYear, publications, search } from "@/lib/publications";
 
 /**
  * Filter state lives in the URL, so a filtered view can be linked to, bookmarked
@@ -17,10 +16,9 @@ function useFilters() {
   const [params, setParams] = useSearchParams();
 
   const query = params.get("q") ?? "";
-  const kind = (params.get("kind") ?? "") as PublicationKind | "";
 
   const update = React.useCallback(
-    (next: { q?: string; kind?: string }) => {
+    (next: { q?: string }) => {
       setParams(
         (current) => {
           const draft = new URLSearchParams(current);
@@ -36,11 +34,11 @@ function useFilters() {
     [setParams],
   );
 
-  return { query, kind, update, active: Boolean(query || kind) };
+  return { query, update, active: Boolean(query) };
 }
 
 export function Publications() {
-  const { query, kind, update, active } = useFilters();
+  const { query, update, active } = useFilters();
 
   // The field is local and commits to the URL after a pause: filter state in the
   // URL is right for linkability, but re-running the search on every keystroke
@@ -54,9 +52,8 @@ export function Publications() {
   }, [draft, query, update]);
 
   const results = React.useMemo(() => {
-    const byKind = kind ? publications.filter((p) => p.kind === kind) : publications;
-    return search(byKind, query);
-  }, [kind, query]);
+    return search(publications, query);
+  }, [query]);
 
   const grouped = React.useMemo(() => groupByYear(results), [results]);
 
@@ -89,12 +86,13 @@ export function Publications() {
         sm:-mx-5` of their own so that a hover background is not boxed in.
       */}
       <div className="bg-background/80 sticky top-14 z-30 -mx-5 mb-6 border-b px-5 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
-        {/* Two controls, search then kind. There was a third, a BibTeX download
-            button on the end, and it was furniture: the whole bibliography is
-            still published at `publications.bib` for anyone who wants it, and a
-            reader who wants one entry's record has the BibTeX toggle on the card
-            itself. `flex-1` on the field means it takes the width the button was
-            using rather than leaving a hole where it stood. */}
+        {/* One control. There were three: a BibTeX download button, which was
+            furniture because the whole bibliography is published at
+            `publications.bib` and a single entry's record is on its own card,
+            and a segmented filter by kind, which asked a reader to care whether
+            something was a workshop paper before they had seen the titles. The
+            search field answers both and more, since it already matches venues
+            as well as titles and authors. */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-56 flex-1">
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
@@ -106,28 +104,6 @@ export function Publications() {
               className="h-9 pl-9"
             />
           </div>
-
-          {/* `spacing={0}` turns the group into a segmented control: the items
-              share their borders and only the two ends are rounded. Five separate
-              pills read as five unrelated buttons, whereas one joined bar reads as
-              a single choice, which is what it is. Heights are pinned to match the
-              search field beside it. */}
-          <ToggleGroup
-            type="single"
-            value={kind}
-            onValueChange={(value) => update({ kind: value })}
-            variant="outline"
-            size="sm"
-            spacing={0}
-            className="h-9 *:h-9"
-            aria-label="Filter by kind"
-          >
-            {kinds.map((option) => (
-              <ToggleGroupItem key={option} value={option} className="px-3 text-xs">
-                {KIND_LABEL[option]}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
         </div>
 
         {/* Inside the bar rather than under it. It appears only while a filter
@@ -145,7 +121,7 @@ export function Publications() {
               variant="ghost"
               size="sm"
               className="text-muted-foreground h-6 gap-1 px-1.5 text-xs"
-              onClick={() => update({ q: "", kind: "" })}
+              onClick={() => update({ q: "" })}
             >
               <X className="size-3" />
               Clear

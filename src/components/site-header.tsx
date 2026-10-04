@@ -41,6 +41,8 @@ const links: readonly NavEntry[] = [
   {
     label: "Experience",
     items: [
+      // First, because it says where and when, and the two under it say what.
+      { to: "/career", label: "Career" },
       { to: "/practice", label: "ML Practice" },
       { to: "/technologies", label: "Technologies" },
     ],
