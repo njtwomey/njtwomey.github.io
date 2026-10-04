@@ -33,21 +33,35 @@ function ProjectCard({ project }: { project: Project }) {
       href={project.href}
       target="_blank"
       rel="noreferrer"
-      className="group hover:border-foreground/20 hover:bg-muted/30 flex flex-col overflow-hidden rounded-xl border no-underline transition-colors sm:flex-row"
+      className="group hover:border-foreground/20 hover:bg-muted/30 flex flex-col gap-4 rounded-xl border p-4 no-underline transition-colors sm:flex-row sm:gap-5"
     >
       {/* Anchored to the top, so a preview is cropped at the fold rather than
           centred on a band of whatever happened to be halfway down the page.
-          The rule moves from under the image to beside it when the card turns,
-          so the seam always sits where the picture ends. */}
+
+          Inset from the card's edge and rounded, with no rule between it and
+          the words. Run to the border with a divider beside it, the picture
+          read as a second panel bolted to a text panel; sitting inside the
+          padding it reads as a thumbnail belonging to the card. It keeps a
+          faint border of its own because the previews are pale in light and
+          near black in dark, so without one the edge disappears into the card
+          in whichever theme happens to match.
+
+          `self-start` matters more than it looks. A flex child stretches to
+          the row by default, which overrides the aspect, and `object-cover`
+          then scales the picture to the new height and crops the sides: the
+          AIFN Engine preview lost its own name off the left edge that way. A
+          preview whose whole job is to show what a site looks like cannot be
+          cropped to fit a column, so the box stays 16:10 and the card grows
+          around it when the text needs more. */}
       <img
         src={`${import.meta.env.BASE_URL}projects/${file}`}
         alt={project.alt}
         loading="lazy"
-        className="bg-muted aspect-[16/10] w-full shrink-0 border-b object-cover object-top sm:w-64 sm:border-r sm:border-b-0 md:w-80"
+        className="bg-muted aspect-[16/10] w-full shrink-0 rounded-lg border object-cover object-top sm:w-60 sm:self-start md:w-72"
       />
 
-      <div className="flex flex-col px-4 py-4">
-        <h2 className="group-hover:text-primary flex items-center gap-2 text-base font-semibold tracking-tight transition-colors">
+      <div className="flex min-w-0 flex-1 flex-col justify-center">
+        <h2 className="group-hover:text-primary flex items-center gap-2 text-[1.05rem] font-semibold tracking-tight transition-colors">
           {project.name}
           {/* Leans the way the link goes, which is the only thing on the card
               that says it leaves the site. */}
@@ -55,11 +69,13 @@ function ProjectCard({ project }: { project: Project }) {
         </h2>
         {project.subtitle && <p className="text-muted-foreground mt-0.5 text-xs">{project.subtitle}</p>}
 
-        {/* `flex-1` so the stat sits on the bottom edge of the card rather than
-            floating under a short paragraph. */}
-        <p className="text-muted-foreground mt-2 flex-1 text-sm/6">{project.blurb}</p>
+        {/* No `flex-1` under the paragraph. It pinned the figures to the bottom
+            edge, which is right when something else decides the height and
+            wrong now that the text does: the gap it opened was the whole of
+            what made these cards look hollow. */}
+        <p className="text-muted-foreground mt-2.5 text-sm/7">{project.blurb}</p>
 
-        <p className="text-muted-foreground/80 mt-3.5 font-mono text-[0.7rem] tracking-tight tabular-nums">
+        <p className="text-muted-foreground/80 mt-4 font-mono text-[0.7rem] tracking-tight tabular-nums">
           {project.stat}
         </p>
       </div>
@@ -74,7 +90,7 @@ export function Projects() {
       title="Projects"
       lede="I have fairly diverse interests. These are things I have built outside work, several of them for communities I am part of."
     >
-      <div className="space-y-5">
+      <div className="space-y-6">
         {projects.map((project) => (
           <ProjectCard key={project.name} project={project} />
         ))}
