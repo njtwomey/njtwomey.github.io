@@ -127,13 +127,21 @@ function PillarBody({ pillar, open, onToggle }: { pillar: Pillar; open: boolean;
 
   return (
     <tbody>
-      <tr>
+      {/* The handler is on the row, not on the button inside it, so the whole
+          header including its dots is a target rather than just the words. One
+          handler rather than two: a keyboard press on the button raises a click
+          that bubbles here, so both routes toggle exactly once, and a second
+          handler on the button would cancel its own work by firing twice.
+
+          A table row cannot itself be a button, since a button may not span
+          cells, so the button stays for the accessible name and the expanded
+          state and gives up only its own onClick. */}
+      <tr onClick={() => onToggle(pillar.id)} className="group/row cursor-pointer">
         <th scope="row" className={cn(STICKY, "scroll-mt-28 py-1 pr-3 text-left align-middle")} id={anchor(pillar.id)}>
           <button
             type="button"
-            onClick={() => onToggle(pillar.id)}
             aria-expanded={open}
-            className="group hover:text-primary -ml-1 flex w-full items-center gap-1.5 py-1 text-left transition-colors"
+            className="group-hover/row:text-primary -ml-1 flex w-full cursor-pointer items-center gap-1.5 py-1 text-left transition-colors"
           >
             <ChevronRight className={cn("size-3.5 shrink-0 transition-transform", open && "rotate-90")} />
             <span className="text-sm font-medium">{pillar.label}</span>
