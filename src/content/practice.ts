@@ -144,7 +144,14 @@ export const ORG_YEARS: Record<OrgKey, string> = {
  *
  * `years` is only given where an entry covers part of an organisation's span.
  * Everywhere else it comes from `ORG_YEARS`, so the timeline and the matrix
- * columns cannot disagree about a date.
+ * columns cannot disagree about a date. `length` is the same escape hatch for
+ * how long a spell was: a range of calendar years cannot say eighteen months,
+ * and counting them gets Cookpad wrong by half a year.
+ *
+ * Each line names the place before the work. "An education technology company,
+ * where I led..." tells a reader who has not heard of KidsLoop what kind of
+ * thing it was, which the name alone does not, and that is most readers for
+ * three of the five.
  *
  * `role` is filled in only where the title can be sourced: the current one from
  * `site.role`, the Bristol one from the fellowship that funded it, and the two
@@ -157,21 +164,24 @@ export const ORG_YEARS: Record<OrgKey, string> = {
  * The confidentiality rules at the top of this file apply here, and apply
  * hardest to the first entry.
  */
-export const career: readonly { org: OrgKey; years?: string; role?: string; what: string }[] = [
+export const career: readonly { org: OrgKey; years?: string; role?: string; length?: string; what: string }[] = [
   {
     org: "amazon",
     role: "Senior Applied Scientist",
-    what: "Leading science initiatives across a portfolio of applications: anomaly detection, information retrieval, audio-visual AI and agentic systems.",
+    what: "Prime Video, where I lead science initiatives across a portfolio of applications: anomaly detection, information retrieval, audio-visual AI and agentic systems.",
   },
   {
     org: "kidsloop",
     role: "Principal Applied Scientist",
-    what: "Learner models and simulation for education technology.",
+    what: "An education technology company, where I led the science behind learner models and classroom simulation.",
   },
   {
     org: "cookpad",
     role: "Research Lead",
-    what: "Recommendation, personalisation and search, serving millions of people across several languages.",
+    // A year and a half, which the year range cannot express: 2020–21 reads as
+    // one year to anything counting them.
+    length: "1.5 years",
+    what: "The recipe platform, where I led the research team behind search, recommendation and personalisation for millions of cooks across several languages.",
   },
   {
     org: "bristol",

@@ -24,7 +24,12 @@ import { ORG_YEARS, career, orgs } from "@/content/practice";
  * to that is at the top.
  */
 
-/** The years a range covers, as a phrase. Open-ended ranges run to this year. */
+/**
+ * The years a range covers, as a phrase. Open-ended ranges run to this year.
+ *
+ * Only a fallback. Calendar years cannot express eighteen months, so an entry
+ * that knows better carries its own `length` and this is not consulted.
+ */
 function duration(span: string): string {
   const [from = "", to] = span.split("–");
   const start = Number(from);
@@ -105,7 +110,7 @@ export function Career() {
                 <Dot />
                 <span className="text-muted-foreground font-mono text-xs tabular-nums">{label(span)}</span>
                 <Dot />
-                <span className="text-muted-foreground/70 text-xs">{duration(span)}</span>
+                <span className="text-muted-foreground/70 text-xs">{entry.length ?? duration(span)}</span>
               </div>
 
               <p className="text-muted-foreground/80 mt-0.5 text-xs">{org.where}</p>
