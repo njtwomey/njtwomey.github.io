@@ -70,7 +70,17 @@ export const projects: readonly Project[] = [
     stat: "3 packages · 188 modules · 15 compute families",
     image: "aifn-engine.jpg",
     imageDark: "aifn-engine-dark.jpg",
-    alt: "A gallery of live chart recipes, each showing the chart and the question it answers",
+    alt: "A landing page with a large gradient headline and the start of a chart you can drag below it",
+  },
+  {
+    name: "Knight School",
+    href: "https://www.nialltwomey.com/knightschool/",
+    blurb:
+      "A trainer for chess openings, with a few ways to work at them. Play a line through with the reason for every move, drill the moves that are due, or name an opening from a position you are shown. Drilling uses spaced repetition, so the moves stick. I am still building it.",
+    stat: "4 packages · 3 ways to learn · 27 courses",
+    image: "knightschool.jpg",
+    imageDark: "knightschool-dark.jpg",
+    alt: "A chess trainer, with a board showing the first two moves beside the name and a line on what it does",
   },
   {
     name: "DPC Gallery",

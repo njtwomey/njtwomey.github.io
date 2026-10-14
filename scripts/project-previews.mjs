@@ -1,7 +1,7 @@
 /**
  * Capture the Projects page previews from the live sites.
  *
- * The four cards on /projects each show a screenshot of the thing they link to,
+ * The cards on /projects each show a screenshot of the thing they link to,
  * which is what stops the page being four paragraphs in the same register. The
  * screenshots go stale whenever one of those sites changes, so the way they
  * were made is here rather than in somebody's shell history.
@@ -15,6 +15,11 @@
  * it:
  *
  *   npm i -D playwright && npx playwright install chromium-headless-shell
+ *
+ * Each URL is a landing page, because every one of these sites puts its name
+ * and what it does at the top. Where that stops being true, point this at the
+ * page that shows the thing instead and say why here: the card still links to
+ * the root, so a URL in this table is the picture rather than the destination.
  *
  * Dark variants are captured through `prefers-color-scheme`, so a site without
  * a dark mode produces a second copy of its light page. That is not worth
@@ -37,10 +42,8 @@ const OUT = resolve(root, "public/projects");
  */
 const SITES = {
   "ai-field-notes": "https://www.nialltwomey.com/ai-field-notes/",
-  // The render gallery rather than the landing page, because the figures are what
-  // the engine is for and the front door is three boxes of prose. The card still
-  // links to the root: this URL is the picture, not the destination.
-  "aifn-engine": "https://www.nialltwomey.com/aifn-engine/render",
+  "aifn-engine": "https://www.nialltwomey.com/aifn-engine/",
+  knightschool: "https://www.nialltwomey.com/knightschool/",
   dpc: "https://www.nialltwomey.com/dpc/",
   whazzon: "https://www.nialltwomey.com/whazzon/",
   chess: "https://www.nialltwomey.com/chess/",
