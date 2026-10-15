@@ -75,7 +75,7 @@ uniform anyway.
 
 ## Fitting it
 
-This is where the three get compared. A point's density is the sum over its copies, so what it contributes to the
+This is where we compare some alternatives. A point's density is the sum over its copies, so what it contributes to the
 loss is the log of that sum: a log-sum-exp over three terms, and nothing else in the training loop changes. Fit a
 conventional Gaussian mixture and ignore the circle. Fit the paper's version, which shifts the means. Or shift the
 data, which is what this note considers.
