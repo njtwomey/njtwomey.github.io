@@ -44,6 +44,7 @@ const SITES = {
   "ai-field-notes": "https://www.nialltwomey.com/ai-field-notes/",
   "aifn-engine": "https://www.nialltwomey.com/aifn-engine/",
   knightschool: "https://www.nialltwomey.com/knightschool/",
+  drillcode: "https://www.nialltwomey.com/drillcode/",
   dpc: "https://www.nialltwomey.com/dpc/",
   whazzon: "https://www.nialltwomey.com/whazzon/",
   chess: "https://www.nialltwomey.com/chess/",

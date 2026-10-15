@@ -83,6 +83,16 @@ export const projects: readonly Project[] = [
     alt: "A chess trainer, with a board showing the first two moves beside the name and a line on what it does",
   },
   {
+    name: "DrillCode",
+    href: "https://www.nialltwomey.com/drillcode/",
+    blurb:
+      "Practice for coding interviews that runs in the browser. Every problem comes with a commented Python solution and the tests it has to pass, and you can edit that code and run it on the page. Python itself runs in the browser, so nothing you write is sent anywhere.",
+    stat: "254 problems · 21 topics · 46 techniques",
+    image: "drillcode.jpg",
+    imageDark: "drillcode-dark.jpg",
+    alt: "A coding practice site, with a headline above the problem, technique and walkthrough picked for the day",
+  },
+  {
     name: "DPC Gallery",
     subtitle: "DPChallenge Award Gallery",
     href: "https://www.nialltwomey.com/dpc/",
