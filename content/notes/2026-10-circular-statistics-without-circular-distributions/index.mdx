@@ -75,13 +75,14 @@ uniform anyway.
 
 ## Fitting it
 
-This is where we compare some alternatives. A point's density is the sum over its copies, so what it contributes to the
-loss is the log of that sum: a log-sum-exp over three terms, and nothing else in the training loop changes. Fit a
-conventional Gaussian mixture and ignore the circle. Fit the paper's version, which shifts the means. Or shift the
-data, which is what this note considers.
+Does it work? I compared three ways of fitting the same data: a conventional Gaussian mixture that ignores the
+circle, the paper's version that shifts the means, and shifting the data.
 
-The setup is the same for all three. Here I use Adam rather than the paper's Bayesian inference, so none of this says
-anything about model evidence. One generating density is a single normal at 23:00 with $\sigma$ of three hours,
+For the last two, each point contributes the log of the sum over its copies, which is a log-sum-exp over three terms.
+Nothing else in the training loop changes.
+
+The setup is the same for all three options. Here I use Adam rather than the paper's Bayesian inference, which is
+the same thing done a different way. One generating density is a single normal at 23:00 with $\sigma$ of three hours,
 straddling midnight. The other is a mixture of two, weights 0.6 and 0.4, means at 22 and 9 hours, scales 2.5 and 2.0.
 Each fit saw 500 draws and started with the means spread evenly round the circle, as the paper does.
 
@@ -108,8 +109,12 @@ Drag a component into a corner and its mass comes out of all four. The fit follo
 see what is being scored: the data in nine tiles, one model in the middle.
 
 The model never changed through any of this: it is the same normal fitted with the same optimiser, and all that
-changed is how the data is measured against it.
+changed is how the data is measured against it. None of which is better than what we did in the paper, and it could
+not be, since the two give the same fit. It is a reinterpretation of it, and from a certain point of view a simpler
+one: the awkward object goes away and what is left is a distribution anybody can write down.
 
-So the takeaway is this. If your target is periodic, you do not need a periodic distribution. Copy the target a
-period either way, score the copies with a log-sum-exp, and keep the predicted mean inside one period. The
-distribution you already know does the rest.
+## Takeaways
+
+If your target is periodic, you do not need a periodic distribution. Keep the one you have, evaluate it at the
+reading and at a period either side of it, and add those three densities together before taking the log. The model's
+mean stays inside one period.
