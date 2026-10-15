@@ -38,7 +38,7 @@ export function Explorer() {
     two: toggle(true, "two components in the data"),
     // Only meaningful with two components, so it is hidden with one rather than
     // sitting there doing nothing.
-    weight: slider(0.05, 0.95, 0.6, { step: 0.05, label: "weight on the first", when: when("two", true) }),
+    weight: slider(0.05, 0.95, 0.8, { step: 0.05, label: "weight on the first", when: when("two", true) }),
     components: slider(1, 4, 2, { step: 1, label: "components fitted" }),
     n: slider(100, 2000, 500, { step: 100, label: "training draws n" }),
     seed: slider(0, 9, 0, { step: 1, label: "seed" }),
@@ -128,17 +128,19 @@ export function Explorer() {
           // controls "Configuration" as well and two panels under one word
           // reads as a mistake.
           <ControlGroup title="fitting">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button size="sm" variant="outline" onClick={run.running ? run.pause : run.start} disabled={run.done}>
-                {run.running ? <Pause /> : <Play />}
-                {run.running ? "Pause" : "Continue"}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={run.reset}>
-                <RotateCcw /> Again
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => state.reset()} disabled={state.isDefault}>
-                <Undo2 /> Reset
-              </Button>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <div className="flex shrink-0 items-center gap-3">
+                <Button size="sm" variant="outline" onClick={run.running ? run.pause : run.start} disabled={run.done}>
+                  {run.running ? <Pause /> : <Play />}
+                  {run.running ? "Pause" : "Continue"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={run.reset}>
+                  <RotateCcw /> Again
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => state.reset()} disabled={state.isDefault}>
+                  <Undo2 /> Reset
+                </Button>
+              </div>
               {pinned !== null && (
                 <Button size="sm" variant="ghost" onClick={() => setPinned(null)}>
                   <SkipForward /> Back to the end

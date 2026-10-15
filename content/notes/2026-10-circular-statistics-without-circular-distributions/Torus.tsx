@@ -16,6 +16,8 @@ import {
   shifts,
   trainer,
 } from "./circular-2d";
+import { chrome } from "aifn-render/design";
+import { useSettled } from "./use-training";
 import { useTheme } from "@/hooks/use-theme";
 
 /**
@@ -59,23 +61,23 @@ export function Torus() {
   const state = useFigureState({
     // Everything about the two generating components is dragged on the chart,
     // so none of these draws a control of its own.
-    // Two long thin components at right angles to each other, both axis
-    // aligned: one standing up in the middle of the square, one lying along
-    // the bottom edge from the corner, so it wraps both ways. Every handle is
-    // on the chart and can be taken hold of.
-    m1h: slider(0, G1, 0.48, { step: 0.005, onChart: true, label: "first mean, x" }),
-    m1d: slider(0, G2, 0.55, { step: 0.005, onChart: true, label: "first mean, y" }),
-    a1h: tip(0.58, "first axis, x", G1),
-    a1d: tip(0.55, "first axis, y", G2),
-    b1h: tip(0.48, "second axis, x", G1),
-    b1d: tip(0.9, "second axis, y", G2),
+    // Two tilted components: a broad one across the middle and a narrower one
+    // in the top corner, which wraps round all four. Both are off the axes, so
+    // the covariance is doing something, and every handle sits inside the
+    // square where it can be taken hold of.
+    m1h: slider(0, G1, 0.275, { step: 0.005, onChart: true, label: "first mean, x" }),
+    m1d: slider(0, G2, 0.49, { step: 0.005, onChart: true, label: "first mean, y" }),
+    a1h: tip(0.5, "first axis, x", G1),
+    a1d: tip(0.355, "first axis, y", G2),
+    b1h: tip(0.33, "second axis, x", G1),
+    b1d: tip(0.58, "second axis, y", G2),
 
-    m2h: slider(0, G1, 0.02, { step: 0.005, onChart: true, label: "second mean, x" }),
-    m2d: slider(0, G2, 0.02, { step: 0.005, onChart: true, label: "second mean, y" }),
-    a2h: tip(0.39, "third axis, x", G1),
-    a2d: tip(0.02, "third axis, y", G2),
-    b2h: tip(0.02, "fourth axis, x", G1),
-    b2d: tip(0.115, "fourth axis, y", G2),
+    m2h: slider(0, G1, 0.845, { step: 0.005, onChart: true, label: "second mean, x" }),
+    m2d: slider(0, G2, 0.905, { step: 0.005, onChart: true, label: "second mean, y" }),
+    a2h: tip(0.985, "third axis, x", G1),
+    a2d: tip(0.985, "third axis, y", G2),
+    b2h: tip(0.87, "fourth axis, x", G1),
+    b2d: tip(0.86, "fourth axis, y", G2),
 
     weight: slider(0.05, 0.95, 0.6, { step: 0.05, label: "weight on the first" }),
     components: slider(1, 4, 2, { step: 1, label: "components fitted" }),
@@ -128,6 +130,14 @@ export function Torus() {
     for (const c of ["1", "2"]) {
       const [mh, md, ah, ad, bh, bd] = [`m${c}h`, `m${c}d`, `a${c}h`, `a${c}d`, `b${c}h`, `b${c}d`];
       const mean = [now[mh] as number, now[md] as number] as const;
+
+      // A drag moves one handle. Anything that moves several at once is a
+      // reset or a value read back from the URL, and reconciling it would
+      // carry the old positions into the new ones: reset used to put the means
+      // back and then shift the tips by how far the means had come.
+      const parts = [moved(mh, md), moved(ah, ad), moved(bh, bd)].filter(Boolean).length;
+      if (parts !== 1) continue;
+
       if (moved(mh, md)) {
         const dh = (now[mh] as number) - (prev[mh] as number);
         const dd = (now[md] as number) - (prev[md] as number);
@@ -200,9 +210,11 @@ export function Torus() {
   // sample cannot come out ahead of the density that produced it.
   const test = useMemo(() => sample(truth, 2000, 1000 + state.seed), [truth, state.seed]);
 
+  // The charts follow the pointer; the fit waits until it has stopped.
+  const toFit = useSettled(draws);
   const build = useCallback(
-    () => trainer(draws, { components: state.components, seed: state.seed, diagonal: state.diagonal }),
-    [draws, state.components, state.diagonal, state.seed],
+    () => trainer(toFit, { components: state.components, seed: state.seed, diagonal: state.diagonal }),
+    [toFit, state.components, state.diagonal, state.seed],
   );
 
   const [fitter, setFitter] = useState(build);
@@ -288,6 +300,9 @@ export function Torus() {
     ],
   );
 
+  // The theme's ink, one entry per point, which is how `Points` takes a colour.
+  const ink = useMemo(() => draws[0].map(() => chrome(resolved === "dark" ? "dark" : "light").ink), [draws, resolved]);
+
   const span = state.tiles;
   // Equal units, so a circle is drawn as a circle and an ellipse's tilt means
   // what it looks like it means.
@@ -307,20 +322,24 @@ export function Torus() {
         state={state}
         controls={
           <ControlGroup title="fitting">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button size="sm" variant="outline" onClick={() => setRunning(!running)} disabled={steps >= STEPS}>
-                {running ? <Pause /> : <Play />}
-                {running ? "Pause" : "Continue"}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setFitter(build())}>
-                <RotateCcw /> Again
-              </Button>
-              {/* `Again` refits what is on screen; this puts the controls back
-                  where they started, which a figure with six draggable handles
-                  needs rather more than most. */}
-              <Button size="sm" variant="ghost" onClick={() => state.reset()} disabled={state.isDefault}>
-                <Undo2 /> Reset
-              </Button>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              {/* The buttons stay on one line together: letting them wrap
+                  individually left Reset stranded on a line of its own. */}
+              <div className="flex shrink-0 items-center gap-3">
+                <Button size="sm" variant="outline" onClick={() => setRunning(!running)} disabled={steps >= STEPS}>
+                  {running ? <Pause /> : <Play />}
+                  {running ? "Pause" : "Continue"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setFitter(build())}>
+                  <RotateCcw /> Again
+                </Button>
+                {/* `Again` refits what is on screen; this puts the controls
+                    back where they started, which a figure with six draggable
+                    handles needs rather more than most. */}
+                <Button size="sm" variant="ghost" onClick={() => state.reset()} disabled={state.isDefault}>
+                  <Undo2 /> Reset
+                </Button>
+              </div>
               <StatusText tone="muted">
                 {steps >= STEPS ? `fitted, ${STEPS} steps` : `fitting, step ${steps} of ${STEPS}`}
               </StatusText>
@@ -380,7 +399,10 @@ export function Torus() {
           {rings.map((ring, i) => (
             <Curve key={`fit-${i}`} name="one scale of the fit" x={ring[0]} y={ring[1]} slot={1} live />
           ))}
-          <Points name="the draws" x={draws[0]} y={draws[1]} size={3} emphasis />
+          {/* `emphasis` fills a marker with the page colour, which leaves the
+              draws white on a light background. These take the theme's ink
+              instead, so they are dark on light and white on dark. */}
+          <Points name="the draws" x={draws[0]} y={draws[1]} size={2.5} colors={ink} />
           <Segments name="its principal axes" segments={spokes} emphasis width={1} />
           {/* Six handles: a mean and two axis tips for each component. */}
           <Handle {...state.handle(["m1h", "m1d"], { label: "first" })} />
