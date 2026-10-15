@@ -59,17 +59,59 @@ function ScrollOnNavigate() {
     }
 
     const id = decodeURIComponent(hash.slice(1));
-    const jump = () => {
+    const jump = (behavior?: ScrollBehavior) => {
       const target = document.getElementById(id);
-      target?.scrollIntoView();
+      target?.scrollIntoView(behavior ? { behavior } : undefined);
       return Boolean(target);
     };
-    if (jump()) return;
+
+    // Landing on the element once is not enough. Everything above it is still
+    // laying out — a figure sizing its charts, an image arriving — and each of
+    // those pushes the target down after the jump has happened. A hash naming
+    // the second figure of a note came to rest about ninety pixels too high.
+    //
+    // So hold the position for a few seconds. The nudges start late enough not
+    // to interrupt the smooth scroll of a click within the page, are instant
+    // rather than smooth so a correction does not read as a second animation,
+    // and stop the moment the reader scrolls for themselves: being dragged back
+    // to an anchor you have just left is worse than landing short of it.
+    let held = true;
+    const release = () => {
+      held = false;
+    };
+    for (const event of ["wheel", "touchstart", "keydown"] as const) {
+      window.addEventListener(event, release, { passive: true });
+    }
+
+    let settle = 0;
+    const hold = (until: number) => {
+      settle = window.setTimeout(() => {
+        if (!held || performance.now() > until) return;
+        jump("auto");
+        hold(until);
+      }, 150);
+    };
+    const start = () => {
+      window.setTimeout(() => held && hold(performance.now() + 2500), 400);
+    };
+
+    const stop = () => {
+      window.clearTimeout(settle);
+      for (const event of ["wheel", "touchstart", "keydown"] as const) window.removeEventListener(event, release);
+    };
+
+    if (jump()) {
+      start();
+      return stop;
+    }
 
     // Not rendered yet. Watch the tree rather than polling, and give up after a
     // few seconds so a hash naming nothing does not leave an observer running.
     const observer = new MutationObserver(() => {
-      if (jump()) observer.disconnect();
+      if (jump()) {
+        observer.disconnect();
+        start();
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
     const timeout = window.setTimeout(() => observer.disconnect(), 5000);
@@ -77,6 +119,7 @@ function ScrollOnNavigate() {
     return () => {
       observer.disconnect();
       window.clearTimeout(timeout);
+      stop();
     };
   }, [pathname, hash]);
 

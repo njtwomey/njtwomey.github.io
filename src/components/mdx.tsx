@@ -1,4 +1,4 @@
-import { Check, Copy, ExternalLink } from "lucide-react";
+import { Check, Copy, ExternalLink, Link2 } from "lucide-react";
 import * as React from "react";
 import type { ComponentPropsWithoutRef } from "react";
 import { Link } from "react-router-dom";
@@ -128,6 +128,13 @@ export function Figures({
  * An inline citation — "(Twomey et al., 2019)" linking to the entry on the
  * publications page. Written as `<Cite id="twomey2019neural" />`, the same key
  * `<Paper>` takes, so prose and cards cite the one bibliography.
+ *
+ * Hovering opens the compact paper card, which is what `Ref` does for other
+ * people's work. This used to carry a native `title` attribute instead, so a
+ * reader hovering Niall's own paper got an unstyled browser tooltip holding
+ * the title and nothing else, with no way to the PDF, while somebody else's
+ * paper got the full record. The asymmetry was invisible to whoever added the
+ * card to `Ref`, because both forms look identical in the prose.
  */
 export function Cite({ id }: { id: string }) {
   const paper = publication(id);
@@ -141,9 +148,18 @@ export function Cite({ id }: { id: string }) {
   const label = first ? `${first.last}${paper.authors.length > 1 ? " et al." : ""}, ${paper.year}` : String(paper.year);
 
   return (
-    <Link to={`/publications#${paper.key}`} title={paper.title} className="whitespace-nowrap">
-      ({label})
-    </Link>
+    <HoverCard openDelay={120} closeDelay={80}>
+      <HoverCardTrigger asChild>
+        <Link to={`/publications#${paper.key}`} className="whitespace-nowrap">
+          ({label})
+        </Link>
+      </HoverCardTrigger>
+      {/* The card already is a card: inside a popover it drops its own border
+          and padding rather than sitting in a second one. */}
+      <HoverCardContent className="w-96">
+        <Paper id={id} variant="compact" className="border-0 bg-transparent p-0" />
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 
@@ -389,8 +405,43 @@ export function Placeholder({ title, children }: { title: string; children?: Rea
   );
 }
 
+/**
+ * A heading that links to itself.
+ *
+ * `rehype-slug` already puts an id on every heading, and `ScrollOnNavigate`
+ * already jumps to a hash on load, so the only missing piece was a way to get
+ * the hash into the address bar. Clicking the heading does it, which also means
+ * a reload comes back to the same place rather than to the top: the thing you
+ * want while editing a note further down the page.
+ *
+ * The whole heading is the target rather than a marker beside it, since a
+ * marker that appears on hover cannot be found by anyone looking for it. The
+ * icon is there to say the text is a link, and is decoration.
+ */
+function heading(Tag: "h2" | "h3" | "h4") {
+  return function Heading({ id, children, ...rest }: ComponentPropsWithoutRef<"h2">) {
+    if (!id) {
+      return <Tag {...rest}>{children}</Tag>;
+    }
+    return (
+      <Tag id={id} {...rest}>
+        <Link to={{ hash: `#${id}` }} className="group/anchor inline-flex items-baseline gap-2">
+          {children}
+          <Link2
+            aria-hidden
+            className="text-muted-foreground size-3.5 shrink-0 self-center opacity-0 transition-opacity group-hover/anchor:opacity-100 group-focus-visible/anchor:opacity-100"
+          />
+        </Link>
+      </Tag>
+    );
+  };
+}
+
 export const mdxComponents = {
   a: Anchor,
+  h2: heading("h2"),
+  h3: heading("h3"),
+  h4: heading("h4"),
   img: MarkdownImage,
   pre: CodeBlock,
   Paper: NotePaper,

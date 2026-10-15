@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Personal site of Niall Twomey \u2014 publications, projects and notes.",
+  "description": "Personal site of Niall Twomey — publications, projects and notes.",
   "scripts": {
     "prebuild": "npm run content",
     "predev": "npm run content",
@@ -22,6 +22,9 @@
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@mdx-js/react": "^3.1.1",
+    "aifn-compute": "https://github.com/njtwomey/aifn-engine/releases/download/v0.2.9/aifn-compute-0.2.9.tgz",
+    "aifn-methods": "https://github.com/njtwomey/aifn-engine/releases/download/v0.2.9/aifn-methods-0.2.9.tgz",
+    "aifn-render": "https://github.com/njtwomey/aifn-engine/releases/download/v0.2.9/aifn-render-0.2.9.tgz",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "echarts": "^6.1.0",

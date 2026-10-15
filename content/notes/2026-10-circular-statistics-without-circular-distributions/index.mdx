@@ -1,0 +1,115 @@
+---
+title: "Circular statistics without circular distributions"
+description: "Times of day are circular, so 23:50 and 00:10 are twenty minutes apart and an ordinary normal has no idea. The usual fix is a wrapped distribution, which is awkward to write down and awkward to fit. Copying each reading a period either way and scoring the copies together gives exactly the same answer, and leaves the model an ordinary normal."
+date: "2026-10-15"
+tags: ["circular-statistics", "probabilistic"]
+hero: torus.png
+heroAlt: "Two components fitted on a surface that wraps both ways, their mass carrying across every edge"
+heroOnPage: false
+published: false
+---
+
+import "./references.bib";
+import { Shifts } from "./Shifts";
+import { Explorer } from "./Explorer";
+import { Torus } from "./Torus";
+
+Say you want to model when somebody does something during the day. The readings are clock times, so a normal fitted
+to them treats a bedtime at 23:50 and one at 00:10 as twenty-three hours and forty minutes apart, even though they
+are only twenty minutes apart. Any model of a daily routine needs some way to say that times near midnight are near
+each other.
+
+Circular statistics and wrapped distributions are the usual ways to approach these problems. Take a normal on the
+line and wrap it round a circle of period $\gamma$, so its density is $\sum_k N(x;\mu+k\gamma,\sigma^2)$ summed over
+every integer $k$. We fitted mixtures of these to smart home activity times in 2015 <Cite id="diethe2015circular" />.
+They are awkward. The density is an infinite sum that has to be truncated, and in a mixture the components are not
+pinned down, so a fit can wander round the clock without settling on anything.
+
+<Ref id="nunezantonio2014bayesian" /> dealt with that by conditioning each point on which copy it came from. We took a
+simpler route: approximate the wrapped normal by a mixture of ordinary normals with means one period apart, sharing a
+variance, with the central mean held inside $[0,\gamma)$. That turned a wrapped mixture into an ordinary one, which
+Gibbs sampling and expectation propagation could both fit.
+
+The idea in this note is that you do not need the wrapped distribution at all, and you do not need to move the means
+either. A normal depends on $x$ and $\mu$ only through $x-\mu$, so
+
+$$
+N(x;\mu+k\gamma,\sigma^2) = N(x-k\gamma;\mu,\sigma^2),
+$$
+
+term by term. Moving the mean up a period and moving the reading down a period are the same arithmetic. In our paper
+we moved the mean. The other option is what this note does: leave one ordinary normal where it is, copy each reading
+a day early and a day late, and score the three copies together. Wrapping stops being something the distribution does
+and becomes something the loss does.
+
+This is useful because a loss is easier to reuse than a distribution. Any model that gives you a density for a
+periodic target, an hour of the day or a compass bearing, can be trained this way without changing the model: score
+the target at $k\gamma$ offsets, take a log-sum-exp, and keep the predicted mean inside one period.
+
+<Shifts />
+
+The figure draws both pictures. Switching what moves changes it completely, and the sum underneath does not move at
+all. Turning the copies off is worth a look too: with none of them the bump sits over 23:00 with nothing left for the
+far side of midnight, which is the problem we started with.
+
+## How many copies you need
+
+Three copies approximate the true density very accurately, as long as $\sigma$ is small compared with the period, and
+the error from dropping the rest can be put a number on. With $x$ and $\mu$ both inside $[0,\gamma)$ the nearest copy
+is never more than half a period from the mean and every copy dropped is at least a whole period away, so writing
+$a=\gamma^2/2\sigma^2$, the density you compute falls short of the true one by a relative error of at most
+
+$$
+\varepsilon \;\le\; \frac{2e^{-3a/4}}{1-e^{-3a}}.
+$$
+
+At the three-hour scale fitted below that is $8\times10^{-11}$, which is nothing. It is still under $0.005$ nats at
+$\sigma=6$, a quarter of a day. By $\sigma=12$ it is about $0.4$ nats and three copies are no longer enough.
+
+The paper answers the same question the other way round. It also writes the wrapped normal as a truncated Fourier
+series, $\frac{1}{\gamma}(1+2\sum_n e^{-\sigma^2(2\pi n/\gamma)^2/2}\cos(2\pi n(x-\mu)/\gamma))$, and switches to that
+form as $\sigma$ grows. Poisson summation turns one series into the other, and their rates,
+$e^{-\gamma^2/2\sigma^2}$ against $e^{-2\pi^2\sigma^2/\gamma^2}$, are equal at $\sigma=\gamma/\sqrt{2\pi}$, about ten
+hours on a day. Below that you need fewer copies, above it fewer harmonics, and a distribution that wide is close to
+uniform anyway.
+
+## Fitting it
+
+This is where the three get compared. A point's density is the sum over its copies, so what it contributes to the
+loss is the log of that sum: a log-sum-exp over three terms, and nothing else in the training loop changes. Fit a
+conventional Gaussian mixture and ignore the circle. Fit the paper's version, which shifts the means. Or shift the
+data, which is what this note considers.
+
+The setup is the same for all three. Here I use Adam rather than the paper's Bayesian inference, so none of this says
+anything about model evidence. One generating density is a single normal at 23:00 with $\sigma$ of three hours,
+straddling midnight. The other is a mixture of two, weights 0.6 and 0.4, means at 22 and 9 hours, scales 2.5 and 2.0.
+Each fit saw 500 draws and started with the means spread evenly round the circle, as the paper does.
+
+<Explorer />
+
+Shifting the data and shifting the means give the same fit. They agreed to $9\times10^{-16}$ in the loss at random
+parameters and to $4\times10^{-15}$ in the fitted parameters across 40 fits. They are equivalent.
+
+One detail is worth getting right. The copies go into a single log-sum-exp, not into the dataset as extra rows.
+Adding rows scores each copy separately, so it maximises $\sum_k\log p(x-k\gamma)$ rather than $\log\sum_k
+p(x-k\gamma)$, and that loss has to make every copy likely at once: on the single normal it fits $\sigma$ at 21.7
+hours against a true 3.
+
+## More than one circle
+
+The same thing works in more dimensions. With $d$ periodic coordinates the copies are a grid rather than a row, so
+each point is scored at $(2K+1)^d$ of them: nine in two dimensions keeping one copy either way, twenty-seven in
+three. Polynomial in the copies kept per axis and exponential in the number of axes that wrap, which is what decides
+where the idea stops being worth it.
+
+<Torus />
+
+Drag a component into a corner and its mass comes out of all four. The fit follows it round. Turn on the copies to
+see what is being scored: the data in nine tiles, one model in the middle.
+
+The model never changed through any of this: it is the same normal fitted with the same optimiser, and all that
+changed is how the data is measured against it.
+
+So the takeaway is this. If your target is periodic, you do not need a periodic distribution. Copy the target a
+period either way, score the copies with a log-sum-exp, and keep the predicted mean inside one period. The
+distribution you already know does the rest.

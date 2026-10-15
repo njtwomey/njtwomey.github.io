@@ -6,6 +6,16 @@
 @import "@fontsource-variable/geist-mono";
 @import "katex/dist/katex.min.css";
 
+/*
+ * aifn-render ships React components written in Tailwind classes against these
+ * same token names, so Tailwind has to see the package to generate them. Its
+ * own `theme.css` is deliberately not imported: it defines `--background`,
+ * `--primary` and the rest at `:root`, and importing it would repaint this
+ * whole site in the engine's palette. Scanning it instead leaves the tokens
+ * here in charge, so a figure takes its colours from the page around it.
+ */
+@source "../node_modules/aifn-render";
+
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -157,6 +167,29 @@
   }
   .prose-note a {
     @apply text-primary decoration-primary/30 hover:decoration-primary font-medium underline underline-offset-[3px] transition-colors;
+  }
+  /*
+   * No hover tooltip over a figure's charts.
+   *
+   * The figures here are things to move rather than numbers to read off, and a
+   * box following the pointer across every one of them is noise. The engine's
+   * charts offer no switch for it, so this hides the element: ECharts renders
+   * its tooltip as a class-less div with that z-index hard-coded, and the rule
+   * is scoped inside a note so nothing else on the site is affected. The
+   * figures' own readouts are turned off at the component instead, with
+   * `hoverReadout={false}`.
+   */
+  .prose-note div[style*="z-index: 9999999"] {
+    display: none !important;
+  }
+
+  /* A heading links to itself, and should read as a heading rather than as a
+     link until you point at it. */
+  .prose-note :is(h2, h3, h4) a {
+    @apply text-foreground font-semibold no-underline;
+  }
+  .prose-note :is(h2, h3, h4) a:hover {
+    @apply text-primary;
   }
   .prose-note strong {
     @apply text-foreground font-semibold;

@@ -186,6 +186,15 @@ export default defineConfig({
   resolve: {
     alias: { "@": resolve(import.meta.dirname, "src") },
   },
+  /*
+   * ES modules for workers, because aifn-render starts its compute worker with
+   * `new Worker(new URL(...), { type: "module" })` and that worker imports
+   * enough of the engine to be code-split. Vite's default worker format is
+   * `iife`, which rollup refuses to emit for a split build, so the whole build
+   * fails on a figure that never runs anything off the main thread. It is
+   * invisible in dev, where workers are served as modules either way.
+   */
+  worker: { format: "es" },
   build: {
     // The PDF archive is large and already in public/; keep the JS budget honest.
     chunkSizeWarningLimit: 700,
