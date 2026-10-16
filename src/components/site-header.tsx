@@ -30,14 +30,27 @@ type NavEntry = NavItem | NavGroup;
 const isGroup = (entry: NavEntry): entry is NavGroup => "items" in entry;
 
 /**
+ * Ordered by how recently the thing behind it changed.
+ *
+ * About is the front door. Then Notes, which gains an entry every few weeks,
+ * then Projects, which gains one every few months, then Publications, which is
+ * a record rather than a feed, and last Experience, which is the background a
+ * reader goes looking for only once the rest has interested them. Publications
+ * used to sit second, and it is the least likely of the four to have changed
+ * since the reader's last visit.
+ *
+ * The group goes last for a second reason: a dropdown in the middle of the bar
+ * stops the eye, and the three pages behind it are the ones nobody opens first.
+ *
  * Notes is conditional. They are kept in the repo whether or not they are
  * published, so a nav item that is always present would sometimes lead to an
  * empty page. It appears once there is something behind it.
  */
 const links: readonly NavEntry[] = [
   { to: "/", label: "About", end: true },
-  { to: "/publications", label: "Publications" },
+  ...(hasNotes ? [{ to: "/notes", label: "Notes" }] : []),
   { to: "/projects", label: "Projects" },
+  { to: "/publications", label: "Publications" },
   {
     label: "Experience",
     items: [
@@ -47,7 +60,6 @@ const links: readonly NavEntry[] = [
       { to: "/technologies", label: "Technologies" },
     ],
   },
-  ...(hasNotes ? [{ to: "/notes", label: "Notes" }] : []),
 ];
 
 /**
