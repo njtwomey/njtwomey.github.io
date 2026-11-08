@@ -38,6 +38,32 @@ set, no CSS-in-JS.
   seaborn's, copied verbatim and lightened for dark by a shared helper, so the nth series is the same
   hue it would be in a figure from the Python side and there is one place to correct.
 
+## Figures and compute are omai, and only omai
+
+**omai** (Observable Methods in Machine Learning, `github.com/njtwomey/omai`) is the figure and compute library
+for every interactive figure in a note. `omai-engine` is the compute (`omai-engine/<domain>`) and `omai-render` the
+figures, views and React bindings (`omai-render/<area>`); there is no second library and nothing hand-writes numerics
+the engine provides. **To use omai, read the two `llms.txt` files, then the `index/<domain>.md` they point to**:
+`node_modules/omai-engine/llms.txt` for compute and `node_modules/omai-render/llms.txt` for figures, views and the
+React bindings, then the source only if an index is not enough.
+
+- **Installed from GitHub release tarballs, never from a registry.** `omai.lock.json` pins each package by sha256 and
+  `scripts/fetch-omai.mjs` (the `preinstall` hook, or `npm run omai:fetch`) downloads it over HTTPS into the
+  git-ignored `vendor/omai/`, verifies the hash and refuses on a mismatch. `package.json` depends on
+  `file:vendor/omai/<name>.tgz`. The repository is public, so no sign-in is needed.
+- **The lock's `status` field means the release has no assets yet.** Version 0.1.4 was packed from the `v0.1.4` tag
+  with `make pack` in an omai checkout. Once the release carries `omai-engine-0.1.4.tgz` and
+  `omai-render-0.1.4.tgz`, `npm run omai:lock -- v0.1.4 && npm run omai:fetch && npm install` takes the release's
+  hashes and clears the field. Until then CI cannot install them, so do not push before that is done.
+- **The API in one paragraph.** Randomness is explicit: an immutable `key` from `omai-engine/random`. Iterative
+  methods are traced `Algorithm`s run as sessions (`useSession`, `useLiveRun`, `SessionPlayer`). Numeric functions take
+  a `TensorLike` and return tensors (`toFlat` and `toVector` read them back), and fixed-size tuples are `Vec2`, `Vec3`
+  and `Vec4` from `omai-engine/base`. Invalid arguments throw `OmaiError('value')`; non-convergence does not throw, so
+  check the run's status. `omai-render` follows the `dark` class on `<html>` and stores its session preferences in
+  `localStorage` under `omai-session-preferences`.
+- **If omai lacks something, say so rather than working around it.** A figure that needs a domain, function or
+  behaviour omai does not have becomes a marked placeholder and the gap is reported upstream, not hand-rolled.
+
 ## Content is compiled, not hand-written into the app
 
 Everything a human writes lives under `content/`. A build step compiles it into JSON the app
@@ -68,8 +94,8 @@ alongside their own chunk (`withPaperDetails` in `App.tsx`).
 `<Paper id="twomey2019neural" />` renders a publication; `<Cite id="..." />` is the inline-prose
 form. `<Ref id="..." />` is the same for **other people's** papers, keyed off
 `src/content/references.ts` and linking out rather than to the publications page; it shows the full
-record on hover, with the BibTeX. Which of its two forms to use is a grammar question and is settled
-in `repositories/note-authoring/reference/`. Referring to a paper by key rather than copying its details means a corrected venue or a new
+record on hover, with the BibTeX. Which of its two forms to use is a grammar question: `Ref` is the
+subject of the sentence, and `Ref` with `paren` is support at the end of a clause. Referring to a paper by key rather than copying its details means a corrected venue or a new
 PDF appears everywhere at once. `src/content/references.test.ts` fails the build if a key used in a
 note or the front page's `SELECTED` list stops resolving.
 
@@ -105,6 +131,11 @@ root. Never write `/notes/<slug>/moons.gif` by hand, since removing that prefix 
 <CodeFile path="python/demos/torch_dataclass.py" lines="20-45" />
 ```
 
+**An inline `<Cite>` or `<Ref>` must never start a line.** MDX reads a JSX element at the start of a
+line as a block, so prettier puts a blank line in front of it and the paragraph splits in two around
+the citation. Wrap the prose so the tag sits mid-line; the linter's "paragraph does not end in a
+complete sentence" is pointing at exactly this.
+
 `CodeFile` inlines a real file during the MDX transform, so a quoted snippet cannot drift from the
 file it came from, and an unreadable path fails the build. Code fences are highlighted by Shiki at
 build time in both themes, so always declare a language and use ```text for program output. `Paper`,
@@ -119,7 +150,7 @@ order. A note that cites no paper carries topics alone, because a second kind wo
 absence of the first. The venue tag is copied from the bibliography entry for the key the note cites,
 because that is the fact and a hand-typed venue is how a note ends up still saying "preprint" two
 years after the paper appeared. `src/content/references.test.ts` fails the build when a tag
-disagrees with the bib, and the topics in use are listed in the `note-draft` skill.
+disagrees with the bib, and the topics in use are the ones already on the notes in `content/notes/`.
 
 **`hero` is the index thumbnail and, by default, a banner at the top of the note.** `heroOnPage:
 false` keeps the thumbnail and drops the banner, for a picture that survives being small and does
@@ -147,7 +178,7 @@ The Notes nav item only appears once at least one note is published. The `hero` 
 thumbnail, so a note needs one image rather than two.
 
 The vocabulary is **notes** throughout, in files, routes, identifiers and UI. Not "posts", not
-"blog". Frontmatter fields and the house shape of a note are in the `note-draft` skill.
+"blog". Frontmatter fields and the house shape of a note are in `repositories/note-authoring/harness/note-pattern.md`.
 
 ## Commands
 
@@ -177,28 +208,24 @@ hard-code a base. Because routing is client-side, the build writes `404.html` as
 
 ## Skills
 
-| skill               | e.g.                                                                         |
-| ------------------- | ---------------------------------------------------------------------------- |
-| `add-publications`  | "add my new papers", "check Scholar for anything missing", "add this PDF"    |
-| `note-draft`        | "draft a note about the ordinal regression paper", "write something about X" |
-| `note-revise`       | any correction to note prose                                                 |
-| `note-review`       | "review this note", "does this read", "actually read the thing"              |
-| `persona-read`      | "read this as a generalist", "how does this land for a recruiter"            |
-| `context-free-read` | "cold read this", "does this stand on its own"                               |
-| `reference-audit`   | "is any of this working", "which rules should go"                            |
-| `humanise`          | "clean this up", "make this sound less like AI wrote it"                     |
-| `voice-check`       | "does this sound like me", "any banned phrases"                              |
+| skill              | e.g.                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| `add-publications` | "add my new papers", "check Scholar for anything missing", "add this PDF"             |
+| `note`             | "write a note about X", "plan this note", "review this note", "revise this note"      |
+| `plain-writer`     | "rewrite this in plain English", "simplify this", "ASD-STE100", "controlled language" |
 
-**The note skills live in `repositories/note-authoring`** and are symlinked into `.claude/skills/` so
-they are discoverable here. That repository is where notes are drafted and reviewed. It holds the
-reference the skills operate over: sentence patterns with a verdict, the two note templates, six
-reader personas, catalogues of constructions that work and that do not, a definition of complexity,
-and the measured voice profile. A finished note is copied into `content/notes/<slug>/`.
+**`plain-writer` is adapted from ASD-STE100's skill, and is short on purpose.** It keeps the rules that
+make explanatory prose easier to read: active voice, one term for one thing, ordinary words, articles,
+related words kept together, and no noun stack longer than three. It drops the rules for procedures,
+warnings, the approved dictionary and the sentence caps, because they push the text towards staccato.
+`.claude/skills/plain-writer/SOURCE.md` says where the skill came from, under what licence, and what was
+dropped.
 
-There is no longer a `writing` skill. Prose rules for the rest of the site live in that reference
-too, and `voice-check` is what applies them. The reference is organised by **when a file loads**
-rather than by subject: `card.md` holds the twenty rules carried while writing, and everything else
-is reached by a named condition. `repositories/note-authoring/reference/README.md` is the map.
+**The note harness lives in `repositories/note-authoring`.** `note` and `plain-writer` are symlinked into
+`.claude/skills/` from there, so they are discoverable here. That repository is where notes are planned,
+drafted, reviewed and revised, and where `make dev` serves a local viewer for them. A finished note is
+copied into `content/notes/<slug>/`. The old skills and the reference they ran on are in that
+repository's `legacy/` directory and are not loaded.
 
 `add-publications` reconciles `content/publications.bib` against Google Scholar and PDFs dropped in
 `inbox/`. It must **never invent a field**: an entry with a guessed venue or a fabricated DOI is
@@ -206,14 +233,13 @@ worse than one that is missing them.
 
 ## Writing
 
-**Read `repositories/note-authoring/reference/card.md` before writing or editing any user-facing
-prose**, meaning the bio, the ML Practice page, publication summaries, note prose and page ledes.
-Twenty rules, and two of them outrank the rest: every sentence must be a complete sentence, and em
-dashes are banned in favour of a comma, a colon, a semicolon or a full stop.
+**Read `repositories/note-authoring/harness/style.md` before writing or editing any user-facing prose**,
+meaning the bio, the ML Practice page, publication summaries, note prose and page ledes. The goal is
+human, straightforward, succinct writing that is precise, sharp and informative. Every sentence must be a
+complete sentence, and em dashes are banned in favour of a comma, a colon, a semicolon or a full stop.
 
-`uv run scripts/lint_prose.py <file>`, **run from `repositories/note-authoring/`**, catches every
-mechanical rule including those two. Code comments are exempt and should explain why at whatever
-length it takes.
+`uv run tools/lint_prose.py <file>`, **run from `repositories/note-authoring/`**, catches the mechanical
+rules including those two. Code comments are exempt and should explain why at whatever length it takes.
 
 ## Conventions
 

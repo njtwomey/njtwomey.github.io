@@ -7,42 +7,43 @@
  * Nothing about the method changes from the line. The copies are a three by
  * three grid rather than a row of three, the loss is a log-sum-exp over nine
  * terms instead of three, and the model underneath is an ordinary bivariate
- * normal with a full covariance.
+ * normal with a full covariance, which is the engine's `multivariateNormal`.
  *
  * The covariance is carried as its Cholesky factor, lower triangular, with the
  * diagonal held in logs. That keeps it positive definite for free under an
- * unconstrained optimiser, and the quadratic form is a forward substitution
- * rather than an inverse.
+ * unconstrained optimiser, and is the form `multivariateNormal` takes directly.
  */
+import { valueAndGrad } from "omai-engine/autodiff";
+import { multivariateNormal } from "omai-engine/dists";
+import { adam, applyUpdates } from "omai-engine/optim";
+import { type Key, categorical, key, normal as normalNoise, split } from "omai-engine/random";
 import {
-  type Tensor,
   type Value,
   add,
-  div,
   exp,
+  item,
   log,
+  logSoftmax,
   logsumexp,
   mean,
+  mod,
   mul,
   neg,
   reshape,
-  shapeOfValue,
-  square,
+  softmax,
+  stack,
   sub,
+  take,
   tensor,
-  toArray,
-} from "aifn-compute";
-import { adamRule, applyUpdates } from "aifn-compute/optim";
-import { valueAndGrad } from "aifn-compute";
-import { normals, stream, uniform } from "aifn-compute/foundation/random";
+  toFlat,
+} from "omai-engine/tensor";
+import type { Algorithm } from "omai-engine/trace";
 
 /** Both axes wrap at one, so the surface is the unit square joined at its edges. */
 export const PERIOD: readonly [number, number] = [1, 1];
 
 /** Copies either side, in both directions: nine in all. */
 export const K = 1;
-
-const LOG_2PI = Math.log(2 * Math.PI);
 
 /**
  * The smallest a component may be along each axis.
@@ -58,12 +59,12 @@ export const FLOOR: readonly [number, number] = [0.01, 0.01];
 export type Component = { w: number; mu: [number, number]; a: number; b: number; c: number };
 
 export type Params = {
-  mu1: Tensor;
-  mu2: Tensor;
-  logA: Tensor;
-  b: Tensor;
-  logC: Tensor;
-  logits: Tensor;
+  mu1: Value;
+  mu2: Value;
+  logA: Value;
+  b: Value;
+  logC: Value;
+  logits: Value;
 };
 
 /**
@@ -140,10 +141,7 @@ export function componentFromAxes(
   return { w, mu: [mu[0], mu[1]], a, b, c };
 }
 
-export const wrap2 = (x: number, i: 0 | 1) => {
-  const g = PERIOD[i] as number;
-  return ((x % g) + g) % g;
-};
+export const wrap2 = (x: number, i: 0 | 1) => item(mod(x, PERIOD[i] as number));
 
 /** The shifts, as a grid: nine pairs for K = 1. */
 export const shifts = (k = K): [number, number][] => {
@@ -151,60 +149,102 @@ export const shifts = (k = K): [number, number][] => {
   return range.flatMap((i) => range.map((j) => [i, j] as [number, number]));
 };
 
+/** The points `(x1, x2)` as one `[n, 2]` tensor, which is the shape a bivariate normal scores. */
+const pointsOf = (x1: Value, x2: Value): Value => stack([x1, x2], -1);
+
+/** The shifts as the `[1, copies, 2]` offsets that are taken off a point before it is scored. */
+const offsets = (ks: readonly [number, number][]): Value =>
+  reshape(tensor(ks.map(([i, j]) => [i * (PERIOD[0] as number), j * (PERIOD[1] as number)])), [1, ks.length, 2]);
+
 /**
- * `log w + log N` for every point, copy and component: shape (n, copies, M).
+ * One bivariate normal per component, from a mean and a lower Cholesky factor.
  *
  * `diagonal` drops the off-diagonal term, which restricts every component to a
  * covariance aligned with the axes. The parameter stays in the tree and is
  * simply not read, so its gradient is zero and the optimiser leaves it where it
  * started, which is nought.
+ *
+ * Each component is its own distribution over every point at once, rather than
+ * one batched distribution over components, because the engine solves a single
+ * triangular system for all the rows of a batch and that is several times
+ * faster than solving one system per row.
  */
-export function logJoint(x1: Value, x2: Value, p: Params, ks: readonly [number, number][], diagonal = false): Value {
-  const n = shapeOfValue(x1)[0] ?? 0;
-  const m = shapeOfValue(p.mu1)[0] ?? 0;
-  const at = (t: Value) => reshape(t, [1, 1, m]);
-  const k1 = reshape(tensor(ks.map(([i]) => i * (PERIOD[0] as number))), [1, ks.length, 1]);
-  const k2 = reshape(tensor(ks.map(([, j]) => j * (PERIOD[1] as number))), [1, ks.length, 1]);
-
-  // The data moves, which is the whole point. Shifting the means instead gives
-  // the same number, as `circular-2d.test.ts` checks.
-  const d1 = sub(sub(reshape(x1, [n, 1, 1]), k1), at(p.mu1));
-  const d2 = sub(sub(reshape(x2, [n, 1, 1]), k2), at(p.mu2));
-
-  const a = add(exp(at(p.logA)), FLOOR[0] as number);
-  const c = add(exp(at(p.logC)), FLOOR[1] as number);
-  // y = L⁻¹ d by forward substitution, so the quadratic form is |y|².
-  const y1 = div(d1, a);
-  const y2 = diagonal ? div(d2, c) : div(sub(d2, mul(at(p.b), y1)), c);
-  const quad = add(square(y1), square(y2));
-
-  const logW = reshape(sub(p.logits, logsumexp(p.logits)), [1, 1, m]);
-  const logDet = add(log(a), log(c));
-  return add(logW, sub(sub(mul(-0.5, quad), logDet), LOG_2PI));
+function components(p: Params, diagonal: boolean) {
+  const m = p.mu1.shape[0] ?? 0;
+  const a = add(exp(p.logA), FLOOR[0] as number);
+  const c = add(exp(p.logC), FLOOR[1] as number);
+  const b = diagonal ? mul(p.b, 0) : p.b;
+  return Array.from({ length: m }, (_, i) => {
+    const at = (t: Value) => take(t, [i]);
+    const scaleTril = reshape(stack([at(a), mul(at(a), 0), at(b), at(c)], -1), [2, 2]);
+    return multivariateNormal(reshape(stack([at(p.mu1), at(p.mu2)], -1), [2]), { scaleTril });
+  });
 }
 
-export const loss = (x1: Tensor, x2: Tensor, p: Params, ks: readonly [number, number][], diagonal = false): Value =>
+/**
+ * `log w + log N` for every point, copy and component: shape (n, copies, M).
+ *
+ * The data moves, which is the whole point. Shifting the means instead gives
+ * the same number, as `circular-2d.test.ts` checks.
+ */
+export function logJoint(x1: Value, x2: Value, p: Params, ks: readonly [number, number][], diagonal = false): Value {
+  const m = p.mu1.shape[0] ?? 0;
+  const n = x1.shape[0] ?? 0;
+  const moved = sub(reshape(pointsOf(x1, x2), [n, 1, 2]), offsets(ks));
+  const lp = stack(
+    components(p, diagonal).map((d) => d.logProb(moved)),
+    -1,
+  );
+  return add(reshape(logSoftmax(p.logits), [1, 1, m]), lp);
+}
+
+export const loss = (x1: Value, x2: Value, p: Params, ks: readonly [number, number][], diagonal = false): Value =>
   neg(mean(logsumexp(logJoint(x1, x2, p, ks, diagonal), [1, 2])));
 
 /** The parameters as components, for drawing. */
 export function readOut(p: Params, diagonal = false): Component[] {
-  const mu1 = toArray(p.mu1) as number[];
-  const mu2 = toArray(p.mu2) as number[];
-  const a = (toArray(exp(p.logA)) as number[]).map((v) => v + (FLOOR[0] as number));
-  const c = (toArray(exp(p.logC)) as number[]).map((v) => v + (FLOOR[1] as number));
-  const b = diagonal ? (toArray(p.b) as number[]).map(() => 0) : (toArray(p.b) as number[]);
-  const logits = toArray(p.logits) as number[];
-  const top = Math.max(...logits);
-  const raw = logits.map((v) => Math.exp(v - top));
-  const total = raw.reduce((x, y) => x + y, 0);
+  const mu1 = toFlat(p.mu1);
+  const mu2 = toFlat(p.mu2);
+  const a = toFlat(add(exp(p.logA), FLOOR[0] as number));
+  const c = toFlat(add(exp(p.logC), FLOOR[1] as number));
+  const b = diagonal ? mu1.map(() => 0) : toFlat(p.b);
+  const w = toFlat(softmax(p.logits));
   return mu1.map((_, i) => ({
-    w: (raw[i] as number) / total,
+    w: w[i] as number,
     mu: [wrap2(mu1[i] as number, 0), wrap2(mu2[i] as number, 1)] as [number, number],
     a: a[i] as number,
     b: b[i] as number,
     c: c[i] as number,
   }));
 }
+
+/**
+ * The log density of a mixture of components at each of the points, summing
+ * enough copies (`k` either way) to be exact.
+ *
+ * The points are two parallel arrays so a figure can ask for a whole grid of
+ * cells in one call, which is one tensor pass rather than a call per cell.
+ */
+function logMixture(mix: readonly Component[], x1: readonly number[], x2: readonly number[], k: number): Value {
+  const moved = sub(reshape(pointsOf(tensor([...x1]), tensor([...x2])), [x1.length, 1, 2]), offsets(shifts(k)));
+  const lp = stack(
+    mix.map((g) =>
+      multivariateNormal([...g.mu], {
+        scaleTril: [
+          [g.a, 0],
+          [g.b, g.c],
+        ],
+      }).logProb(moved),
+    ),
+    -1,
+  );
+  const logW = reshape(log(tensor(mix.map((g) => g.w))), [1, 1, mix.length]);
+  return logsumexp(add(logW, lp), [1, 2]);
+}
+
+/** The density of a mixture at each of the points. */
+export const densities = (mix: readonly Component[], x1: readonly number[], x2: readonly number[], k = 4): number[] =>
+  toFlat(exp(logMixture(mix, x1, x2, k)));
 
 /**
  * The one-sigma ellipse of a component, as a closed curve.
@@ -224,41 +264,36 @@ export function ellipse(g: Component, points = 64): [number[], number[]] {
   return [x, y];
 }
 
-/** The density of a mixture at one point, summing enough copies to be exact. */
-export function density(mix: readonly Component[], x: number, y: number, k = 4): number {
-  let total = 0;
-  for (let i = -k; i <= k; i++) {
-    for (let j = -k; j <= k; j++) {
-      for (const g of mix) {
-        const d1 = x - i * (PERIOD[0] as number) - g.mu[0];
-        const d2 = y - j * (PERIOD[1] as number) - g.mu[1];
-        const y1 = d1 / g.a;
-        const y2 = (d2 - g.b * y1) / g.c;
-        total += (g.w * Math.exp(-0.5 * (y1 * y1 + y2 * y2))) / (2 * Math.PI * g.a * g.c);
-      }
-    }
-  }
-  return total;
-}
-
 /** Draws from a mixture on the torus, folded into one period of each. */
 export function sample(mix: readonly Component[], n: number, seed: number): [number[], number[]] {
-  const s = stream(seed);
-  const u = toArray(uniform(s, 0, 1, { shape: [n] })) as number[];
-  const z1 = toArray(normals(s, n)) as number[];
-  const z2 = toArray(normals(s, n)) as number[];
-  const cuts = mix.map((_, i) => mix.slice(0, i + 1).reduce((t, g) => t + g.w, 0));
-  const x1: number[] = [];
-  const x2: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const found = cuts.findIndex((cut) => (u[i] as number) < cut);
-    const g = mix[found < 0 ? mix.length - 1 : found] as Component;
-    const d1 = g.a * (z1[i] as number);
-    const d2 = g.b * (z1[i] as number) + g.c * (z2[i] as number);
-    x1.push(wrap2(g.mu[0] + d1, 0));
-    x2.push(wrap2(g.mu[1] + d2, 1));
-  }
-  return [x1, x2];
+  const [pick, noise1, noise2] = split(key(seed), 3) as [Key, Key, Key];
+  const comp = toFlat(
+    categorical(
+      pick,
+      mix.map((g) => g.w),
+      [n],
+    ),
+  );
+  const at = (f: (g: Component) => number) => tensor(comp.map((i) => f(mix[i] as Component)));
+  const z1 = normalNoise(noise1, [n]);
+  const z2 = normalNoise(noise2, [n]);
+  const d1 = mul(
+    at((g) => g.a),
+    z1,
+  );
+  const d2 = add(
+    mul(
+      at((g) => g.b),
+      z1,
+    ),
+    mul(
+      at((g) => g.c),
+      z2,
+    ),
+  );
+  const fold = (centre: (g: Component) => number, d: Value, i: 0 | 1) =>
+    toFlat(mod(add(at(centre), d), PERIOD[i] as number));
+  return [fold((g) => g.mu[0], d1, 0), fold((g) => g.mu[1], d2, 1)];
 }
 
 /**
@@ -314,46 +349,62 @@ export function start(m: number, draws?: readonly [number[], number[]], seed = 0
   };
 }
 
-export type Trainer = {
-  step: (n?: number) => number;
-  steps: () => number;
-  fit: () => Component[];
+/** What a torus fit records every `ROUND` steps. */
+export type Row = { step: number; loss: number };
+
+/** The whole of a fit at one step, which is all that a figure needs to draw it and a scrub needs to return to it. */
+export type FitState = {
+  params: Params;
+  optimiser: unknown;
+  /** Steps taken so far. */
+  steps: number;
+  /** The training loss of the last step taken. */
+  loss: number;
+  diagonal: boolean;
+  trail: readonly Row[];
 };
 
-/** One fit, stepped by the figure that owns it. */
+/** Steps between the points of the loss trace. */
+export const ROUND = 20;
+
+/** One fit, as an engine `Algorithm` so the figure can play, pause and scrub it. */
 export function trainer(
   draws: readonly [number[], number[]],
   options: { components?: number; lr?: number; seed?: number; diagonal?: boolean } = {},
-): Trainer {
+): Algorithm<FitState> {
   const ks = shifts();
   const x1 = tensor([...draws[0]]);
   const x2 = tensor([...draws[1]]);
-  const rule = adamRule({ stepSize: options.lr ?? 0.05 });
-
-  let params = start(options.components ?? 2, draws, options.seed ?? 0);
-  let state = rule.init(params);
-  let taken = 0;
+  const rule = adam({ learningRate: options.lr ?? 0.05 });
   const diagonal = options.diagonal ?? false;
-  const graded = valueAndGrad((p: Params) => loss(x1, x2, p, ks, diagonal));
+  const components = options.components ?? 2;
+  const seed = options.seed ?? 0;
 
   return {
-    step(n = 1) {
-      let value = 0;
-      for (let i = 0; i < n; i++) {
-        const { value: v, grad } = graded(params);
-        const next = rule.update(grad as Params, state, params);
-        params = applyUpdates(params, next.updates);
-        state = next.state;
-        value = v as number;
-        taken += 1;
-      }
-      return value;
+    name: "torus-fit",
+    config: { components, lr: options.lr ?? 0.05, seed, diagonal },
+    init: () => {
+      const params = start(components, draws, seed);
+      return { params, optimiser: rule.init(params), steps: 0, loss: Number.NaN, diagonal, trail: [] };
     },
-    steps: () => taken,
-    fit: () => readOut(params, diagonal),
+    step: (s) => {
+      const { value, grad } = valueAndGrad((p: Params) => loss(x1, x2, p, ks, diagonal))(s.params);
+      const { updates, state } = rule.update(grad, s.optimiser as unknown[], s.params);
+      const steps = s.steps + 1;
+      const now = item(value);
+      return {
+        ...s,
+        params: applyUpdates(s.params, updates) as Params,
+        optimiser: state,
+        steps,
+        loss: now,
+        trail: steps % ROUND === 0 ? [...s.trail, { step: steps, loss: now }] : s.trail,
+      };
+    },
+    observe: (s) => ({ metrics: { loss: s.loss } }),
   };
 }
 
 /** Mean log density of a sample under a mixture, for scoring a fit. */
-export const logLik = (x1: readonly number[], x2: readonly number[], mix: readonly Component[]): number =>
-  x1.reduce((total, x, i) => total + Math.log(density(mix, x, x2[i] as number)), 0) / x1.length;
+export const logLik = (x1: readonly number[], x2: readonly number[], mix: readonly Component[], k = 2): number =>
+  item(mean(logMixture(mix, x1, x2, k)));

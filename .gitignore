@@ -64,3 +64,6 @@ repositories/
 .claude/skills/humanise
 .claude/skills/note-audit
 .claude/skills/reference-audit
+
+# omai release tarballs, fetched and sha256-checked by scripts/fetch-omai.mjs.
+vendor/

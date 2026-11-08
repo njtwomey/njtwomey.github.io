@@ -1,7 +1,7 @@
 /**
  * Wrapped normals on a circle, fitted by gradient descent in the browser.
  *
- * This is `circular.py` from the draft, rewritten against `aifn-compute` so the
+ * This is `circular.py` from the draft, rewritten against `omai-engine` so the
  * figures in the note fit their own models while a reader watches. The numbers
  * it produces are checked against the PyTorch run in `circular.test.ts`.
  *
@@ -15,29 +15,38 @@
  * as a training loss, and the point of the note is that the two give the same
  * fit while the obvious third way, treating the copies as extra examples, does
  * not.
+ *
+ * The normal itself is the engine's, and so are the optimiser, the gradient and
+ * the random draws. What lives here is the one thing the engine does not have,
+ * the sum over copies as a loss, and the stepping of a fit as an `Algorithm` so
+ * that a figure can play, pause and scrub it like any other run.
  */
+import { valueAndGrad } from "omai-engine/autodiff";
+import { normal } from "omai-engine/dists";
+import { adam, applyUpdates } from "omai-engine/optim";
+import { type Key, categorical, key, normal as normalNoise, split, uniform } from "omai-engine/random";
 import {
-  type Tensor,
   type Value,
   add,
-  div,
+  argmax,
   exp,
+  item,
   log,
+  logSoftmax,
   logsumexp,
   mean,
+  mod,
   mul,
   neg,
+  oneHot,
   reshape,
-  shapeOfValue,
-  square,
+  softmax,
   sub,
   sum,
   tensor,
-  toArray,
-} from "aifn-compute";
-import { adamRule, applyUpdates } from "aifn-compute/optim";
-import { valueAndGrad } from "aifn-compute";
-import { normals, stream, uniform } from "aifn-compute/foundation/random";
+  toFlat,
+} from "omai-engine/tensor";
+import type { Algorithm } from "omai-engine/trace";
 
 /** The period: hours in a day. Everything here is in hours. */
 export const G = 24;
@@ -47,8 +56,6 @@ export const K = 1;
 
 /** The reference density, which nothing here comes close to truncating. */
 const K_EXACT = 10;
-
-const LOG_SQRT_2PI = 0.5 * Math.log(2 * Math.PI);
 
 export const METHODS = ["raw", "offset", "shift", "uniform", "posterior"] as const;
 export type Method = (typeof METHODS)[number];
@@ -75,7 +82,7 @@ export const METHOD_LABEL: Record<Method, string> = {
 export const SHOWN: readonly Method[] = ["raw", "offset", "shift"];
 
 /** The free parameters of a mixture, as a pytree for `valueAndGrad` and the optimiser. */
-export type Params = { mu: Tensor; logSigma: Tensor; logits: Tensor };
+export type Params = { mu: Value; logSigma: Value; logits: Value };
 
 /** A mixture read off as numbers, which is what the figures draw. */
 export type Mixture = { w: number[]; mu: number[]; sigma: number[] };
@@ -88,16 +95,11 @@ export const SCENARIOS: Record<string, Mixture> = {
   mixture: { w: [0.6, 0.4], mu: [22, 9], sigma: [2.5, 2] },
 };
 
-/**
- * The numbers behind a reduction.
- *
- * `logsumexp` and the rest type as `Value`, since reducing every axis gives a
- * plain number, and every call here leaves axes standing.
- */
-export const numbers = <T extends number[] | number[][]>(v: Value): T => toArray(v as Tensor) as T;
-
 /** Positive remainder, which `%` is not for a negative left-hand side. */
-export const wrap = (x: number) => ((x % G) + G) % G;
+export const wrap = (x: number): number => item(mod(x, G));
+
+/** The same remainder over a whole array. */
+export const wrapAll = (xs: readonly number[]): number[] => toFlat(mod(xs, G));
 
 /** The shorter way round the circle between two angles. */
 export const circDist = (a: number, b: number) => {
@@ -105,8 +107,8 @@ export const circDist = (a: number, b: number) => {
   return Math.min(d, G - d);
 };
 
-const logNormal = (x: Value, mu: Value, sigma: Value): Value =>
-  sub(sub(mul(-0.5, square(div(sub(x, mu), sigma))), log(sigma)), LOG_SQRT_2PI);
+/** The shifts -k..k, as the copies a loss scores. */
+export const copies = (k: number): number[] => Array.from({ length: 2 * k + 1 }, (_, i) => i - k);
 
 /**
  * `log w_m + log N(.)` for every example, copy and component: shape (n, |ks|, M).
@@ -116,27 +118,23 @@ const logNormal = (x: Value, mu: Value, sigma: Value): Value =>
  * the same number term by term, which `circular.test.ts` checks.
  */
 export function logJoint(x: Value, p: Params, ks: readonly number[], mode: "offset" | "shift"): Value {
-  // Through `shapeOfValue` rather than `.shape`, because inside `valueAndGrad`
-  // the parameters are traced values standing for tensors rather than tensors.
-  const n = shapeOfValue(x)[0] ?? 0;
-  const m = shapeOfValue(p.mu)[0] ?? 0;
+  const n = x.shape[0] ?? 0;
+  const m = p.mu.shape[0] ?? 0;
   const xs = reshape(x, [n, 1, 1]);
   const k = reshape(tensor([...ks]), [1, ks.length, 1]);
   const mu = reshape(p.mu, [1, 1, m]);
   const sigma = reshape(exp(p.logSigma), [1, 1, m]);
-  // log-softmax, spelled out: the logits less their own logsumexp.
-  const logW = reshape(sub(p.logits, logsumexp(p.logits)), [1, 1, m]);
+  const logW = reshape(logSoftmax(p.logits), [1, 1, m]);
   const lp =
     mode === "offset"
-      ? logNormal(xs, add(mu, mul(k, G)), sigma) // the component moves
-      : logNormal(sub(xs, mul(k, G)), mu, sigma); // the data moves
+      ? normal(add(mu, mul(k, G)), sigma).logProb(xs) // the component moves
+      : normal(mu, sigma).logProb(sub(xs, mul(k, G))); // the data moves
   return add(logW, lp);
 }
 
 /** Mean negative log density under the wrapped mixture, with enough copies to be exact. */
-export function exactNll(x: Tensor, p: Params): number {
-  const ks = Array.from({ length: 2 * K_EXACT + 1 }, (_, i) => i - K_EXACT);
-  return -(mean(logsumexp(logJoint(x, p, ks, "shift"), [1, 2])) as number);
+export function exactNll(x: Value, p: Params): number {
+  return -item(mean(logsumexp(logJoint(x, p, copies(K_EXACT), "shift"), [1, 2])));
 }
 
 /**
@@ -145,49 +143,45 @@ export function exactNll(x: Tensor, p: Params): number {
  * A wrapped density is periodic in mu, so only [0, G) is a distinct answer, and
  * holding the means there is what makes three copies enough. This is counted
  * before the traced pass rather than inside it: the parameters are traced
- * there, so they cannot be read as numbers, and `mod` has a derivative of one
- * wherever it is defined, so subtracting a constant number of periods is the
- * same operation to the gradient and needs no new primitive.
+ * there, so they cannot be read as numbers, and subtracting a constant number
+ * of periods is the same operation to the gradient as not subtracting them.
  */
-const periodsOf = (p: Params): number[] => (toArray(p.mu) as number[]).map((v) => Math.floor(v / G));
+const periodsOf = (p: Params): number[] => toFlat(p.mu).map((v) => Math.floor(v / G));
 
 /** Subtract those periods, inside the traced pass, where they are constants. */
 function fold(p: Params, periods: readonly number[] | undefined): Params {
   if (!periods || periods.every((q) => q === 0)) return p;
-  return { ...p, mu: sub(p.mu, tensor(periods.map((q) => q * G))) as Tensor };
+  return { ...p, mu: sub(p.mu, tensor(periods.map((q) => q * G))) };
 }
 
 /** The parameters read as a wrapped mixture, whichever loss produced them. */
 export function readOut(p: Params): Mixture {
-  const mu = (toArray(p.mu) as number[]).map(wrap);
-  const sigma = (toArray(exp(p.logSigma)) as number[]).map(Number);
-  const logits = toArray(p.logits) as number[];
-  const top = Math.max(...logits);
-  const raw = logits.map((v) => Math.exp(v - top));
-  const total = raw.reduce((a, b) => a + b, 0);
-  return { mu, sigma, w: raw.map((v) => v / total) };
+  return { mu: toFlat(mod(p.mu, G)), sigma: toFlat(exp(p.logSigma)), w: toFlat(softmax(p.logits)) };
 }
 
 /** A mixture as parameters, for scoring a fit or a truth with the same code. */
 export const asParams = (m: Mixture): Params => ({
   mu: tensor([...m.mu]),
-  logSigma: tensor(m.sigma.map(Math.log)),
-  logits: tensor(m.w.map(Math.log)),
+  logSigma: log(tensor([...m.sigma])),
+  logits: log(tensor([...m.w])),
 });
 
-/** The wrapped density of a mixture at each of `xs`, for drawing it. */
-export function density(m: Mixture, xs: readonly number[]): number[] {
-  return xs.map((x) => {
-    let total = 0;
-    for (let k = -K_EXACT; k <= K_EXACT; k++) {
-      for (let i = 0; i < m.mu.length; i++) {
-        const z = (x - k * G - (m.mu[i] as number)) / (m.sigma[i] as number);
-        total += ((m.w[i] as number) * Math.exp(-0.5 * z * z)) / ((m.sigma[i] as number) * Math.sqrt(2 * Math.PI));
-      }
-    }
-    return total;
-  });
+/**
+ * The density of a mixture whose components are copied at the shifts `ks`,
+ * at each of `xs`: the sum over copies and components, written once.
+ */
+function copiedDensity(m: Mixture, ks: readonly number[], xs: readonly number[]): number[] {
+  const n = xs.length;
+  const width = m.mu.length;
+  const x = reshape(tensor([...xs]), [n, 1, 1]);
+  const k = reshape(tensor([...ks]), [1, ks.length, 1]);
+  const component = normal(reshape(tensor([...m.mu]), [1, 1, width]), reshape(tensor([...m.sigma]), [1, 1, width]));
+  const w = reshape(tensor([...m.w]), [1, 1, width]);
+  return toFlat(sum(mul(w, component.prob(sub(x, mul(k, G)))), [1, 2]));
 }
+
+/** The wrapped density of a mixture at each of `xs`, for drawing it. */
+export const density = (m: Mixture, xs: readonly number[]): number[] => copiedDensity(m, copies(K_EXACT), xs);
 
 /**
  * The density the truncated loss actually sees: the copies kept, and no others.
@@ -197,16 +191,8 @@ export function density(m: Mixture, xs: readonly number[]): number[] {
  * the day when the copies are taken away, and one drawn with `density` would
  * quietly stay periodic however few copies it was given.
  */
-export function keptDensity(mu: number, sigma: number, ks: readonly number[], xs: readonly number[]): number[] {
-  return xs.map((x) => {
-    let total = 0;
-    for (const k of ks) {
-      const z = (x - k * G - mu) / sigma;
-      total += Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
-    }
-    return total;
-  });
-}
+export const keptDensity = (mu: number, sigma: number, ks: readonly number[], xs: readonly number[]): number[] =>
+  copiedDensity({ w: [1], mu: [mu], sigma: [sigma] }, ks, xs);
 
 /**
  * Standard normal draws, unwrapped, for data that has to follow a distribution
@@ -214,53 +200,32 @@ export function keptDensity(mu: number, sigma: number, ks: readonly number[], xs
  * sample the same shape while it slides, where resampling on every change makes
  * the picture flicker and nothing can be read off it.
  */
-export const standardDraws = (n: number, seed: number): number[] => toArray(normals(stream(seed), n)) as number[];
+export const standardDraws = (n: number, seed: number): number[] => toFlat(normalNoise(key(seed), [n]));
 
 /** Draws from a wrapped mixture, already folded into [0, G). */
 export function sample(m: Mixture, n: number, seed: number): number[] {
-  const s = stream(seed);
-  const u = toArray(uniform(s, 0, 1, { shape: [n] })) as number[];
-  const cuts = m.w.map((_, i) => m.w.slice(0, i + 1).reduce((a, b) => a + b, 0));
-  const comp = u.map((v) => cuts.findIndex((c) => v < c)).map((i) => (i < 0 ? m.w.length - 1 : i));
+  const [pick, noise] = split(key(seed), 2) as [Key, Key];
+  const comp = toFlat(categorical(pick, m.w, [n]));
   const mu = tensor(comp.map((i) => m.mu[i] as number));
   const sd = tensor(comp.map((i) => m.sigma[i] as number));
-  return (toArray(normals(s, n, mu, sd)) as number[]).map(wrap);
+  return toFlat(mod(add(mu, mul(sd, normalNoise(noise, [n]))), G));
 }
 
 /**
  * The copy each example is scored at, for the two sampled losses, as a 0/1 mask.
  *
  * A mask rather than a gather, because it multiplies into the loss as a
- * constant and needs no new primitive to differentiate. The draw itself is not
- * differentiated in either method, which is why the probabilities are read off
- * the current parameters as plain numbers before the traced pass begins.
+ * constant. The draw is not differentiated in either method, which is why it is
+ * made from the current parameters as plain numbers before the traced pass
+ * begins. The draw is a Gumbel-max over the copies: adding Gumbel noise to the
+ * log probabilities and taking the largest picks a copy with exactly those
+ * probabilities, so `uniform` is the same draw with no log probabilities.
  */
-function pickCopy(x: Tensor, p: Params, ks: readonly number[], method: Method, s: ReturnType<typeof stream>): Tensor {
-  const n = (x.shape as readonly number[])[0] ?? 0;
-  const lj = numbers<number[][]>(logsumexp(logJoint(x, p, ks, "shift"), 2));
-  const u = toArray(uniform(s, 0, 1, { shape: [n] })) as number[];
-  const rows = lj.map((row, i) => {
-    let probs: number[];
-    if (method === "uniform") {
-      probs = row.map(() => 1 / row.length);
-    } else {
-      const top = Math.max(...row);
-      const w = row.map((v) => Math.exp(v - top));
-      const total = w.reduce((a, b) => a + b, 0);
-      probs = w.map((v) => v / total);
-    }
-    let acc = 0;
-    let chosen = probs.length - 1;
-    for (let k = 0; k < probs.length; k++) {
-      acc += probs[k] as number;
-      if ((u[i] as number) < acc) {
-        chosen = k;
-        break;
-      }
-    }
-    return probs.map((_, k) => (k === chosen ? 1 : 0));
-  });
-  return tensor(rows);
+function pickCopy(x: Value, p: Params, ks: readonly number[], method: Method, k: Key): Value {
+  const n = x.shape[0] ?? 0;
+  const gumbel = neg(log(neg(log(uniform(k, [n, ks.length])))));
+  const scores = method === "uniform" ? gumbel : add(logsumexp(logJoint(x, p, ks, "shift"), 2), gumbel);
+  return oneHot(argmax(scores, 1), ks.length);
 }
 
 /**
@@ -272,17 +237,17 @@ function pickCopy(x: Tensor, p: Params, ks: readonly number[], method: Method, s
  */
 export function loss(
   method: Method,
-  x: Tensor,
+  x: Value,
   p: Params,
-  extra: { mask?: Tensor; periods?: readonly number[] } = {},
+  extra: { mask?: Value; periods?: readonly number[] } = {},
 ): Value {
-  const ks = Array.from({ length: 2 * K + 1 }, (_, i) => i - K);
+  const ks = copies(K);
   const folded = method === "raw" || method === "uniform" ? p : fold(p, extra.periods);
   if (method === "raw") return neg(mean(logsumexp(logJoint(x, folded, [0], "shift"), [1, 2])));
   if (method === "offset" || method === "shift") return neg(mean(logsumexp(logJoint(x, folded, ks, method), [1, 2])));
   // The sampled losses keep the components summed and sample only the copy.
   const lj = logsumexp(logJoint(x, folded, ks, "shift"), 2);
-  return neg(mean(sum(mul(lj, extra.mask as Tensor), 1)));
+  return neg(mean(sum(mul(lj, extra.mask as Value), 1)));
 }
 
 /** Where a fit starts: means spread evenly round the circle, as the paper breaks symmetry. */
@@ -300,8 +265,8 @@ export function start(m: number): Params {
  */
 export const QUIET = G / 1800;
 
-/** Steps between convergence checks. One check on its own says very little. */
-const ROUND = 25;
+/** Steps between convergence checks, and between the rows of a fit's trail. One check on its own says very little. */
+export const ROUND = 25;
 
 /**
  * How little the training loss may fall over `PATIENCE` steps for a fit to
@@ -331,95 +296,106 @@ const SMOOTHING = 0.1;
  */
 const CONSECUTIVE = 4;
 
-export type Trainer = {
-  /** Take `n` optimiser steps, and return the training loss after the last. */
-  step: (n?: number) => number;
+/** What a fit records every `ROUND` steps: the fit itself, because a figure that draws the parameters over the run needs them. */
+export type Row = { step: number; gap: number; loss: number; fit: Mixture };
+
+/** The whole of a fit at one step, which is all that a figure needs to draw it and a scrub needs to return to it. */
+export type FitState = {
+  params: Params;
+  optimiser: unknown;
   /** Steps taken so far. */
-  steps: () => number;
-  /** The fit as a mixture, folded into one period. */
-  fit: () => Mixture;
-  /** Held-out nats per example above the generating density. */
-  gap: () => number;
-  /**
-   * The step at which the means went quiet and the loss stopped falling, or
-   * undefined while either is still moving.
-   */
-  settledAt: () => number | undefined;
+  steps: number;
+  /** The training loss of the last step taken. */
+  loss: number;
+  smoothed: number | undefined;
+  /** The smoothed loss at each round, for the patience test. */
+  rounds: readonly number[];
+  lastMeans: readonly number[];
+  inARow: number;
+  /** The step at which the means went quiet and the loss stopped falling, or undefined while either is still moving. */
+  settled: number | undefined;
+  trail: readonly Row[];
 };
 
+/** Held-out nats per example above the generating density, for a fit scored on `test`. */
+export function heldOut(test: readonly number[], truth: Mixture): (fit: Mixture) => number {
+  const x = tensor([...test]);
+  const oracle = exactNll(x, asParams(truth));
+  return (fit) => exactNll(x, asParams(fit)) - oracle;
+}
+
 /**
- * One fit, stepped by the figure that owns it.
+ * One fit as an engine `Algorithm`, so a figure can play it, pause it and scrub
+ * it, and a test can run it with `runAlgorithm`.
  *
- * Adam with the optax-style rule rather than the `adam` algorithm, because the
- * objective changes at every step for the sampled losses and a figure wants to
- * take one step at a time anyway.
+ * Adam is the engine's `adam` rather than the `adam` algorithm in `omai-engine/optim`,
+ * because the objective changes at every step for the sampled losses. The
+ * sampled losses draw from the step's own key, so a run is the same however it
+ * was paused or scrubbed.
  */
 export function trainer(
   method: Method,
   train: readonly number[],
   test: readonly number[],
   truth: Mixture,
-  options: { components?: number; lr?: number; seed?: number } = {},
-): Trainer {
+  options: { components?: number; lr?: number } = {},
+): Algorithm<FitState> {
   const m = options.components ?? truth.mu.length;
+  const lr = options.lr ?? 0.03;
   const x = tensor([...train]);
-  const xTest = tensor([...test]);
-  const ks = Array.from({ length: 2 * K + 1 }, (_, i) => i - K);
-  const s = stream(options.seed ?? 0);
-  const rule = adamRule({ stepSize: options.lr ?? 0.03 });
-
-  let params = start(m);
-  let state = rule.init(params);
-  let taken = 0;
-  const oracle = exactNll(xTest, asParams(truth));
-
-  // Convergence, checked once a round against the previous round's means and
-  // against the loss `PATIENCE` steps ago.
-  let settled: number | undefined;
-  let lastMeans = readOut(params).mu;
-  let lastCheck = 0;
-  let smoothed: number | undefined;
-  let inARow = 0;
-  const losses = new Map<number, number>();
-
-  // Both are set from the plain parameters before each traced pass, and are
-  // constants inside it.
-  let extra: { mask?: Tensor; periods?: readonly number[] } = {};
-  const graded = valueAndGrad((p: Params) => loss(method, x, p, extra));
+  const ks = copies(K);
+  const rule = adam({ learningRate: lr });
+  const gap = heldOut(test, truth);
+  const sampled = method === "uniform" || method === "posterior";
 
   return {
-    step(n = 1) {
-      let value = 0;
-      for (let i = 0; i < n; i++) {
-        extra = {
-          periods: periodsOf(params),
-          mask: method === "uniform" || method === "posterior" ? pickCopy(x, params, ks, method, s) : undefined,
-        };
-        const { value: v, grad } = graded(params);
-        const next = rule.update(grad as Params, state, params);
-        params = applyUpdates(params, next.updates);
-        state = next.state;
-        value = v as number;
-        taken += 1;
-        smoothed = smoothed === undefined ? value : smoothed + SMOOTHING * (value - smoothed);
-
-        if (taken - lastCheck >= ROUND) {
-          lastCheck = taken;
-          losses.set(taken, smoothed);
-          const means = readOut(params).mu;
-          const moved = Math.max(...means.map((mu, j) => circDist(mu, lastMeans[j] ?? mu)));
-          lastMeans = means;
-          const before = losses.get(taken - PATIENCE);
-          const falling = before === undefined || before - smoothed > IMPROVEMENT;
-          inARow = moved < QUIET && !falling ? inARow + 1 : 0;
-          if (settled === undefined && inARow >= CONSECUTIVE) settled = taken;
-        }
-      }
-      return value;
+    name: "circular-fit",
+    config: { method, components: m, lr },
+    init: () => {
+      const params = start(m);
+      return {
+        params,
+        optimiser: rule.init(params),
+        steps: 0,
+        loss: Number.NaN,
+        smoothed: undefined,
+        rounds: [],
+        lastMeans: readOut(params).mu,
+        inARow: 0,
+        settled: undefined,
+        trail: [],
+      };
     },
-    steps: () => taken,
-    settledAt: () => settled,
-    fit: () => readOut(params),
-    gap: () => exactNll(xTest, asParams(readOut(params))) - oracle,
+    step: (s, ctx) => {
+      const mask = sampled ? pickCopy(x, s.params, ks, method, ctx.key) : undefined;
+      const { value, grad } = valueAndGrad((p: Params) => loss(method, x, p, { mask, periods: periodsOf(s.params) }))(
+        s.params,
+      );
+      const { updates, state } = rule.update(grad, s.optimiser as unknown[], s.params);
+      const params = applyUpdates(s.params, updates) as Params;
+      const now = item(value);
+      const steps = s.steps + 1;
+      const smoothed = s.smoothed === undefined ? now : s.smoothed + SMOOTHING * (now - s.smoothed);
+      const next: FitState = { ...s, params, optimiser: state, steps, loss: now, smoothed };
+      if (steps % ROUND !== 0) return next;
+
+      // Convergence, checked once a round against the previous round's means and
+      // against the loss `PATIENCE` steps ago.
+      const fit = readOut(params);
+      const rounds = [...s.rounds, smoothed];
+      const moved = Math.max(...fit.mu.map((mu, j) => circDist(mu, s.lastMeans[j] ?? mu)));
+      const before = rounds[rounds.length - 1 - PATIENCE / ROUND];
+      const falling = before === undefined || before - smoothed > IMPROVEMENT;
+      const inARow = moved < QUIET && !falling ? s.inARow + 1 : 0;
+      return {
+        ...next,
+        rounds,
+        lastMeans: fit.mu,
+        inARow,
+        settled: s.settled === undefined && inARow >= CONSECUTIVE ? steps : s.settled,
+        trail: [...s.trail, { step: steps, gap: gap(fit), loss: now, fit }],
+      };
+    },
+    observe: (s) => ({ metrics: { loss: s.loss } }),
   };
 }

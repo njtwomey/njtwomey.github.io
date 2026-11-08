@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { logsumexp, tensor } from "aifn-compute";
-import { numbers } from "./circular";
+import { logsumexp, tensor, toFlat } from "omai-engine/tensor";
+import { runAlgorithm } from "omai-engine/trace";
 import {
   FLOOR,
   PERIOD,
   TRUTH,
-  density,
+  densities,
   logJoint,
   logLik,
+  readOut,
   sample,
   shifts,
   start,
@@ -32,17 +33,17 @@ describe("on a torus", () => {
     const p = start(2);
     const [x1, x2] = sample(TRUTH, 200, 3);
     const ks = shifts();
-    const moved = numbers<number[]>(logsumexp(logJoint(tensor(x1), tensor(x2), p, ks), [1, 2]));
+    const moved = toFlat(logsumexp(logJoint(tensor(x1), tensor(x2), p, ks), [1, 2]));
 
     // Shifting the means instead: the same sum, written the other way round.
     const byHand = x1.map((x, i) => {
       const terms = ks.flatMap(([k1, k2]) =>
         [0, 1].map((m) => {
-          const mu1 = (numbers<number[]>(p.mu1)[m] as number) + k1 * (PERIOD[0] as number);
-          const mu2 = (numbers<number[]>(p.mu2)[m] as number) + k2 * (PERIOD[1] as number);
-          const a = Math.exp(numbers<number[]>(p.logA)[m] as number) + (FLOOR[0] as number);
-          const c = Math.exp(numbers<number[]>(p.logC)[m] as number) + (FLOOR[1] as number);
-          const b = numbers<number[]>(p.b)[m] as number;
+          const mu1 = (toFlat(p.mu1)[m] as number) + k1 * (PERIOD[0] as number);
+          const mu2 = (toFlat(p.mu2)[m] as number) + k2 * (PERIOD[1] as number);
+          const a = Math.exp(toFlat(p.logA)[m] as number) + (FLOOR[0] as number);
+          const c = Math.exp(toFlat(p.logC)[m] as number) + (FLOOR[1] as number);
+          const b = toFlat(p.b)[m] as number;
           const y1 = (x - mu1) / a;
           const y2 = ((x2[i] as number) - mu2 - b * y1) / c;
           return -0.5 * (y1 * y1 + y2 * y2) - Math.log(a) - Math.log(c) - Math.log(2 * Math.PI) - Math.log(2);
@@ -67,21 +68,22 @@ describe("on a torus", () => {
   it("integrates to one over the surface", () => {
     const n = 120;
     const [g1, g2] = PERIOD as [number, number];
-    let total = 0;
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        total += density(TRUTH, ((i + 0.5) * g1) / n, ((j + 0.5) * g2) / n);
-      }
-    }
+    const cells = Array.from({ length: n * n }, (_, i) => [
+      ((Math.floor(i / n) + 0.5) * g1) / n,
+      (((i % n) + 0.5) * g2) / n,
+    ]);
+    const total = densities(
+      TRUTH,
+      cells.map(([u]) => u as number),
+      cells.map(([, v]) => v as number),
+    ).reduce((a, b) => a + b, 0);
     expect((total * g1 * g2) / (n * n)).toBeCloseTo(1, 3);
   });
 
   it("recovers a mixture that wraps in both directions", () => {
     const train = sample(TRUTH, 800, 0);
     const test = sample(TRUTH, 2000, 1);
-    const t = trainer(train, { components: 2 });
-    t.step(1200);
-    const fit = t.fit();
+    const fit = readOut(runAlgorithm(trainer(train, { components: 2 }), { maxSteps: 1200, seed: 0 }).state.params);
 
     // Matched to the truth by which mean each fitted component landed nearest.
     const near = (c: (typeof fit)[number], truth: (typeof TRUTH)[number]) => {

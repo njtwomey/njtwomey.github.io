@@ -147,6 +147,35 @@ function inlinedCodeFiles(): Plugin {
   };
 }
 
+/**
+ * omai-render's missing `dist/react/maths.css`.
+ *
+ * `dist/react/MathView.js` imports `./maths.css`, but the 0.1.4 tarball carries only
+ * `src/react/maths.css`, so the import resolves to nothing and both the dev pre-bundle and
+ * the build stop on it. Until omai ships the file in `dist`, that one import is pointed at
+ * the source copy, in Vite (serving and building) and in the esbuild pre-bundle, which
+ * bypasses Vite plugins. Both rules match nothing once the file exists.
+ *
+ * TODO: remove this, and its two uses below, once omai-render ships dist/react/maths.css.
+ */
+const OMAI_MATHS_CSS = {
+  importer: /[\\/]node_modules[\\/]omai-render[\\/]dist[\\/]react[\\/][^\\/]+$/,
+  target: resolve(import.meta.dirname, "node_modules/omai-render/src/react/maths.css"),
+  missing: () => !existsSync(resolve(import.meta.dirname, "node_modules/omai-render/dist/react/maths.css")),
+};
+
+function omaiMathsCss(): Plugin {
+  return {
+    name: "site:omai-maths-css",
+    enforce: "pre",
+    resolveId(id, importer) {
+      if (id === "./maths.css" && importer && OMAI_MATHS_CSS.importer.test(importer) && OMAI_MATHS_CSS.missing()) {
+        return OMAI_MATHS_CSS.target;
+      }
+    },
+  };
+}
+
 export default defineConfig({
   // A user site served from a custom domain lives at the root. VITE_BASE is the
   // escape hatch for previewing under a subpath.
@@ -182,12 +211,65 @@ export default defineConfig({
     notesIndex(),
     inlinedCodeFiles(),
     spaFallback(),
+    omaiMathsCss(),
   ],
   resolve: {
     alias: { "@": resolve(import.meta.dirname, "src") },
   },
   /*
-   * ES modules for workers, because aifn-render starts its compute worker with
+   * Pre-bundle the engine and ECharts at server start rather than when a note
+   * first asks for them.
+   *
+   * Vite discovers dependencies as modules are requested, and discovering one
+   * late means re-running the optimizer and handing out a new `?v=` hash while
+   * the open page still holds the old one. For most libraries that is only a
+   * reload. For ECharts it is a crash: its internal per-model store is keyed by
+   * a counter private to one copy of the module, so a chart built by one copy
+   * and read by the other throws `Cannot read properties of undefined (reading
+   * '__ec_inner_NN')` from inside the axis pass, which looks like a bug in the
+   * figure rather than in the dev server.
+   *
+   * The notes are lazy routes and two of them start workers, which is exactly
+   * the shape that triggers late discovery, so the entries are listed here.
+   */
+  optimizeDeps: {
+    esbuildOptions: {
+      plugins: [
+        {
+          name: "site:omai-maths-css",
+          setup(build) {
+            build.onResolve({ filter: /^\.\/maths\.css$/ }, (args) =>
+              OMAI_MATHS_CSS.importer.test(args.importer) && OMAI_MATHS_CSS.missing()
+                ? { path: OMAI_MATHS_CSS.target }
+                : undefined,
+            );
+          },
+        },
+      ],
+    },
+    include: [
+      "echarts/core",
+      "echarts/charts",
+      "echarts/components",
+      "echarts/renderers",
+      "omai-engine/autodiff",
+      "omai-engine/base",
+      "omai-engine/dists",
+      "omai-engine/random",
+      "omai-engine/tensor",
+      "omai-engine/trace",
+      "omai-engine/data",
+      "omai-engine/datasets",
+      "omai-engine/optim",
+      "omai-engine/signal",
+      "omai-render/charts",
+      "omai-render/figure",
+      "omai-render/react",
+      "omai-render/theme",
+    ],
+  },
+  /*
+   * ES modules for workers, because omai-render starts its compute worker with
    * `new Worker(new URL(...), { type: "module" })` and that worker imports
    * enough of the engine to be code-split. Vite's default worker format is
    * `iife`, which rollup refuses to emit for a split build, so the whole build

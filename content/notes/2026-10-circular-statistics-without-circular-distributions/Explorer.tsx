@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Pause, Play, RotateCcw, SkipForward, Undo2 } from "lucide-react";
-import { Button, StatusText } from "aifn-render/controls";
-import { ControlGroup } from "aifn-render/layout";
-import { Figure, Providers } from "aifn-render/layout";
-import { choice, slider, toggle, useFigureState, when } from "aifn-render/state";
-import { Annotation, Area, Curve, Histogram, Plot, Readout, useAxis } from "aifn-render/viz";
-import { G, METHOD_LABEL, SCENARIOS, SHOWN, density, sample, trainer } from "./circular";
-import { useTraining } from "./use-training";
-import { useTheme } from "@/hooks/use-theme";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { RotateCcw, Undo2 } from "lucide-react";
+import { cartesian } from "omai-render/charts";
+import type { Figure } from "omai-render/figure";
+import { Choice, Player, useLiveRun } from "omai-render/react";
+import { Button } from "@/components/ui/button";
+import { G, METHOD_LABEL, type Method, SCENARIOS, SHOWN, density, readOut, sample, trainer } from "./circular";
+import { ChartPanel, Controls, FigureBox, Readouts, useParams, type Layers, Num, Switch } from "./figure-kit";
 
 /**
  * One loss at a time, with the data and the model both in the reader's hands.
@@ -19,31 +17,17 @@ import { useTheme } from "@/hooks/use-theme";
  *
  * The fitted curve is read off the optimiser every frame rather than at the
  * end, so the components are visibly walking round the circle while it runs.
+ * The fit is an engine `Algorithm` played by `useLiveRun`, which keeps every
+ * state, so the player's scrubber returns the charts to any step of the run.
  */
 
 const STEPS = 1500;
 const xs = Array.from({ length: 241 }, (_, i) => (i * G) / 240);
 
-export function Explorer() {
-  const { resolved } = useTheme();
+const INITIAL = { method: "shift" as Method, two: true, weight: 0.8, components: 2, n: 500, seed: 0, parts: true };
 
-  const state = useFigureState({
-    method: choice(
-      SHOWN.map((m) => ({ value: m, label: METHOD_LABEL[m] })),
-      "shift",
-      { label: "the loss" },
-    ),
-    // A button rather than a menu: there are two of them, and the picture
-    // beside it says which one is on.
-    two: toggle(true, "two components in the data"),
-    // Only meaningful with two components, so it is hidden with one rather than
-    // sitting there doing nothing.
-    weight: slider(0.05, 0.95, 0.8, { step: 0.05, label: "weight on the first", when: when("two", true) }),
-    components: slider(1, 4, 2, { step: 1, label: "components fitted" }),
-    n: slider(100, 2000, 500, { step: 100, label: "training draws n" }),
-    seed: slider(0, 9, 0, { step: 1, label: "seed" }),
-    parts: toggle(true, "show each component"),
-  });
+export function Explorer() {
+  const { values: state, set, reset, isDefault } = useParams(INITIAL);
 
   // The scenario with the reader's weights, since the mixture's shape is as
   // much a thing to play with as the model fitted to it.
@@ -53,50 +37,42 @@ export function Explorer() {
   }, [state.two, state.weight]);
   const train = useMemo(() => sample(truth, state.n, state.seed), [truth, state.n, state.seed]);
 
-  const build = useCallback(() => {
-    const test = sample(truth, 2000, 1000 + state.seed);
-    return [trainer(state.method, train, test, truth, { components: state.components, seed: state.seed })];
-  }, [state.components, state.method, state.seed, train, truth]);
+  const algorithm = useMemo(
+    () => trainer(state.method, train, sample(truth, 2000, 1000 + state.seed), truth, { components: state.components }),
+    [state.components, state.method, state.seed, train, truth],
+  );
+  // Changing anything fits the new thing rather than waiting to be told to.
+  const run = useLiveRun(algorithm, {
+    maxSteps: STEPS,
+    seed: state.seed,
+    stepsPerFrame: 6,
+    fps: 60,
+    history: STEPS + 1,
+    autoplay: true,
+  });
+  const play = useRef(run.controller.play);
+  play.current = run.controller.play;
+  useEffect(() => play.current(), [algorithm]);
 
-  const run = useTraining(build, { steps: STEPS, perFrame: 6, every: 25, auto: true });
-
-  // A step the reader has clicked on one of the traces, which the charts then
-  // show instead of the latest one. Null follows the run.
-  const [pinned, setPinned] = useState<number | null>(null);
-  useEffect(() => setPinned(null), [run.trainers]);
-
-  const live = run.trainers[0]?.fit();
-  const held = run.traces[0] ?? [];
-  const at =
-    pinned === null
-      ? undefined
-      : held.reduce(
-          (best, row) => (Math.abs(row.step - pinned) < Math.abs(best.step - pinned) ? row : best),
-          held[0] ?? { step: 0, gap: 0, loss: 0, fit: { w: [], mu: [], sigma: [] } },
-        );
-  const fit = at?.fit ?? live;
-  const gap = at?.gap ?? held.at(-1)?.gap;
-
-  const x = useAxis({ label: "hour of the day", range: [0, G] });
-  const y = useAxis({ label: "density", range: [0, undefined] });
-  const stepX = useAxis({ label: "optimiser step", range: [0, STEPS] });
-  const muY = useAxis({ label: "component means", range: [0, G] });
-  const lossY = useAxis({ label: "training loss" });
+  const fit = useMemo(() => readOut(run.state.params), [run.state]);
+  const trail = run.state.trail;
+  const gap = trail.at(-1)?.gap;
+  const settled = run.state.settled;
+  const step = run.state.steps;
 
   // The parameters over the run, one series per component. A mean that crosses
   // midnight comes back on the other side, and a line drawn straight through
   // that would cross the whole chart, so the series is broken with a NaN where
   // it wraps rather than drawn as a jump that means nothing.
-  const trace = held;
   const paths = useMemo(() => {
-    const m = trace.at(-1)?.fit.mu.length ?? 0;
+    const m = trail.at(-1)?.fit.mu.length ?? 0;
     return Array.from({ length: m }, (_, i) => {
       const steps: number[] = [];
       const mu: number[] = [];
       const lo: number[] = [];
       const hi: number[] = [];
       let last: number | undefined;
-      for (const row of trace) {
+      for (const row of trail) {
         const here = row.fit.mu[i];
         const sd = row.fit.sigma[i];
         if (here === undefined || sd === undefined) continue;
@@ -114,120 +90,174 @@ export function Explorer() {
       }
       return { steps, mu, lo, hi };
     });
-  }, [trace]);
+  }, [trail]);
+
+  // The truth's curve only changes with the truth, so it is not redrawn for
+  // every step of the fit.
+  const truthDensity = useMemo(() => density(truth, xs), [truth]);
+  const fitDensity = useMemo(() => density(fit, xs), [fit]);
+  const parts = useMemo(
+    () =>
+      state.parts
+        ? fit.mu.map((mu, i) => density({ w: [fit.w[i] as number], mu: [mu], sigma: [fit.sigma[i] as number] }, xs))
+        : [],
+    [fit, state.parts],
+  );
+
+  // The step the charts are showing, which is the head of the run unless the
+  // reader has scrubbed back.
+  const cursor = (L: Layers, top: number, bottom: number) =>
+    L.lines([{ x: [step, step], y: [bottom, top], dash: "dashed", colour: "muted", width: 1, name: "__cursor" }]);
+
+  const buildFit = useCallback(
+    (fig: Figure, L: Layers) =>
+      cartesian(
+        [
+          L.histogram(train, {
+            bins: 48,
+            range: [0, G],
+            density: true,
+            name: "the draws",
+            colour: "muted",
+            opacity: 0.5,
+          }),
+          L.lines([{ x: xs, y: truthDensity, name: "the truth", colour: "fg", dash: "dashed", width: 2 }]),
+          L.lines([{ x: xs, y: fitDensity, name: "the fit", colour: "tab1", width: 2.5 }]),
+          ...parts.map((y) => L.lines([{ x: xs, y, name: "its components", colour: "tab2", width: 1, opacity: 0.8 }])),
+        ],
+        {
+          figure: fig,
+          mode: fig.mode,
+          x: { label: "hour of the day", limits: [0, G] },
+          y: { label: "density" },
+          tooltip: false,
+        },
+      ),
+    [fitDensity, parts, train, truthDensity],
+  );
+
+  const buildMeans = useCallback(
+    (fig: Figure, L: Layers) =>
+      cartesian(
+        [
+          ...paths.map((p, i) =>
+            L.band([
+              { x: p.steps, lower: p.lo, upper: p.hi, colour: `tab${i}`, opacity: 0.15, name: "give or take a scale" },
+            ]),
+          ),
+          ...paths.map((p, i) =>
+            L.lines([{ x: p.steps, y: p.mu, name: `mean ${i + 1}`, colour: `tab${i}`, width: 2 }]),
+          ),
+          cursor(L, G, 0),
+        ],
+        {
+          figure: fig,
+          mode: fig.mode,
+          x: { label: "optimiser step", limits: [0, STEPS] },
+          y: { label: "component means", limits: [0, G] },
+          tooltip: false,
+        },
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paths, step],
+  );
+
+  const losses = useMemo(() => trail.map((row) => row.loss), [trail]);
+  const buildLoss = useCallback(
+    (fig: Figure, L: Layers) =>
+      cartesian(
+        [
+          L.lines([{ x: trail.map((row) => row.step), y: losses, name: "training loss", colour: "tab3", width: 2 }]),
+          ...(losses.length > 0 ? [cursor(L, Math.max(...losses), Math.min(...losses))] : []),
+        ],
+        {
+          figure: fig,
+          mode: fig.mode,
+          x: { label: "optimiser step", limits: [0, STEPS] },
+          y: { label: "training loss" },
+          tooltip: false,
+        },
+      ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [losses, trail, step],
+  );
+
+  const status = run.status !== undefined ? `fitted, ${STEPS} steps` : `fitting, step ${step} of ${STEPS}`;
 
   return (
-    <Providers key={resolved} theme={resolved}>
-      <Figure
-        hoverReadout={false}
-        title="Watching it fit"
-        purpose="Change anything and it refits. The dashed line is the density the draws came from."
-        state={state}
-        controls={
-          // A group of its own, titled, because a Figure labels hand-placed
-          // controls "Configuration" as well and two panels under one word
-          // reads as a mistake.
-          <ControlGroup title="fitting">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-              <div className="flex shrink-0 items-center gap-3">
-                <Button size="sm" variant="outline" onClick={run.running ? run.pause : run.start} disabled={run.done}>
-                  {run.running ? <Pause /> : <Play />}
-                  {run.running ? "Pause" : "Continue"}
-                </Button>
-                <Button size="sm" variant="ghost" onClick={run.reset}>
-                  <RotateCcw /> Again
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => state.reset()} disabled={state.isDefault}>
-                  <Undo2 /> Reset
-                </Button>
-              </div>
-              {pinned !== null && (
-                <Button size="sm" variant="ghost" onClick={() => setPinned(null)}>
-                  <SkipForward /> Back to the end
-                </Button>
-              )}
-              <StatusText tone="muted">
-                {at
-                  ? `showing step ${at.step}`
-                  : run.done
-                    ? `fitted, ${STEPS} steps`
-                    : `fitting, step ${run.step} of ${STEPS}`}
-              </StatusText>
-            </div>
-          </ControlGroup>
-        }
-        readouts={[
-          <Readout key="gap" label="held-out nats above the truth" value={gap === undefined ? "–" : gap.toFixed(4)} />,
-          <Readout key="mu" label="means, hours" value={fit ? fit.mu.map((v) => v.toFixed(1)).join(", ") : "–"} />,
-          <Readout
-            key="sigma"
-            label="scales, hours"
-            value={fit ? fit.sigma.map((v) => v.toFixed(2)).join(", ") : "–"}
-          />,
-          <Readout key="w" label="weights" value={fit ? fit.w.map((v) => v.toFixed(2)).join(", ") : "–"} />,
-          <Readout
-            key="settled"
-            label="converged"
-            value={
-              !run.step
-                ? "–"
-                : (run.trainers[0]?.settledAt() ?? undefined) === undefined
-                  ? "no, still moving"
-                  : `at step ${run.trainers[0]?.settledAt()}`
-            }
-          />,
-        ]}
-        caption="The middle chart is where each component sat as the fit went on, with a band a scale either side. A low-weight component can take a long time to find the mass it belongs to, and the loss below barely moves while it does. Click either of those charts to see the model as it was at that step. Fit one component to two, or four to one, to see where the spare mass goes."
-      >
-        <Plot x={x} y={y}>
-          <Histogram name="the draws" values={train} bins={{ width: G / 48 }} normalize="density" muted />
-          <Curve name="the truth" x={xs} y={density(truth, xs)} dashed emphasis />
-          {fit && <Curve name="the fit" x={xs} y={density(fit, xs)} live slot={1} />}
-          {fit &&
-            state.parts &&
-            fit.mu.map((mu, i) => (
-              <Curve
-                key={i}
-                name="its components"
-                x={xs}
-                y={density({ w: [fit.w[i] as number], mu: [mu], sigma: [fit.sigma[i] as number] }, xs)}
-                thin
-                silent
-                slot={2}
-                live
-              />
-            ))}
-        </Plot>
-
-        {/* Half the height each: the fit above is the thing being watched, and
-            these two say how it got there. */}
-        <Plot x={stepX} y={muY} scale={0.5} onPlotClick={([step]) => setPinned(step)}>
-          {at && <Annotation x={at.step} text={`step ${at.step}`} dashed />}
-          {paths.map((path, i) => (
-            <Area
-              key={`band-${i}`}
-              name="give or take a scale"
-              x={path.steps}
-              y={path.hi}
-              base={path.lo}
-              line={false}
-              // The band takes its component's colour, so two of them crossing
-              // can be told apart.
-              slot={i}
-              opacity={0.15}
-              live
+    <FigureBox
+      title="Watching it fit"
+      purpose="Change anything and it refits. The dashed line is the density the draws came from."
+      caption="The middle chart is where each component sat as the fit went on, with a band a scale either side. A low-weight component can take a long time to find the mass it belongs to, and the loss below barely moves while it does. Drag the scrubber to see the model as it was at any step. Fit one component to two, or four to one, to see where the spare mass goes."
+      controls={
+        <Controls>
+          <Choice
+            label="the loss"
+            value={state.method}
+            options={SHOWN.map((m) => ({ value: m, label: METHOD_LABEL[m] }))}
+            onChange={(method) => set({ method })}
+            className="w-full max-w-none"
+          />
+          <Switch label="two components in the data" value={state.two} onChange={(two) => set({ two })} />
+          {state.two && (
+            <Num
+              label="weight on the first"
+              value={state.weight}
+              min={0.05}
+              max={0.95}
+              step={0.05}
+              onChange={(weight) => set({ weight })}
             />
-          ))}
-          {paths.map((path, i) => (
-            <Curve key={i} name={`mean ${i + 1}`} x={path.steps} y={path.mu} slot={i} live />
-          ))}
-        </Plot>
-
-        <Plot x={stepX} y={lossY} scale={0.5} onPlotClick={([step]) => setPinned(step)}>
-          {at && <Annotation x={at.step} dashed />}
-          <Curve name="training loss" x={trace.map((row) => row.step)} y={trace.map((row) => row.loss)} slot={3} live />
-        </Plot>
-      </Figure>
-    </Providers>
+          )}
+          <Num
+            label="components fitted"
+            value={state.components}
+            min={1}
+            max={4}
+            integer
+            onChange={(components) => set({ components })}
+          />
+          <Num label="training draws n" value={state.n} min={100} max={2000} step={100} onChange={(n) => set({ n })} />
+          <Num label="seed" value={state.seed} min={0} max={9} integer onChange={(seed) => set({ seed })} />
+          <Switch label="show each component" value={state.parts} onChange={(parts) => set({ parts })} />
+        </Controls>
+      }
+      readouts={
+        <Readouts
+          items={[
+            ["held-out nats above the truth", gap === undefined ? "–" : gap.toFixed(4)],
+            ["means, hours", fit.mu.map((v) => v.toFixed(1)).join(", ")],
+            ["scales, hours", fit.sigma.map((v) => v.toFixed(2)).join(", ")],
+            ["weights", fit.w.map((v) => v.toFixed(2)).join(", ")],
+            ["converged", step === 0 ? "–" : settled === undefined ? "no, still moving" : `at step ${settled}`],
+          ]}
+        />
+      }
+    >
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <Player controller={run.controller} className="basis-full" />
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => {
+            run.controller.reset();
+            run.controller.play();
+          }}
+        >
+          <RotateCcw /> Again
+        </Button>
+        <Button size="sm" variant="ghost" onClick={reset} disabled={isDefault}>
+          <Undo2 /> Reset
+        </Button>
+        <span className="text-muted-foreground text-sm">{status}</span>
+      </div>
+      <ChartPanel
+        label="The draws, the generating density and the fitted density over the day"
+        build={buildFit}
+        ratio={1.7}
+      />
+      <ChartPanel label="Where each component's mean sat over the run" build={buildMeans} ratio={4} />
+      <ChartPanel label="The training loss over the run" build={buildLoss} ratio={4} />
+    </FigureBox>
   );
 }

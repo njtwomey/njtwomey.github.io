@@ -7,16 +7,37 @@
 @import "katex/dist/katex.min.css";
 
 /*
- * aifn-render ships React components written in Tailwind classes against these
+ * omai-render ships React components written in Tailwind classes against these
  * same token names, so Tailwind has to see the package to generate them. Its
  * own `theme.css` is deliberately not imported: it defines `--background`,
  * `--primary` and the rest at `:root`, and importing it would repaint this
  * whole site in the engine's palette. Scanning it instead leaves the tokens
  * here in charge, so a figure takes its colours from the page around it.
  */
-@source "../node_modules/aifn-render";
+@source "../node_modules/omai-render";
 
 @custom-variant dark (&:is(.dark *));
+
+/*
+ * omai-render's controls (switch tracks, slider rails, borders, popovers) are written
+ * against `--wb-*` custom properties, and the package does not define them: it offers
+ * `cssVariables(mode)` for a page to do it. They are defined here once, as aliases of
+ * the semantic tokens below, so an omai control takes its colours from the page around
+ * it and follows `.dark` with no second set of values to keep in step. They live on
+ * `:root` rather than on a figure so that a popover portalled to `body` has them too.
+ */
+:root {
+  --wb-bg: var(--background);
+  --wb-fg: var(--foreground);
+  --wb-fg-secondary: var(--muted-foreground);
+  --wb-muted: var(--muted-foreground);
+  --wb-grid: var(--border);
+  --wb-surface: var(--muted);
+  --wb-accent: var(--primary);
+  --wb-danger: var(--destructive);
+  --wb-font: var(--font-sans);
+  --wb-mono-font: var(--font-mono);
+}
 
 /*
  * shadcn design tokens. Everything in the app refers to these semantic names
