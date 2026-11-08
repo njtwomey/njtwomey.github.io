@@ -45,6 +45,12 @@ jobs:
           node-version: 22
           cache: npm
 
+      # omai is installed from GitHub release tarballs pinned by sha256 in omai.lock.json, and `npm ci` reads the
+      # `file:vendor/omai/*.tgz` dependencies before it runs the project's own preinstall hook, so the tarballs have to
+      # be fetched (and verified) first.
+      - name: Fetch omai
+        run: node scripts/fetch-omai.mjs
+
       - run: npm ci
 
       # The bibliography is the content. If a paper claims a PDF that is not in
