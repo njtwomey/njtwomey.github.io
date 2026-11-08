@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { RotateCcw, Undo2 } from "lucide-react";
 import type { Point2 } from "omai-engine/numerics/geometry";
 import { cartesian } from "omai-render/charts";
@@ -128,11 +128,7 @@ export function Torus() {
     stepsPerFrame: 4,
     fps: 60,
     history: STEPS + 1,
-    autoplay: true,
   });
-  const play = useRef(run.controller.play);
-  play.current = run.controller.play;
-  useEffect(() => play.current(), [algorithm]);
 
   const running = run.controller.playing;
   const step = run.state.steps;
@@ -290,7 +286,12 @@ export function Torus() {
 
   const gap = truthScore - fitScore;
   const labels = ["first mean", "first axis", "second axis", "second mean", "third axis", "fourth axis"];
-  const status = run.status !== undefined ? `fitted, ${STEPS} steps` : `fitting, step ${step} of ${STEPS}`;
+  const status =
+    run.status !== undefined
+      ? `fitted, ${STEPS} steps`
+      : step === 0
+        ? "press play to fit"
+        : `fitting, step ${step} of ${STEPS}`;
 
   return (
     <FigureBox

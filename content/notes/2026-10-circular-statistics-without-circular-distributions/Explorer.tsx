@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { RotateCcw, Undo2 } from "lucide-react";
 import { cartesian } from "omai-render/charts";
 import type { Figure } from "omai-render/figure";
@@ -41,18 +41,15 @@ export function Explorer() {
     () => trainer(state.method, train, sample(truth, 2000, 1000 + state.seed), truth, { components: state.components }),
     [state.components, state.method, state.seed, train, truth],
   );
-  // Changing anything fits the new thing rather than waiting to be told to.
+  // Nothing is computed until the reader presses play or steps: changing a setting starts a new fit from its
+  // beginning and waits there.
   const run = useLiveRun(algorithm, {
     maxSteps: STEPS,
     seed: state.seed,
     stepsPerFrame: 6,
     fps: 60,
     history: STEPS + 1,
-    autoplay: true,
   });
-  const play = useRef(run.controller.play);
-  play.current = run.controller.play;
-  useEffect(() => play.current(), [algorithm]);
 
   const fit = useMemo(() => readOut(run.state.params), [run.state]);
   const trail = run.state.trail;
@@ -182,12 +179,17 @@ export function Explorer() {
     [losses, trail, step],
   );
 
-  const status = run.status !== undefined ? `fitted, ${STEPS} steps` : `fitting, step ${step} of ${STEPS}`;
+  const status =
+    run.status !== undefined
+      ? `fitted, ${STEPS} steps`
+      : step === 0
+        ? "press play to fit"
+        : `fitting, step ${step} of ${STEPS}`;
 
   return (
     <FigureBox
       title="Watching it fit"
-      purpose="Change anything and it refits. The dashed line is the density the draws came from."
+      purpose="Change anything, then press play to fit it. The dashed line is the density the draws came from."
       caption="The middle chart is where each component sat as the fit went on, with a band a scale either side. A low-weight component can take a long time to find the mass it belongs to, and the loss below barely moves while it does. Drag the scrubber to see the model as it was at any step. Fit one component to two, or four to one, to see where the spare mass goes."
       controls={
         <Controls>

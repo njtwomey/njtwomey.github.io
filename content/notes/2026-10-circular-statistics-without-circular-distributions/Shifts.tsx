@@ -3,7 +3,6 @@ import { Undo2 } from "lucide-react";
 import { linspace, logsumexp, tensor, toFlat } from "omai-engine/tensor";
 import { cartesian } from "omai-render/charts";
 import type { Figure } from "omai-render/figure";
-import { onGraph } from "omai-render/react";
 import { Button } from "@/components/ui/button";
 import { G, asParams, copies, keptDensity, logJoint, standardDraws, wrapAll } from "./circular";
 import { ChartPanel, Controls, FigureBox, Readouts, useParams, type Layers, Num, Switch } from "./figure-kit";
@@ -119,17 +118,9 @@ export function Shifts() {
   const bump = useMemo(() => keptDensity(state.mu, state.sigma, [0], xs), [state.mu, state.sigma]);
   const peak = Math.max(...bump);
   const keptTop = Math.max(...kept) * 1.1;
-  // The kept curve at its own mean, which is where its handle sits. The log is
-  // floored, because with no copies it reaches -40 at the far side of the day
-  // and an axis fitted to that leaves the rest of the curve flat.
+  // The log is floored, because with no copies it reaches -40 at the far side of the day and an axis fitted to
+  // that leaves the rest of the curve flat.
   const LOG_FLOOR = -12;
-  const keptAt = useCallback(
-    (x: number) => {
-      const v = keptDensity(x, state.sigma, ks, [x])[0] as number;
-      return state.log ? Math.max(Math.log(v), LOG_FLOOR) : v;
-    },
-    [ks, state.log, state.sigma],
-  );
 
   const buildTop = useCallback(
     (fig: Figure, L: Layers) => {
@@ -223,8 +214,15 @@ export function Shifts() {
     [draws, kept, keptTop, state.log],
   );
 
-  const drag = (points: readonly (readonly [number, number])[]) =>
-    set({ mu: Math.round((points[0]?.[0] ?? state.mu) * 20) / 20 });
+  // The mean is one value with two ways to set it: the field above and a line dragged across either chart.
+  const mean = {
+    axis: "x" as const,
+    value: state.mu,
+    onChange: (mu: number) => set({ mu }),
+    min: 0,
+    max: G,
+    step: 0.05,
+  };
 
   return (
     <FigureBox
@@ -271,23 +269,13 @@ export function Shifts() {
         label="The model and the draws over three periods of the day"
         build={buildTop}
         ratio={2.6}
-        handles={{
-          points: [[state.mu, peak]],
-          onChange: drag,
-          constrain: onGraph(() => peak, [0, G]),
-          labels: ["mean μ"],
-        }}
+        rules={[{ ...mean, label: "mean μ" }]}
       />
       <ChartPanel
         label="The density the day sees, with the copies added up"
         build={buildDay}
         ratio={2.6}
-        handles={{
-          points: [[state.mu, keptAt(state.mu)]],
-          onChange: drag,
-          constrain: onGraph(keptAt, [0, G]),
-          labels: ["mean μ"],
-        }}
+        rules={[{ ...mean, label: "mean μ" }]}
       />
     </FigureBox>
   );

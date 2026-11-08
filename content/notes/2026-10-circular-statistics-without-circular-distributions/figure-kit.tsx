@@ -8,11 +8,13 @@ import type { ColourMode } from "omai-render/theme";
 import {
   type Constraint,
   Chart,
+  DraggableLine,
   DraggablePoints,
   NumberField,
   Toggle,
   InteractionOverlay,
   Overlaid,
+  type PlotBox,
   type Projection,
   useColourMode,
 } from "omai-render/react";
@@ -98,6 +100,29 @@ export type Handles = {
   colour?: (index: number) => string;
 };
 
+/** A line a reader drags across a chart, bound to the same value as a control. */
+export type Rule = {
+  axis: "x" | "y";
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  label?: string;
+};
+
+/**
+ * The stretch of the other axis a dragged line covers: the plotting box, in data units, so that the line
+ * stops at the axes and does not run through their labels. Without a box it spans the figure.
+ */
+function spanOf(axis: "x" | "y", projection: Projection): { span?: readonly [number, number] } {
+  const box = projection.rect;
+  if (!box) return {};
+  const corners = [projection.toData([box.x, box.y + box.height]), projection.toData([box.x + box.width, box.y])];
+  const k = axis === "x" ? 1 : 0;
+  return { span: [corners[0]?.[k] ?? 0, corners[1]?.[k] ?? 0] };
+}
+
 /**
  * A chart that fills the width it is given.
  *
@@ -114,9 +139,10 @@ export function ChartPanel(props: {
   ratio?: number;
   square?: boolean;
   handles?: Handles;
+  rules?: readonly Rule[];
   label: string;
 }) {
-  const { build, ratio = 2.2, square = false, handles, label } = props;
+  const { build, ratio = 2.2, square = false, handles, rules, label } = props;
   const mode = useColourMode();
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -150,7 +176,7 @@ export function ChartPanel(props: {
   // flushed the option set a moment ago, and ECharts answers each handle with
   // a console warning. This reads the map when the chart reports it has
   // finished drawing instead, so it is only ever asked when it can answer.
-  const [map, setMap] = useState<{ origin: Point2; scale: Point2 } | null>(null);
+  const [map, setMap] = useState<{ origin: Point2; scale: Point2; box: PlotBox | null } | null>(null);
   const made = useCallback((chart: EChartsInstance) => {
     const finder = { gridIndex: 0 };
     const learn = () => {
@@ -160,15 +186,29 @@ export function ChartPanel(props: {
       const origin: Point2 = [a[0] as number, a[1] as number];
       const scale: Point2 = [(b[0] as number) - origin[0], (b[1] as number) - origin[1]];
       if (!scale.every((v) => Number.isFinite(v) && v !== 0)) return;
+      // The plotting box, read from the option as omai's own projection does (its charts place the grid with
+      // numbers), so that a dragged line spans the axes and not the labels around them.
+      const grids = chart.getOption().grid as readonly Record<string, unknown>[] | undefined;
+      const g = grids?.[0];
+      const num = (k: string) => (typeof g?.[k] === "number" ? (g[k] as number) : undefined);
+      const [bx, by, bw, bh] = [num("left"), num("top"), num("width"), num("height")];
+      const box: PlotBox | null =
+        bx === undefined || by === undefined || bw === undefined || bh === undefined
+          ? null
+          : { x: bx, y: by, width: bw, height: bh };
       setMap((old) =>
         old &&
         [0, 1].every(
           (i) =>
             Math.abs((old.origin[i] as number) - (origin[i] as number)) < 1e-6 &&
             Math.abs((old.scale[i] as number) - (scale[i] as number)) < 1e-9,
-        )
+        ) &&
+        old.box?.x === box?.x &&
+        old.box?.y === box?.y &&
+        old.box?.width === box?.width &&
+        old.box?.height === box?.height
           ? old
-          : { origin, scale },
+          : { origin, scale, box },
       );
     };
     chart.on("finished", learn);
@@ -178,6 +218,7 @@ export function ChartPanel(props: {
       map && {
         toPixel: (p) => [map.origin[0] + map.scale[0] * p[0], map.origin[1] + map.scale[1] * p[1]],
         toData: (p) => [(p[0] - map.origin[0]) / map.scale[0], (p[1] - map.origin[1]) / map.scale[1]],
+        rect: map.box,
       },
     [map],
   );
@@ -189,16 +230,21 @@ export function ChartPanel(props: {
           width={fig.width}
           height={fig.height}
           overlay={
-            handles && projection ? (
+            (handles || rules) && projection ? (
               <InteractionOverlay projection={projection} width={fig.width} height={fig.height}>
-                <DraggablePoints
-                  points={handles.points}
-                  onChange={handles.onChange}
-                  {...(handles.constrain ? { constrain: handles.constrain } : {})}
-                  {...(handles.labels ? { labels: handles.labels } : {})}
-                  {...(handles.colour ? { colour: handles.colour } : {})}
-                  radius={6}
-                />
+                {rules?.map((rule) => (
+                  <DraggableLine key={rule.axis + (rule.label ?? "")} {...rule} {...spanOf(rule.axis, projection)} />
+                ))}
+                {handles && (
+                  <DraggablePoints
+                    points={handles.points}
+                    onChange={handles.onChange}
+                    {...(handles.constrain ? { constrain: handles.constrain } : {})}
+                    {...(handles.labels ? { labels: handles.labels } : {})}
+                    {...(handles.colour ? { colour: handles.colour } : {})}
+                    radius={6}
+                  />
+                )}
               </InteractionOverlay>
             ) : null
           }
