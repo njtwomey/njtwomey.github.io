@@ -28,7 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "echarts": "^6.1.0",
-    "katex": "^0.16.47",
+    "katex": "^0.18.2",
     "lucide-react": "^0.550.0",
     "omai-engine": "file:vendor/omai/omai-engine.tgz",
     "omai-render": "file:vendor/omai/omai-render.tgz",
