@@ -62,6 +62,14 @@ React bindings, then the source only if an index is not enough.
   `localStorage` under `omai-session-preferences`.
 - **If omai lacks something, say so rather than working around it.** A figure that needs a domain, function or
   behaviour omai does not have becomes a marked placeholder and the gap is reported upstream, not hand-rolled.
+- **Standing order: nothing in a figure plays or computes until the reader asks.** No `autoplay`, no run started on
+  mount, no worker fitting in the background when the page loads. An animated or iterative figure opens paused at its
+  first state (step 0) and says what to press ("press play to fit"). Pressing play, stepping or dragging the scrubber
+  starts the computation, and changing a setting starts a fresh run from the beginning and waits there for another
+  press. A figure whose first picture needs a heavy run shows a fixed start (cosines, the initial parameters) instead,
+  and the heavy run starts when the reader chooses it. Cheap, one-shot results that are drawn at once, such as a
+  histogram or a closed-form curve, are not animations and compute normally. A page that deliberately differs says so
+  in the note. Check it with no interaction at all: no worker started, and the step counter still at 0.
 
 ## Content is compiled, not hand-written into the app
 
