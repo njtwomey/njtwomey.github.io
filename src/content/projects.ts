@@ -63,14 +63,14 @@ export const projects: readonly Project[] = [
     alt: "A reference site listing machine learning topics by group, each with a note count",
   },
   {
-    name: "AIFN Engine",
-    href: "https://www.nialltwomey.com/aifn-engine/",
+    name: "omai",
+    href: "https://www.nialltwomey.com/omai/",
     blurb:
-      "The code underneath the figures in AI Field Notes, published on its own because it stands up without them. Move a slider or drag a point and the model refits and redraws where you are looking, since the numerics, the methods and the drawing all run in the browser and nothing goes to a server.",
-    stat: "3 packages · 188 modules · 15 compute families",
-    image: "aifn-engine.jpg",
-    imageDark: "aifn-engine-dark.jpg",
-    alt: "A landing page with a large gradient headline and the start of a chart you can drag below it",
+      "Observable methods in machine learning: a TypeScript library in which each method records what it does, step by step, so a run can be watched, replayed and drawn. The figures in my notes run the library itself. Drag a point or move a slider and the model refits and redraws where you are looking, since the numerics and the drawing all run in the browser and nothing goes to a server.",
+    stat: "3 packages · 67 compute domains · 13 figure areas",
+    image: "omai.jpg",
+    imageDark: "omai-dark.jpg",
+    alt: "The omai landing page, with the headline Observable methods in machine learning above two buttons for the gallery and the docs",
   },
   {
     name: "Knight School",

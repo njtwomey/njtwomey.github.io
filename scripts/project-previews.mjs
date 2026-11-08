@@ -42,13 +42,22 @@ const OUT = resolve(root, "public/projects");
  */
 const SITES = {
   "ai-field-notes": "https://www.nialltwomey.com/ai-field-notes/",
-  "aifn-engine": "https://www.nialltwomey.com/aifn-engine/",
+  omai: "https://www.nialltwomey.com/omai/",
   knightschool: "https://www.nialltwomey.com/knightschool/",
   drillcode: "https://www.nialltwomey.com/drillcode/",
   dpc: "https://www.nialltwomey.com/dpc/",
   whazzon: "https://www.nialltwomey.com/whazzon/",
   chess: "https://www.nialltwomey.com/chess/",
 };
+
+/**
+ * Sites that choose their theme from `localStorage` and ignore `prefers-color-scheme`,
+ * keyed like SITES. The value is the storage key; the script writes `light` or `dark`
+ * into it before the page loads. Without this, omai (dark unless told otherwise)
+ * produced the same dark page for both previews, and the check below threw the
+ * "light" one away as a copy.
+ */
+const THEME_STORAGE = { omai: "omai-colour-mode" };
 
 // 16:10 at 2x, which is the aspect the card crops to and is crisp at the 320px
 // the image is actually drawn at. Anything larger is bytes nobody sees.
@@ -109,6 +118,9 @@ for (const [name, url] of targets) {
 
   for (const scheme of ["light", "dark"]) {
     const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: SCALE, colorScheme: scheme });
+    if (THEME_STORAGE[name]) {
+      await page.addInitScript(([key, value]) => localStorage.setItem(key, value), [THEME_STORAGE[name], scheme]);
+    }
     await page.goto(url, { waitUntil: "networkidle", timeout: 45_000 });
     await page.waitForTimeout(SETTLE);
 

@@ -49,7 +49,7 @@ function ProjectCard({ project }: { project: Project }) {
           `self-start` matters more than it looks. A flex child stretches to
           the row by default, which overrides the aspect, and `object-cover`
           then scales the picture to the new height and crops the sides: the
-          AIFN Engine preview lost its own name off the left edge that way. A
+          omai preview lost its own name off the left edge that way. A
           preview whose whole job is to show what a site looks like cannot be
           cropped to fit a column, so the box stays 16:10 and the card grows
           around it when the text needs more. */}
