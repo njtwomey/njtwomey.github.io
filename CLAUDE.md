@@ -51,10 +51,9 @@ React bindings, then the source only if an index is not enough.
   `scripts/fetch-omai.mjs` (the `preinstall` hook, or `npm run omai:fetch`) downloads it over HTTPS into the
   git-ignored `vendor/omai/`, verifies the hash and refuses on a mismatch. `package.json` depends on
   `file:vendor/omai/<name>.tgz`. The repository is public, so no sign-in is needed.
-- **The lock's `status` field means the release has no assets yet.** Version 0.1.4 was packed from the `v0.1.4` tag
-  with `make pack` in an omai checkout. Once the release carries `omai-engine-0.1.4.tgz` and
-  `omai-render-0.1.4.tgz`, `npm run omai:lock -- v0.1.4 && npm run omai:fetch && npm install` takes the release's
-  hashes and clears the field. Until then CI cannot install them, so do not push before that is done.
+- **Moving to a new release is one command.** `npm run omai:lock -- v<version> && npm run omai:fetch && npm install`
+  takes the release's asset hashes into the lock, downloads and verifies the tarballs, and unpacks them. Use one
+  version for both packages. The site is on 0.1.6, installed from the release assets, so CI can run `npm ci`.
 - **The API in one paragraph.** Randomness is explicit: an immutable `key` from `omai-engine/random`. Iterative
   methods are traced `Algorithm`s run as sessions (`useSession`, `useLiveRun`, `SessionPlayer`). Numeric functions take
   a `TensorLike` and return tensors (`toFlat` and `toVector` read them back), and fixed-size tuples are `Vec2`, `Vec3`

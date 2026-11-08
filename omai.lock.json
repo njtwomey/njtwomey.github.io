@@ -1,18 +1,17 @@
 {
   "$comment": "omai (github.com/njtwomey/omai) packages installed as tarballs. scripts/fetch-omai.mjs puts each into vendor/omai/<name>.tgz (git-ignored), downloading it from the release over HTTPS (gh as the fallback), checks sha256 and refuses on mismatch; package.json depends on those files. One release per version, tag v<version>, all packages attached. To move to a release: `npm run omai:lock -- v<version> && npm run omai:fetch && npm install` (omai:lock rewrites this file from the release's asset digests).",
-  "status": "Local tarballs, not yet attached to a release: built from a checkout of the v0.1.4 tag (dc275e6) with `make pack`. The tag v0.1.4 exists but has no GitHub release assets yet; create the release with omai-engine-0.1.4.tgz and omai-render-0.1.4.tgz, then `npm run omai:lock -- v0.1.4` takes the release's hashes and clears this field.",
   "repo": "njtwomey/omai",
   "dir": "vendor/omai",
   "packages": {
     "omai-engine": {
-      "version": "0.1.4",
-      "sha256": "011e15a0ed90069484fe5286e1e37cfb64fa60f0aec4cad3430f2a27834848b7",
-      "release": { "tag": "v0.1.4", "asset": "omai-engine-0.1.4.tgz" }
+      "version": "0.1.6",
+      "sha256": "0075f09d35f403be72215b2064040fe458887d2eb40882f80879302c74b785f6",
+      "release": { "tag": "v0.1.6", "asset": "omai-engine-0.1.6.tgz" }
     },
     "omai-render": {
-      "version": "0.1.4",
-      "sha256": "54e21b015e2f44b1740cfbe07a4165c47a1b54f7818e05abfd344cf3407ca99c",
-      "release": { "tag": "v0.1.4", "asset": "omai-render-0.1.4.tgz" }
+      "version": "0.1.6",
+      "sha256": "baa200806057df789e6fe3a58ed6f8125724136182b050ddebe641c50c8e797a",
+      "release": { "tag": "v0.1.6", "asset": "omai-render-0.1.6.tgz" }
     }
   }
 }

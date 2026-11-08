@@ -147,35 +147,6 @@ function inlinedCodeFiles(): Plugin {
   };
 }
 
-/**
- * omai-render's missing `dist/react/maths.css`.
- *
- * `dist/react/MathView.js` imports `./maths.css`, but the 0.1.4 tarball carries only
- * `src/react/maths.css`, so the import resolves to nothing and both the dev pre-bundle and
- * the build stop on it. Until omai ships the file in `dist`, that one import is pointed at
- * the source copy, in Vite (serving and building) and in the esbuild pre-bundle, which
- * bypasses Vite plugins. Both rules match nothing once the file exists.
- *
- * TODO: remove this, and its two uses below, once omai-render ships dist/react/maths.css.
- */
-const OMAI_MATHS_CSS = {
-  importer: /[\\/]node_modules[\\/]omai-render[\\/]dist[\\/]react[\\/][^\\/]+$/,
-  target: resolve(import.meta.dirname, "node_modules/omai-render/src/react/maths.css"),
-  missing: () => !existsSync(resolve(import.meta.dirname, "node_modules/omai-render/dist/react/maths.css")),
-};
-
-function omaiMathsCss(): Plugin {
-  return {
-    name: "site:omai-maths-css",
-    enforce: "pre",
-    resolveId(id, importer) {
-      if (id === "./maths.css" && importer && OMAI_MATHS_CSS.importer.test(importer) && OMAI_MATHS_CSS.missing()) {
-        return OMAI_MATHS_CSS.target;
-      }
-    },
-  };
-}
-
 export default defineConfig({
   // A user site served from a custom domain lives at the root. VITE_BASE is the
   // escape hatch for previewing under a subpath.
@@ -211,7 +182,6 @@ export default defineConfig({
     notesIndex(),
     inlinedCodeFiles(),
     spaFallback(),
-    omaiMathsCss(),
   ],
   resolve: {
     alias: { "@": resolve(import.meta.dirname, "src") },
@@ -233,20 +203,6 @@ export default defineConfig({
    * the shape that triggers late discovery, so the entries are listed here.
    */
   optimizeDeps: {
-    esbuildOptions: {
-      plugins: [
-        {
-          name: "site:omai-maths-css",
-          setup(build) {
-            build.onResolve({ filter: /^\.\/maths\.css$/ }, (args) =>
-              OMAI_MATHS_CSS.importer.test(args.importer) && OMAI_MATHS_CSS.missing()
-                ? { path: OMAI_MATHS_CSS.target }
-                : undefined,
-            );
-          },
-        },
-      ],
-    },
     include: [
       "echarts/core",
       "echarts/charts",

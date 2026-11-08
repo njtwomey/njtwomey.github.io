@@ -21,7 +21,7 @@
    lock's sha256 (a local build) it is used, otherwise the script says so and how to build the tarballs.
 
    Bumping to a release (the one-command step):
-     npm run omai:lock -- v0.1.4 && npm run omai:fetch && npm install
+     npm run omai:lock -- v0.1.6 && npm run omai:fetch && npm install
    `--lock <tag>` asks GitHub for the release (HTTPS API, or `gh api` if that fails), takes each listed package's
    asset and its sha256 digest (hashing the download if the API gives none), and rewrites omai.lock.json: versions, tags,
    assets, hashes; the "status" field goes. It adds nothing and removes nothing: the packages are the ones the lock lists.
@@ -206,7 +206,7 @@ async function releaseOf(tag) {
 
 async function relock(tag) {
   if (!/^v\d+\.\d+\.\d+$/.test(tag ?? ""))
-    fail("usage: node scripts/fetch-omai.mjs --lock v<major>.<minor>.<patch>   (for example v0.1.4)");
+    fail("usage: node scripts/fetch-omai.mjs --lock v<major>.<minor>.<patch>   (for example v0.1.6)");
   const version = tag.slice(1);
   const rel = await releaseOf(tag);
   const assets = new Map((rel.assets ?? []).map((a) => [a.name, a]));
