@@ -3,11 +3,11 @@ title: "Continental Fingerprinting with Airplane Doppler"
 description:
   "I use synthetic flights and known microphone locations to test whether faint aircraft sounds can reveal where a
   recording was captured."
-date: "2026-11-06"
+date: "2026-11-09"
 tags: ["geolocation", "signal-processing", "simulation"]
 hero: "hero.png"
 heroAlt: "Synthetic terrain with an aircraft flight path and a microphone"
-published: false
+published: true
 ---
 
 import { DopplerLab } from "./DopplerLab";
@@ -16,7 +16,7 @@ import { LocateLab } from "./LocateLab";
 import { DayInLifeLab } from "./DayInLifeLab";
 import { TransferLab } from "./TransferLab";
 
-I watched [a video showing how the sound in a recording can reveal exactly where it was
+I watched [a fascinating video showing how the sound in a recording can reveal exactly where it was
 captured](https://www.youtube.com/watch?v=UytYrhYLOKI).
 The presenter began with a security-camera recording known only to have been captured on September 8 somewhere in the
 continental United States. By matching the changing pitch of faint aircraft sounds to historical flights, he narrowed
@@ -39,6 +39,9 @@ When we hear a plane, we hear sound that was emitted in the past. Knowing the pl
 us work backwards from when the sound arrives to when it was emitted. Each ring below shows how far sound from an
 earlier aircraft position has travelled; the microphone hears that sound when the ring reaches it.
 
+Knowing where the plane was when it emitted the sound matters because aircraft move so fast, often hundreds of metres a
+second.
+
 <WavefrontLab />
 
 ## Aircraft Doppler curves
@@ -59,7 +62,7 @@ $$
 
 A plane passing close to the microphone produces a rapid drop from high to low pitch; farther away, the drop is slower.
 Turns and changes in speed add more detail to the curve. Those details help distinguish the curves predicted from
-different flight paths and microphone positions[^flight-transfer].
+different flight paths and microphone positions.
 
 The plane's emitted frequency is set in this demonstration. In a recording, that frequency is unknown, so the search
 tests different values while matching the rise, fall, and timing of the received curve. It assumes the plane's tone
@@ -67,30 +70,32 @@ stays steady during a pass.
 
 ## Calculating the received curve
 
-The received curve can be calculated in two ways. Starting at a time on the recording, we work backwards to find where
-the plane was when it emitted that sound. Or we translate the flight path analytically: each emission time gives an
-arrival time and a received frequency. The orange line is the analytical translation; the blue points are calculated
-backwards from arrival times. They coincide. The microphone and flight-path points can be dragged on the map, and the
-controls change the plane's speed, altitude, and emitted tone.
+Searching for a microphone means asking, for each candidate place, what a plane's tone would sound like there. The
+direct way is to build the sound. Take the expected tone, propagate it from the aircraft to the candidate place with its
+delay and Doppler shift, take the spectrum, and compare that with the recording. Then repeat it for every place on the
+search grid and every flight that passes near it. Each comparison starts from a whole signal, so this is slow.
+
+The shortcut is to skip the signal and translate the curve it would draw. For a flight path $x(t)$ and a candidate
+microphone at $m$, a tone emitted at time $t_e$ arrives at $t_a = t_e + \lVert x(t_e) - m \rVert / c$ with the frequency
+$f_a$ above. Sweeping $t_e$ along the path gives pairs of arrival time and frequency. That is a time series of received
+pitch, or a spline through it, and it describes what the microphone should hear. The path can bend or change speed,
+because the translation only needs the plane's position and radial speed at each emission time.
+
+The two routes give the same curve. The orange line below is the analytical translation of the flight path, and the blue
+points start from arrival times and work backwards to where the plane was. They coincide. The analytical route should
+also be cheaper, since each candidate place costs a short curve instead of a propagated signal and its spectrum. And
+because the curve is a smooth function of the flight path and the microphone position, it should later allow gradient
+descent to refine an estimate. The microphone and flight-path points can be dragged on the map, and the controls change
+the plane's speed, altitude, and emitted tone.
 
 <TransferLab />
 
-## Synthetic flights and recordings
-
-For this setup, I generated random flight paths over a randomly generated terrain and placed microphones at known
-locations and times. Because I know every plane's path, the sound-travel and Doppler equations tell me when each tone
-reaches a microphone and how its pitch changes.
-
-## Matching recordings to flight tracks
-
-The search rejects poor matches between predicted and observed curves, then refines the best locations. Historical
-flight tracks could come from aircraft position broadcasts known as ADS-B; this setup uses generated tracks instead.
-
-The browser starts with clean Doppler curves rather than extracting them from audio. In the Python version, I also
-generated audio and recovered the tonal curves from spectrograms before searching. Its synthetic recovery results were
-broadly similar, though the two versions used different test cases. The full-day search also checks whether a candidate
-would hear the same number of flights as the clip. This assumes every audible tone was detected, which is true for the
-generated curves.
+One extension I find interesting is to carry uncertainty through this translation. If the emission parameters are only
+measured to within some error, that error could be propagated into the received curve, giving a band around it instead
+of a single line. The received frequency is linear in the emitted tone $f_0$, so with Gaussian errors I suspect that
+conjugacy would give this in closed form, and the curve with its band would act much like a matched filter. A separate
+route is to learn the spread from data: for flights with given properties and an expected frequency, estimate directly
+how far the observed frequencies vary around it. I have not tried either.
 
 ## Finding a microphone from two flights
 
@@ -101,13 +106,11 @@ the circle marks the best estimate.
 
 <LocateLab />
 
-A microphone that hears only one plane gives limited information about its location, especially when other flights
-follow similar paths. A second plane travelling in a different direction can narrow the possible locations. The
-comparison uses the same microphone position with either two crossing curved paths or two straight parallel paths. At
-the default position, the parallel paths leave a second plausible area, while the crossing paths concentrate the high
-scores around the microphone.
-
-## Refining the location estimate
+The figure compares two crossing curved paths with two straight parallel paths, for the same microphone position. With
+the parallel paths, the high scores seem to be mirrored between different areas, so a place far from the microphone
+can score about as well as the true one. Crossing paths, or paths set at a bit more of an angle, can show symmetries
+as well, but the area they cover looks smaller. This is an observation from the paths in this figure, and I have not
+tested it more widely.
 
 The location search above first checks positions across the full 20 × 20 km map. It then checks more closely spaced
 positions around the eight best matches, repeating this three times before a final 25 × 25 search around the strongest
@@ -153,13 +156,10 @@ fine, or thorough; the figure starts with the quick setting.
 ## Benchmark: 100 synthetic clips
 
 Each of the 100 test clips is a 20-minute recording at a random microphone position and start time in the same 100 × 100
-km day, with its 420 background flights and two constructed passes. I generated the curves that would reach each
-microphone and gave them to the same TypeScript search that the figure uses. The true position and time were used to
-generate the curves and measure error; the search did not receive either one.
-
-The most thorough search used 1 km coarse cells, three refinement levels, and 80 cells kept at each level. A position
-counts as recovered when it is within 200 m of the microphone. The clips have exact flight tracks and clean curves, so
-this does not test audio detection or missing flights.
+km day. I generated the curves that would reach each microphone and gave them to the same TypeScript search that the
+figure uses. The search did not receive the true position or time. A position counts as recovered when it is within 200
+m of the microphone. The clips have exact flight tracks and clean curves, so this does not test audio detection or
+missing flights.
 
 | Audible flights | Clips | Within 200 m | Mean position error | Median position error | Median start-time error |
 | --------------- | ----: | -----------: | ------------------: | --------------------: | ----------------------: |
@@ -168,28 +168,18 @@ this does not test audio detection or missing flights.
 | 2               |    22 |           22 |                18 m |                  16 m |           Less than 1 s |
 | 3 or more       |     8 |            8 |                21 m |                  19 m |           Less than 1 s |
 
-The thorough search recovered all 30 clips with at least two audible flights, with a mean position error of 19 m. It
-recovered only two of the 38 one-flight clips. In these clips, a finer search cannot separate places and times that fit
-the same one-flight curve. The 32 clips with no audible flight produced no estimate.
+The most thorough search setting recovered all 30 clips with at least two audible flights, with a mean position error
+of 19 m. It recovered only two of the 38 one-flight clips: a single curve fits many places and times about equally
+well, so a finer search cannot separate them. The 32 clips with no audible flight produced no estimate.
 
-I reran the 30 clips with at least two audible flights at three search settings. The interactive figure starts with the
-quick 2 km, 20-cell search. The fine and thorough options take longer but keep more areas for refinement.
+Cheaper settings are faster but less reliable. The search scores a coarse grid first and refines only the best cells,
+so a setting that keeps too few cells can discard the correct area before refinement starts, and later refinement
+cannot bring it back. The quick setting that the figure starts with found 26 of the 30 two-flight clips in about a
+quarter of the time of the thorough one.
 
-| Coarse spacing | Cells kept | Within 200 m | Mean position error | Mean search time |
-| -------------- | ---------: | -----------: | ------------------: | ---------------: |
-| 1 km           |         80 |     30 of 30 |                19 m |           25.3 s |
-| 1 km           |         32 |     29 of 30 |               615 m |           21.4 s |
-| 2 km           |         20 |     26 of 30 |              5.0 km |            6.8 s |
-
-The lower settings can lose the answer before refinement starts. In one clip, the true place and time scored 100, but
-the nearest point on the 1 km coarse grid scored only 25 and ranked 76th. Keeping 32 cells discarded the correct area.
-Adding a fourth refinement level could not bring it back; keeping 80 cells preserved it.
-
-The video uses a 200 m grid for candidate positions, then 100 m spacing for detailed curve scoring. This benchmark
-starts at 1 km and refines selected areas three times, reaching about 37 m spacing. That finer final grid helps only if
-the correct area survives the first pass, which is why the number of cells kept for refinement matters. The accuracy
-here is an optimistic ceiling for this constructed setup: the generated curves have no ground reflections, changing air
-conditions, noisy surroundings, or missed tones. Those effects can obscure or distort a real Doppler trace.
+The accuracy here is an optimistic ceiling for this constructed setup: the generated curves have no ground reflections,
+changing air conditions, noisy surroundings, or missed tones. Those effects can obscure or distort a real Doppler
+trace.
 
 ## How many flights are enough?
 
@@ -205,7 +195,9 @@ $$
 The 100 clips held 107 audible flights, an average of 1.07 per 20-minute clip. Putting that average into the expression
 gives about 29% of clips with at least two flights, close to the 30% observed. That calculation describes only these
 synthetic clips; I have not checked whether their flight arrivals follow a Poisson process. Real flights also cluster
-around airports and schedules, so the arrival rate alone cannot predict how well recovery will work.
+around airports and schedules, so the arrival rate alone cannot predict how well recovery will work. Because the rate
+differs from place to place, the flights a microphone hears are not independent of where it is, and I would expect rural
+areas with few flights to be much harder to locate than urban areas near airports.
 
 ## Conclusion
 
@@ -214,16 +206,3 @@ search recovered all 30 such clips in my 100-clip benchmark, usually within a fe
 rarely enough, and a coarse search could still discard the right area before refinement. Reflections, noise, and missed
 tones will make real recordings harder, so these results are an optimistic ceiling rather than a prediction for field
 recordings. Even so, I am impressed by how much location information the curves from multiple flights can carry.
-
-<hr />
-
-[^flight-transfer]:
-    For a spline flight path $p(t)$ and microphone $o$, let $r(t)=\lVert p(t)-o\rVert$. Its radial speed is
-    $r'(t)=(p(t)-o)\cdot p'(t)/r(t)$. Each emission time $t$ maps directly to the pair
-    $\bigl(t+r(t)/c,\; f_0/[1+r'(t)/c]\bigr)$: arrival time and received frequency. For a subsonic flight, arrival time
-    increases with emission time, so these pairs trace the heard curve without solving backwards at every audio sample.
-    The heard curve is smooth on each spline segment. Because $r(t)$ contains a square root, the curve is generally not
-    an exact polynomial spline. A compact spline can still approximate it to a chosen accuracy. Modeled amplitude varies
-    smoothly with range too, while real signal-to-noise ratio also depends on background sound and obstructions. Only
-    microphones within a flight's hearing range need its curve, so each grid cell can keep a short list of nearby flight
-    fingerprints.
