@@ -125,7 +125,10 @@ export function Torus() {
   const run = useLiveRun(algorithm, {
     maxSteps: STEPS,
     seed: state.seed,
-    stepsPerFrame: 4,
+    // As many steps a frame as the frame can afford, measured, so a slow fit slows the cursor and not the page.
+    stepsPerFrame: "auto",
+    frameBudgetMs: 8,
+    maxStepsPerFrame: 12,
     fps: 60,
     history: STEPS + 1,
   });

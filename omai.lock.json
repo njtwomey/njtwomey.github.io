@@ -4,14 +4,14 @@
   "dir": "vendor/omai",
   "packages": {
     "omai-engine": {
-      "version": "0.1.6",
-      "sha256": "0075f09d35f403be72215b2064040fe458887d2eb40882f80879302c74b785f6",
-      "release": { "tag": "v0.1.6", "asset": "omai-engine-0.1.6.tgz" }
+      "version": "0.1.9",
+      "sha256": "7b334895f03778be67bdf37ae75cf21237ce5160c4fc194cf16cc858dfd4c725",
+      "release": { "tag": "v0.1.9", "asset": "omai-engine-0.1.9.tgz" }
     },
     "omai-render": {
-      "version": "0.1.6",
-      "sha256": "baa200806057df789e6fe3a58ed6f8125724136182b050ddebe641c50c8e797a",
-      "release": { "tag": "v0.1.6", "asset": "omai-render-0.1.6.tgz" }
+      "version": "0.1.9",
+      "sha256": "bc2789063cf4c40d61a28063c8a5d20b52363cbc1cec78ee5d81356de6840caa",
+      "release": { "tag": "v0.1.9", "asset": "omai-render-0.1.9.tgz" }
     }
   }
 }
