@@ -73,6 +73,6 @@
     "esbuild@0.28.2": true
   },
   "overrides": {
-    "toml": "^5.0.0"
+    "toml": "^5.0.1"
   }
 }
